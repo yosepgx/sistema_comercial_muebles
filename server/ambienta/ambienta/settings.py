@@ -32,6 +32,7 @@ DEBUG = env.bool('DEBUG')
 
 ALLOWED_HOSTS = env.list('ALLOWED_HOSTS')
 
+CORS_ALLOW_ALL_ORIGINS = True
 
 # Application definition
 
@@ -43,6 +44,13 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
+    'corsheaders',
+    'predictivo',
+    'inventario_app',
+    'ventas_app',
+    'oportunidades_app',
+    'clientes_app',
+
 ]
 
 MIDDLEWARE = [
