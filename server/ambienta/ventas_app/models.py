@@ -1,5 +1,5 @@
 from django.db import models
-from oportunidades_app.models import Oportunidad
+from oportunidades_app.models import Cotizacion
 class Pedido(models.Model):
     ESTADOS_PEDIDO = [
         ('pendiente', 'Pendiente'),
@@ -8,14 +8,15 @@ class Pedido(models.Model):
         ('anulado', 'Anulado'),
     ]
 
-    pedido_fecha = models.DateTimeField(auto_now_add=True)
-    pedido_fechaentrega = models.DateField(null=True, blank=True)
-    pedido_direccion = models.CharField(max_length=255)
+    fecha = models.DateTimeField(auto_now_add=True)
+    fechaentrega = models.DateField(null=True, blank=True)
+    direccion = models.CharField(max_length=255)
 
-    cotizacion = models.OneToOneField(Oportunidad, on_delete=models.PROTECT)
+    cotizacion = models.OneToOneField(Cotizacion, on_delete=models.PROTECT)
 
     moneda = models.CharField(max_length=5, default="PEN")  # Sol peruano
     RUC_emisor = models.CharField(max_length=11)  # 11 dígitos
+    cliente = models.CharField(max_length=255, default='cli') #razon o nombre completo
     DOC_cliente = models.CharField(max_length=20)  # DNI/RUC u otro documento
 
     monto_sin_impuesto = models.DecimalField(max_digits=10, decimal_places=2)#valor de venta

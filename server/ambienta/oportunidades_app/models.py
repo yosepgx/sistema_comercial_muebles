@@ -1,6 +1,9 @@
 from django.db import models
 from inventario_app.models import Producto
 from clientes_app.models import Contacto
+
+#modelos: oportunidad, cotizacion, cotizacionDetalle
+
 class Oportunidad(models.Model):
 
     NUEVO = 'nuevo'
@@ -15,11 +18,10 @@ class Oportunidad(models.Model):
         (PERDIDO, 'Perdido'),
     ]
 
-    contacto = models.OneToOneField(Contacto, on_delete=models.CASCADE) 
-    resultado = models.TextField(blank=True, null=True)
+    contacto = models.ForeignKey(Contacto, on_delete=models.CASCADE) 
     valor_neto = models.DecimalField(max_digits=12, decimal_places=2)
     fecha_contacto = models.DateField()
-    vendedor_asignado = models.IntegerField(null=True)  # TODO: Debería ser ForeignKey a un modelo Usuario si existe
+    vendedor_asignado = models.IntegerField(null=True, blank=True)  # TODO: Debería ser ForeignKey a un modelo Usuario si existe
     estado_oportunidad = models.CharField(
         max_length=20, choices=ESTADO_OPORTUNIDAD_CHOICES, default=NUEVO
     )
