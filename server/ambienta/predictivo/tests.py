@@ -17,7 +17,7 @@ class TestPrediccion(TestCase):
     archivo_producto = "datacargable/DataProducto.xlsx"
     prediccion = pd.DataFrame()
     requisicion = pd.DataFrame()
-    horizonte = 3
+    horizonte = 1
     pasado = 36
     def setUp(self):
         #carga de DataProducto        

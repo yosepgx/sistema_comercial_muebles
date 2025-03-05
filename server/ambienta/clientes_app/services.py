@@ -23,7 +23,7 @@ class ServiceCargarDataClientes:
     def Contactos(archivo):
         try:
             campos = {'nombre': str,'correo': str,'telefono': str, 
-                      'direccion_entrega': str, 'tipo_interes': str, 'fecha_conversion': pd.date, 
+                      'direccion_entrega': str, 'tipo_interes': str, 'fecha_conversion': str, 
                       'naturaleza': str, 'empresa': str, 'categoria': int , 'activo': bool}
             df = pd.read_excel(archivo, sheet_name="Contacto", 
                                usecols=campos.keys(),
