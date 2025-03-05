@@ -1,5 +1,7 @@
 import pandas as pd
 from clientes_app.models import CategoriaCliente, Contacto, DocumentoID, Empresa
+
+#categorias -> contactos -> documentos
 class ServiceCargarDataClientes:
     def Categorias(archivo):
         try:

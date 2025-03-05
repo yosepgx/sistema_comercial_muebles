@@ -24,20 +24,20 @@ class CategoriaCliente(models.Model):
         return self.descripcion
     
 class Contacto(models.Model):
-    CLIENTE = 'cliente'
-    LEAD = 'lead'
+    TIPOCLIENTE = 'cliente'
+    TIPOLEAD = 'lead'
 
     TIPO_INTERES_CHOICES = [
-        (CLIENTE, 'Cliente'),
-        (LEAD, 'Lead'),
+        (TIPOCLIENTE, 'Cliente'),
+        (TIPOLEAD, 'Lead'),
     ]
 
-    NATURAL = 'Natural'
-    EMPRESA = 'Empresa'
+    TIPONATURAL = 'Natural'
+    TIPOEMPRESA = 'Empresa'
 
     NATURALEZA_CHOICES = [
-        (NATURAL, 'Natural'),
-        (EMPRESA, 'Empresa'),
+        (TIPONATURAL, 'Natural'),
+        (TIPOEMPRESA, 'Empresa'),
     ]
 
     nombre = models.CharField(max_length=255)
@@ -56,14 +56,14 @@ class Contacto(models.Model):
 
 
 class DocumentoID(models.Model):
-    DNI = 'DNI'
-    RUC = 'RUC'
-    CE = 'CE'
+    TIPODNI = 'DNI'
+    TIPORUC = 'RUC'
+    TIPOCE = 'CE'
 
     TIPO_DOCUMENTO_CHOICES = [
-        (DNI, 'DNI'),
-        (RUC, 'RUC'),
-        (CE, 'CE'),
+        (TIPODNI, 'DNI'),
+        (TIPORUC, 'RUC'),
+        (TIPOCE, 'CE'),
     ]
 
     tipo = models.CharField(max_length=3, choices=TIPO_DOCUMENTO_CHOICES)

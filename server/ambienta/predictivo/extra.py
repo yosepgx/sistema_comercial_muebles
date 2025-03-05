@@ -8,28 +8,16 @@ from io import BytesIO
 from ventas_app.models import PedidoDetalle, Pedido
 from inventario_app.models import Inventario
 from collections import defaultdict
-from datetime import datetime, timedelta
-from django.utils import timezone
-import os
+from datetime import datetime
 
 class ServicePrediccion:
     def __init__(self, queryset=None):
         
         self.queryset = queryset or PedidoDetalle.objects.filter(activo=True)
 
-    def obtener_historico_pedidos(self, meses_historico: int=12) -> pd.DataFrame:
+    def obtener_historico_pedidos(self) -> pd.DataFrame:
         
-        # Calcular fecha de corte
-        fecha_corte = timezone.now() - timedelta(days=meses_historico * 30)
-        
-        # Filtrar queryset por fecha
-        historico_filtrado = self.queryset.select_related('pedido').filter(
-            pedido__fechaentrega__gte=fecha_corte,
-            pedido__estado_pedido = Pedido.DESPACHADO
-        )
-        
-        # Obtener datos
-        historicos = historico_filtrado.values_list(
+        historicos = self.queryset.select_related('pedido').values_list(
             'pedido__pk', 
             'pedido__fechaentrega', 
             'pk', 
@@ -47,22 +35,8 @@ class ServicePrediccion:
 
     def preparar_datos_mensuales(self, data: pd.DataFrame) -> pd.DataFrame:
         
-        data['Mes'] = data['fechaentrega'].dt.to_period('M')#e.g 2024/01
-
-        # Obtener todas las combinaciones de meses y productos
-        all_months = pd.period_range(data['Mes'].min(), data['Mes'].max(), freq='M')
-        all_products = data['producto'].unique()
-        
-        full_index = pd.MultiIndex.from_product([all_months, all_products], names=['Mes', 'producto'])
-
-        # Agrupar por Mes y Producto
-        grouped_data = data.groupby(['Mes', 'producto'])['cantidad'].sum().reset_index()
-
-        # Merge con el índice completo y rellenar los NaN con 0
-        full_data = pd.DataFrame(index=full_index).reset_index().merge(grouped_data, on=['Mes', 'producto'], how='left')
-        full_data['cantidad'] = full_data['cantidad'].fillna(0)
-
-        return full_data
+        data['Mes'] = data['fechaentrega'].dt.to_period('M')
+        return data.groupby(['Mes', 'producto'])['cantidad'].sum().reset_index()
 
     def calcular_indices_estacionales(self, monthly_product_quantities: pd.DataFrame, meses_horizonte: list) -> dict:
         
@@ -104,15 +78,9 @@ class ServicePrediccion:
     def predecir_cantidades(self, monthly_product_quantities: pd.DataFrame, indices_estacionales: dict, meses_historico: int) -> pd.DataFrame:
         
         predicciones = {}
-        count=0
+        
         for product in monthly_product_quantities['producto'].unique():
             product_data = monthly_product_quantities[monthly_product_quantities['producto'] == product]
-            
-            #if(count<1):
-            #    print("\n")
-            #    print(product)
-            #    print(product_data)
-            #    count +=1
             
             # Promedio de las últimas X cantidades
             average_quantities = product_data['cantidad'].tail(meses_historico).mean()
@@ -132,21 +100,16 @@ class ServicePrediccion:
                 df_predicciones.append({
                     'Producto': producto, 
                     'Mes': mes, 
-                    'Cantidad_Predicha': round(cantidad)
+                    'Cantidad_Predicha': cantidad
                 })
         
         return pd.DataFrame(df_predicciones)
 
-    def generar_prediccion(self, horizonte_meses:int =1, meses_historico:int =12) -> pd.DataFrame:
+    def generar_prediccion(self, horizonte_meses:int =3, meses_historico:int = 6) -> pd.DataFrame:
         
         try:
             # Obtener histórico de pedidos
-            data = self.obtener_historico_pedidos(meses_historico)
-            
-            # Verificar si hay datos suficientes
-            if data.empty:
-                print(f"No hay datos históricos para los últimos {meses_historico} meses.")
-                return pd.DataFrame(columns=['Producto', 'Mes', 'Cantidad_Predicha'])
+            data = self.obtener_historico_pedidos()
             
             # Preparar datos mensuales
             monthly_product_quantities = self.preparar_datos_mensuales(data)
@@ -181,63 +144,45 @@ class ServicePrediccion:
             return pd.DataFrame(columns=['Producto', 'Mes', 'Cantidad_Predicha'])
 
     @classmethod
-    def predecir_productos(cls, horizonte_meses:int =1, meses_historico:int =12, queryset=None) ->pd.DataFrame:
+    def predecir_productos(cls, horizonte_meses:int =1, meses_historico:int =6 , queryset=None) -> pd.DataFrame:
         
         servicio = cls(queryset)
         return servicio.generar_prediccion(horizonte_meses, meses_historico)
     
-
-
-    def GenerarRequisicion(prediccion: pd.DataFrame, horizonte_meses: int = 1, meses_historico: int = 12) -> pd.DataFrame:
-        # Generar predicciones
-        #prediccion = self.generar_prediccion(horizonte_meses, meses_historico)
-        
-        # Stock actual
+    def GenerarRequisicion(prediccion: pd.DataFrame, horizonte_meses: int, meses_historico:int ) -> pd.DataFrame:
+        #stock actual
         inventarioNow = Inventario.objects.all()
         stock_actual = defaultdict(int)
-        
         for item in inventarioNow:
-            stock_actual[item.producto.nombre] += item.cantidad
+            stock_actual[item.producto.id] += item.cantidad
 
-        # Pedidos actuales
-        pedidosNow = Pedido.objects.filter(activo=True)#TODO:AGREGAR filtro por Pedidos pagados y pedidos con estado pagado
+        #Pedidos actuales
+        pedidosNow = Pedido.objects.filter(activo=True)
         pedidos_actuales = defaultdict(int)
         for pedido in pedidosNow:
             for detalle in pedido.detalles.all():
-                pedidos_actuales[detalle.nombre_producto] += detalle.cantidad
+                pedidos_actuales[detalle.cod_producto] += detalle.cantidad
         
+        #restar al stock actual la prediccion y los pedidos actuales
         # Calcular la necesidad de reposición
         requisicion = []
         for _, row in prediccion.iterrows():
-            producto = row["Producto"]
-            cantidad_predicha = row["Cantidad_Predicha"]
-            
-            # Obtener stock disponible y pedidos actuales, con valor 0 si no existe
+            producto = row["Product"]
+            cantidad_predicha = row["Quantity"]
             stock_disponible = stock_actual.get(producto, 0) - pedidos_actuales.get(producto, 0)
-            
-            # Calcular cantidad requerida
             cantidad_requerida = max(0, cantidad_predicha - stock_disponible)
             
             if cantidad_requerida > 0:
-                requisicion.append({
-                    "Producto": producto, 
-                    "Cantidad_Predicha": cantidad_predicha,
-                    "Stock_Actual": stock_actual.get(producto, 0),
-                    "Pedidos_Actuales": pedidos_actuales.get(producto, 0),
-                    "Cantidad_Requerida": cantidad_requerida
-                })
+                requisicion.append({"Producto": producto, "Cantidad_Requerida": cantidad_requerida})
         
-        df = pd.DataFrame(requisicion)
-        
-        nombre = f"{datetime.now().strftime('%Y%m%d_%H%M%S')}_ho-{horizonte_meses}_pa-{meses_historico}.xlsx"
-        ruta_completa = os.path.join(
-            "C:\\Users\\jhosept\\Documents\\GitHub\\sistema_comercial_muebles\\server\\ambienta\\predictivo\\requisiciones", 
-            nombre
-        )
-        
-        df.to_excel(ruta_completa, index=False)
-        
-        return df    
+            nombre = datetime.now().strftime("%Y%m%d_%H%M%S")
+            nombre += f':ho-{horizonte_meses}'
+            nombre += f':pa-{meses_historico}'
+            
+            df = pd.DataFrame(requisicion)
+            df.to_excel("C:\\Users\\jhosept\\Documents\\GitHub\\sistema_comercial_muebles\\server\\ambienta\\predictivo\\requisiciones\\requisicion.xlsx", index=False)
+
+            return df
 
         
         

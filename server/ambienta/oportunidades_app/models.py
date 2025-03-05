@@ -6,13 +6,13 @@ from clientes_app.models import Contacto
 
 class Oportunidad(models.Model):
 
-    NUEVO = 'nuevo'
+    NUEVA = 'nueva'
     EN_NEGOCIACION = 'negociacion'
     GANADO = 'ganado'
     PERDIDO = 'perdido'
     
     ESTADO_OPORTUNIDAD_CHOICES = [
-        (NUEVO, 'Nuevo'),
+        (NUEVA, 'Nuevo'),
         (EN_NEGOCIACION, 'En Negociación'),
         (GANADO, 'Ganado'),
         (PERDIDO, 'Perdido'),
@@ -23,7 +23,7 @@ class Oportunidad(models.Model):
     fecha_contacto = models.DateField()
     vendedor_asignado = models.IntegerField(null=True, blank=True)  # TODO: Debería ser ForeignKey a un modelo Usuario si existe
     estado_oportunidad = models.CharField(
-        max_length=20, choices=ESTADO_OPORTUNIDAD_CHOICES, default=NUEVO
+        max_length=20, choices=ESTADO_OPORTUNIDAD_CHOICES, default=NUEVA
     )
     activo = models.BooleanField(default=True)
 

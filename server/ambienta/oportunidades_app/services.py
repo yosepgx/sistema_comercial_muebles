@@ -2,6 +2,8 @@ import pandas as pd
 from clientes_app.models import Contacto
 from oportunidades_app.models import Oportunidad, Cotizacion,CotizacionDetalle
 from inventario_app.models import Producto
+
+#oportunidades -> cotizacion -> cotizacionDetalle
 class ServiceCargarDatosOportunidades:
     def Oportunidades(archivo):
         try:

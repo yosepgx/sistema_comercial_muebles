@@ -2,6 +2,8 @@ import pandas as pd
 from clientes_app.models import Contacto
 from ventas_app.models import PedidoDetalle, Pedido
 from oportunidades_app.models import Cotizacion
+
+#Pedido -> PedidoDetalle
 class ServiceCargarDataVenta:
     def Pedido(archivo):
         try:
@@ -34,7 +36,7 @@ class ServiceCargarDataVenta:
 
     def PedidoDetalle(archivo):
         try:
-            campos = {'pedido':int , 'nombre_producto': str,
+            campos = {'pedido':int , 'cod_producto':int, 'nombre_producto': str,
                       'precio_unitario': float,'cantidad': int,'descuento':float ,
                       'subtotal': float,'nrolinea': int ,'activo': bool}
             
