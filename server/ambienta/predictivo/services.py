@@ -108,13 +108,7 @@ class ServicePrediccion:
         for product in monthly_product_quantities['producto'].unique():
             product_data = monthly_product_quantities[monthly_product_quantities['producto'] == product]
             
-            #if(count<1):
-            #    print("\n")
-            #    print(product)
-            #    print(product_data)
-            #    count +=1
-            
-            # Promedio de las últimas X cantidades
+            # Promedio de los últimos x meses -> Moving averages
             average_quantities = product_data['cantidad'].tail(meses_historico).mean()
             
             # Predecir para cada mes del horizonte
@@ -134,8 +128,13 @@ class ServicePrediccion:
                     'Mes': mes, 
                     'Cantidad_Predicha': round(cantidad)
                 })
-        
-        return pd.DataFrame(df_predicciones)
+        df = pd.DataFrame(df_predicciones)
+
+        #desactivar para mostrar cantidad_predicha para cada mes
+        # Totalizar por producto (sumar cantidades)
+        df = df.groupby('Producto', as_index=False)['Cantidad_Predicha'].sum()
+        #df.to_excel("C:\\Users\\jhosept\\Documents\\GitHub\\sistema_comercial_muebles\\server\\ambienta\\predictivo\\requisiciones\\prediccion.xlsx")
+        return df
 
     def generar_prediccion(self, horizonte_meses:int =1, meses_historico:int =12) -> pd.DataFrame:
         

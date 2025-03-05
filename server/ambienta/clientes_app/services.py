@@ -23,19 +23,20 @@ class ServiceCargarDataClientes:
     def Contactos(archivo):
         try:
             campos = {'nombre': str,'correo': str,'telefono': str, 
-                      'direccion_entrega': str, 'tipo_interes': str, 'fecha_conversion': str, 
+                      'direccion_entrega': str, 'tipo_interes': str, 'fecha_conversion': pd.date, 
                       'naturaleza': str, 'empresa': str, 'categoria': int , 'activo': bool}
             df = pd.read_excel(archivo, sheet_name="Contacto", 
                                usecols=campos.keys(),
                                dtype=campos,
-
                                )
-            df['empresa'] = df['empresa'].where(pd.notna(df['empresa']), None)
+            
+            df['fecha_conversion'] = df['fecha_conversion'].astype(str).str.strip()
+            df['fecha_conversion'] = df['fecha_conversion'].replace({'nan': None, 'NaT': None, 'None': None})
+            df['fecha_conversion'] = pd.to_datetime(df['fecha_conversion'], errors='coerce')
+
             objetos = [] 
 
             for _, row in df.iterrows():
-                fecha_str = row['fecha_conversion']  # Es un string
-                fecha_conv = pd.to_datetime(fecha_str, errors='coerce', dayfirst=True).date() if pd.notna(fecha_str) else None
                 cat = CategoriaCliente.objects.get(id=row['categoria'])
                 cont = Contacto(
                     nombre = row['nombre'],
@@ -43,16 +44,15 @@ class ServiceCargarDataClientes:
                     telefono = row['telefono'],
                     direccion_entrega = row['direccion_entrega'],
                     tipo_interes= row['tipo_interes'],
-                    fecha_conversion = fecha_conv,
+                    fecha_conversion = row['fecha_conversion'].date() if pd.notna(row['fecha_conversion']) else None,
                     naturaleza = row['naturaleza'],
-                    empresa = row['empresa'],
+                    empresa = None if pd.isna(row['empresa']) else Empresa.objects.get(id=row['empresa']),
                     categoria = cat,
                     activo= row['activo'],
                 )
                 objetos.append(cont)
             
             Contacto.objects.bulk_create(objetos)
-
         except Exception as e:
             print(e)
         

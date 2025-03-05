@@ -44,6 +44,7 @@ class TestPrediccion(TestCase):
         self.prediccion = ServicePrediccion.predecir_productos(horizonte_meses= self.horizonte, meses_historico= self.pasado)
         if(self.prediccion.empty):
             self.fail("No se genero prediccion")
+        
 
     def testQuery(self):
         self.requisicion = ServicePrediccion.GenerarRequisicion(self.prediccion, self.horizonte, self.pasado)
