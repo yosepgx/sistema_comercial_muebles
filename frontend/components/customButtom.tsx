@@ -5,9 +5,10 @@ interface CustomButtonProps {
   children: React.ReactNode;
   onClick?: () => void;
   disabled?: boolean;
+  type?: "button" | "submit" | "reset";
 }
 
-export default function CustomButton({ variant = "primary", children, onClick, disabled }: CustomButtonProps) {
+export default function CustomButton({ variant = "primary", children, onClick, type ,disabled }: CustomButtonProps) {
   const baseStyles = "px-4 py-2 rounded font-semibold transition";
   const variantStyles =
     variant === "primary"
@@ -15,7 +16,7 @@ export default function CustomButton({ variant = "primary", children, onClick, d
       : "bg-green-500 text-white hover:bg-green-600";
 
   return (
-    <Button className={`${baseStyles} ${variantStyles} ${disabled ? "opacity-50 cursor-not-allowed" : ""}`} onClick={onClick} disabled={disabled}>
+    <Button className={`${baseStyles} ${variantStyles} ${disabled ? "opacity-50 cursor-not-allowed" : ""}`} onClick={onClick} disabled={disabled} type={type}>
       {children}
     </Button>
   );

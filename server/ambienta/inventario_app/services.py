@@ -43,9 +43,9 @@ class ServiceCargarDataInventario:
                 producto = Producto(
                     nombre=row['nombre'],
                     umedida_sunat=row['umedida_sunat'],
-                    descripcion=row['descripcion'],
+                    descripcion= None if pd.isna(row['descripcion']) else row['descripcion'],
                     precio=row['precio'],
-                    categoria=categoria,  # Aquí ahora se asigna el objeto correcto
+                    categoria=categoria,  
                     igv=row['igv'],
                     afecto_igv=row['afecto_igv'],
                     codigo_afecion_igv=row['codigo_afecion_igv'],

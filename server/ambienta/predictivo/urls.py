@@ -1,6 +1,6 @@
 from django.urls import path
-#from .views import cargar_historico
+from .views import GenerarRequisicionesView
 
 urlpatterns = [
-    #path('cargar-historico/', cargar_historico, name='cargar_historico'),
+    path('generar-requisiciones/', GenerarRequisicionesView.as_view(), name='generar-requisiciones'),
 ]

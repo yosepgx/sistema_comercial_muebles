@@ -1,62 +1,113 @@
-"use client";
+"use client"
 
-import { useState } from "react";
-import CustomButton from "@/components/customButtom";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-export default function PredictivoPage() {
-  const [mesesPromedio, setMesesPromedio] = useState("6");
-  const [horizonteMeses, setHorizonteMeses] = useState("1");
-  const [filesUploaded, setFilesUploaded] = useState({
-    ventas: false,
-    pedidos: false,
-    stock: false,
-  });
-  const allFilesUploaded = Object.values(filesUploaded).every((val) => val);
+import { zodResolver } from "@hookform/resolvers/zod"
+import { useForm } from "react-hook-form"
+import { z } from "zod"
+
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form"
+import { Input } from "@/components/ui/input"
+import CustomButton from "@/components/customButtom"
+import { GenerarRequisicionesApi } from "./api/prediccionApis"
+import { useState } from "react"
+
+const FormSchema = z.object({
+  horizonte: z.coerce.number().int().max(12, {
+    message: "El horizonte debe de ser un número menor a 12 meses",
+  }),
+  pasado: z.coerce.number().int().min(24,{
+    message: "La cantidad de meses historicos debe de ser mayor o igual a 24 meses",
+  }),
+})
+
+export default function PrediccionPage() {
+  const  [mensaje,setMensaje] = useState<string>(
+    "Es necesario completar todos los campos antes de generar el archivo");
+  const form = useForm<z.infer<typeof FormSchema>>({
+    resolver: zodResolver(FormSchema),
+    defaultValues: {
+      horizonte: 1,
+      pasado:24,
+    },
+  })
+
+  async function onSubmit(data: z.infer<typeof FormSchema>) {
+    const respuesta = await GenerarRequisicionesApi(data.horizonte, data.pasado);
+
+    if (respuesta?.success) {
+      setMensaje(
+          `Se ha completado el procesamiento. Tu archivo se descargará en breve.`
+      );
+    } else {
+        setMensaje(
+          "Error, prueba nuevamente mas tarde"
+        );
+    }
+  }
 
   return (
     <div className="p-6">
       <h1 className="text-xl font-bold mb-4">Módulo Predictivo</h1>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="grid w-full max-w-sm items-center gap-1.5">
-          <Label htmlFor="cantmeses">Cantidad de meses en el historico</Label>
-          <Input type="number" id="cantmeses" placeholder="Cantidad de meses en el historico" />
-        </div>
-        <div className="grid w-full max-w-sm items-center gap-1.5">
-          <Label htmlFor="horizonte">Horizonte de meses</Label>
-          <Input type="number" id="horizonte" placeholder="Horizonte de meses" />
-        </div>
-      </div>
 
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(onSubmit)} >
+        
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <FormField
+            control={form.control}
+            name="pasado"
+            render={({ field }) => (
+              <FormItem className="flex flex-col">
+                <FormLabel>Meses a promediar demanda</FormLabel>
+                <FormDescription>
+                Cantidad de meses a usar de los historicos de venta
+                </FormDescription>
+                <FormControl>
+                  <Input type= "number" placeholder="24" {...field} />
+                </FormControl>
+                <FormMessage 
+                  className="min-h-[24px]" 
+                        />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="horizonte"
+            render={({ field }) => (
+              <FormItem className="flex flex-col">
+                <FormLabel>Cantidad de meses en horizonte</FormLabel>
+                <FormDescription>
+                  Cantidad de meses que se predeciran.
+                </FormDescription>
+                <FormControl>
+                  <Input placeholder="1" {...field} />
+                </FormControl>
+                <FormMessage 
+                  className="min-h-[24px]" 
+                        />
+              </FormItem>
+            )}
+          />
+          </div>
+          <div className="flex justify-center mt-6">
+            <CustomButton variant="primary" type="submit">Generar Prediccion</CustomButton>
+          </div>
+          
+        </form>
+      </Form>
       <div className="flex flex-wrap gap-4 mt-6">
-        <CustomButton
-          variant="secondary"
-          onClick={() => setFilesUploaded({ ...filesUploaded, ventas: true })}
-        >
-          Cargar Ventas Históricas
-        </CustomButton>
-        <CustomButton
-          variant="secondary"
-          onClick={() => setFilesUploaded({ ...filesUploaded, pedidos: true })}
-        >
-          Cargar Pedidos Actuales
-        </CustomButton>
-        <CustomButton
-          variant="secondary"
-          onClick={() => setFilesUploaded({ ...filesUploaded, stock: true })}
-        >
-          Cargar Stock Actual
-        </CustomButton>
-        <CustomButton variant="primary" disabled={!allFilesUploaded}>
-          Generar Predicción
-        </CustomButton>
       </div>
-
-      {!allFilesUploaded && (
-        <div className="bg-orange-500 text-white p-2 mt-4 text-center font-semibold">
-          Es necesario completar todos los campos y cargar todos los archivos
-        </div>
-      )}
+      <div className="p-2 mt-4 text-center font-semibold text-white" style={{ backgroundColor: mensaje.includes("completado") ? "green" : "orange" }}>
+        {mensaje}
+      </div>
     </div>
-  );
+  )
 }
