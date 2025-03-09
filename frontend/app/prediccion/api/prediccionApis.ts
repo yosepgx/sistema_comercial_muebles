@@ -57,7 +57,7 @@ export async function GenerarRequisicionesApiBucket(horizonte: number, pasado: n
         const url = window.URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = 'requisiciones.xlsx';  
+        a.download = filename;  
         document.body.appendChild(a);
         a.click();
 
