@@ -11,6 +11,7 @@ from collections import defaultdict
 from datetime import datetime, timedelta
 from django.utils import timezone
 import os
+import environ
 
 class ServicePrediccion:
     def __init__(self, queryset=None):
@@ -101,8 +102,40 @@ class ServicePrediccion:
         
         return indices_estacionales
 
+    def calcular_factor_crecimiento(self, monthly_product_quantities: pd.DataFrame) -> dict:
+        factores = {}
+        
+        for product in monthly_product_quantities['producto'].unique():
+            product_data = monthly_product_quantities[monthly_product_quantities['producto'] == product].copy()
+            product_data['año'] = product_data['Mes'].dt.year  
+            years = sorted(product_data['año'].unique(), reverse=True)
+
+            if len(years) < 2:
+                factores[product] = 1
+                continue
+
+            current_year = years[0]
+            previous_year = years[1]
+
+            current_year_data = product_data[product_data['año'] == current_year]
+            previous_year_data = product_data[product_data['año'] == previous_year]
+
+            months_passed = current_year_data['Mes'].dt.month.nunique()
+
+            if months_passed > 0 and len(previous_year_data) >= 12:
+                avg_current_year = current_year_data['cantidad'].sum() / months_passed
+                avg_previous_year = previous_year_data['cantidad'].sum() / 12
+                factor = avg_current_year / avg_previous_year if avg_previous_year > 0 else 1
+            else:
+                factor = 1  
+
+            factores[product] = factor
+
+        return factores
+
     def predecir_cantidades(self, monthly_product_quantities: pd.DataFrame, indices_estacionales: dict, meses_historico: int) -> pd.DataFrame:
         
+        factores_crecimiento = self.calcular_factor_crecimiento(monthly_product_quantities)
         predicciones = {}
         count=0
         for product in monthly_product_quantities['producto'].unique():
@@ -111,9 +144,12 @@ class ServicePrediccion:
             # Promedio de los últimos x meses -> Moving averages
             average_quantities = product_data['cantidad'].tail(meses_historico).mean()
             
+            # Aplicar factor de crecimiento
+            factor_crecimiento = factores_crecimiento.get(product, 1)
+            
             # Predecir para cada mes del horizonte
             predicciones_producto = {
-                mes: average_quantities * indice 
+                mes: (average_quantities * indice * factor_crecimiento)
                 for mes, indice in indices_estacionales[product].items()
             }
             
@@ -229,11 +265,12 @@ class ServicePrediccion:
         df = pd.DataFrame(requisicion)
         
         nombre = f"{datetime.now().strftime('%Y%m%d_%H%M%S')}_ho-{horizonte_meses}_pa-{meses_historico}.xlsx"
-        ruta_completa = os.path.join(
-            "C:\\Users\\jhosept\\Documents\\GitHub\\sistema_comercial_muebles\\server\\ambienta\\predictivo\\requisiciones", 
-            nombre
-        )
-        
+
+        directorio_base = os.environ.get("PREDICTIVO_PATH", os.path.dirname(os.path.abspath(__file__)))
+        ruta_requisiciones = os.path.join(directorio_base, "requisiciones")
+        os.makedirs(ruta_requisiciones, exist_ok=True)
+        ruta_completa = os.path.join(ruta_requisiciones, nombre)
+
         df.to_excel(ruta_completa, index=False)
         
         return df    

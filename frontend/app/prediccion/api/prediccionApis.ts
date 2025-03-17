@@ -1,3 +1,4 @@
+import { formatInTimeZone } from "date-fns-tz";
 
 export async function GenerarRequisicionesApi(horizonte: number, pasado: number) {
     try {
@@ -18,8 +19,8 @@ export async function GenerarRequisicionesApi(horizonte: number, pasado: number)
         const url = window.URL.createObjectURL(blob);
         
         // Generar el nombre del archivo con la fecha y los parámetros
-        const now = new Date();
-        const timestamp = now.toISOString().replace(/[-T:]/g, "").split(".")[0]; // Formato YYYYMMDD_HHMMSS
+        const now = new Date()
+        const timestamp = formatInTimeZone(now, "America/Lima", 'yyyy-MM-dd HH:mm:ss');
         const filename = `${timestamp}_ho-${horizonte}_pa-${pasado}.xlsx`;
 
         const a = document.createElement('a');

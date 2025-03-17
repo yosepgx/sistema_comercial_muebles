@@ -1,5 +1,6 @@
 from django.db import models
 
+#categoria -> producto -> almacen -> inventario
 class CategoriaProducto(models.Model):
     """
     modelo de CategoriaProducto con campos descripcion, activo
