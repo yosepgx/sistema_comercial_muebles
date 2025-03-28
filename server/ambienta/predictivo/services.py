@@ -110,26 +110,28 @@ class ServicePrediccion:
             product_data['año'] = product_data['Mes'].dt.year  
             years = sorted(product_data['año'].unique(), reverse=True)
 
-            if len(years) < 2:
+            if len(years) < 3:
                 factores[product] = 1
                 continue
 
-            current_year = years[0]
-            previous_year = years[1]
+            last_year = years[1]  # Año pasado (a-1)
+            prev_year = years[2]  # Antepasado (a-2)
 
-            current_year_data = product_data[product_data['año'] == current_year]
-            previous_year_data = product_data[product_data['año'] == previous_year]
+            last_year_data = product_data[product_data['año'] == last_year]
+            prev_year_data = product_data[product_data['año'] == prev_year]
 
-            months_passed = current_year_data['Mes'].dt.month.nunique()
-
-            if months_passed > 0 and len(previous_year_data) >= 12:
-                avg_current_year = current_year_data['cantidad'].sum() / months_passed
-                avg_previous_year = previous_year_data['cantidad'].sum() / 12
-                factor = avg_current_year / avg_previous_year if avg_previous_year > 0 else 1
+            if not last_year_data.empty and not prev_year_data.empty:
+                avg_last_year = last_year_data['cantidad'].mean()
+                avg_prev_year = prev_year_data['cantidad'].mean()
+                
+                if avg_last_year > 0 and avg_prev_year > 0:
+                    G_i = avg_last_year / avg_prev_year
+                else:
+                    G_i = 1
             else:
-                factor = 1  
+                G_i = 1
 
-            factores[product] = factor
+            factores[product] = G_i
 
         return factores
 
