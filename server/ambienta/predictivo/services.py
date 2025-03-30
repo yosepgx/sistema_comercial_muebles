@@ -154,7 +154,8 @@ class ServicePrediccion:
                 mes: (average_quantities * indice * factor_crecimiento)
                 for mes, indice in indices_estacionales[product].items()
             }
-            
+            #if product == 'comedor de 8 sillas':
+            #    print(average_quantities,indices_estacionales[product].items() , factor_crecimiento)
             predicciones[product] = predicciones_producto
         
         # Convertir a DataFrame para mejor visualización
@@ -165,6 +166,7 @@ class ServicePrediccion:
                     'Producto': producto, 
                     'Mes': mes, 
                     'Cantidad_Predicha': round(cantidad)
+                    #'Cantidad_Predicha': cantidad
                 })
         df = pd.DataFrame(df_predicciones)
 
