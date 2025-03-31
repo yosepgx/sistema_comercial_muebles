@@ -8,6 +8,7 @@ from rest_framework import status
 from .services import ServiceCargarDataInventario  
 from inventario_app.serializers import AlmacenSerializer, CategoriaProductoSerializer, InventarioSerializer, ProductoSerializer
 from rest_framework import viewsets
+import openpyxl
 
 class AlmacenViewSet(viewsets.ModelViewSet):
     queryset = Almacen.objects.all()
@@ -26,7 +27,7 @@ class ProductoViewSet(viewsets.ModelViewSet):
     serializer_class = ProductoSerializer
 
 
-class CargarCategoriasView(APIView):
+class CargarInventariosView(APIView):
     parser_classes = (MultiPartParser, FormParser)  
 
     def post(self, request, *args, **kwargs):
@@ -35,49 +36,23 @@ class CargarCategoriasView(APIView):
             return Response({'error': 'No se proporcionó un archivo'}, status=status.HTTP_400_BAD_REQUEST)
 
         try:
+            # Verificar que el archivo sea un Excel válido
+            excel = openpyxl.load_workbook(archivo, read_only=True)
+            hojas_requeridas = {'Inventario', 'Almacen', 'Producto', 'Categoria'}
+            hojas_disponibles = set(excel.sheetnames)
+
+            # Verificar que todas las hojas requeridas estén en el archivo
+            if not hojas_requeridas.issubset(hojas_disponibles):
+                faltantes = hojas_requeridas - hojas_disponibles
+                return Response({'error': f'Faltan las siguientes hojas: {", ".join(faltantes)}'},
+                                status=status.HTTP_400_BAD_REQUEST)
+
             ServiceCargarDataInventario.Categorias(archivo)
-            return Response({'mensaje': 'Carga de categorias producto exitosa'}, status=status.HTTP_201_CREATED)
-        except Exception as e:
-            return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
-
-class CargarProductosView(APIView):
-    parser_classes = (MultiPartParser, FormParser)
-
-    def post(self, request, *args, **kwargs):
-        archivo = request.FILES.get('archivo')
-        if not archivo:
-            return Response({'error': 'No se proporcionó un archivo'}, status=status.HTTP_400_BAD_REQUEST)
-
-        try:
             ServiceCargarDataInventario.Productos(archivo)
-            return Response({'mensaje': 'Carga de productos exitosa'}, status=status.HTTP_201_CREATED)
-        except Exception as e:
-            return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
-
-class CargarAlmacenesView(APIView):
-    parser_classes = (MultiPartParser, FormParser)
-
-    def post(self, request, *args, **kwargs):
-        archivo = request.FILES.get('archivo')
-        if not archivo:
-            return Response({'error': 'No se proporcionó un archivo'}, status=status.HTTP_400_BAD_REQUEST)
-
-        try:
             ServiceCargarDataInventario.Almacenes(archivo)
-            return Response({'mensaje': 'Carga de almacenes exitosa'}, status=status.HTTP_201_CREATED)
-        except Exception as e:
-            return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
-
-class CargarInventariosView(APIView):
-    parser_classes = (MultiPartParser, FormParser)
-
-    def post(self, request, *args, **kwargs):
-        archivo = request.FILES.get('archivo')
-        if not archivo:
-            return Response({'error': 'No se proporcionó un archivo'}, status=status.HTTP_400_BAD_REQUEST)
-
-        try:
             ServiceCargarDataInventario.DataInventario(archivo)
-            return Response({'mensaje': 'Carga de inventario exitosa'}, status=status.HTTP_201_CREATED)
+
+            return Response({'mensaje': 'Carga de datos de inventario exitosa'}, status=status.HTTP_201_CREATED)
+        
         except Exception as e:
             return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
