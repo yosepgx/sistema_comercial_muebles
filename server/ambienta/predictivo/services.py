@@ -18,14 +18,15 @@ class ServicePrediccion:
         
         self.queryset = queryset or PedidoDetalle.objects.filter(activo=True)
 
-    def obtener_historico_pedidos(self, meses_historico: int=12) -> pd.DataFrame:
+    #def obtener_historico_pedidos(self, meses_historico: int=12) -> pd.DataFrame:
+    def obtener_historico_pedidos(self) -> pd.DataFrame:
         
         # Calcular fecha de corte
-        fecha_corte = timezone.now() - timedelta(days=meses_historico * 30)
+        #fecha_corte = timezone.now() - timedelta(days=meses_historico * 30)
         
         # Filtrar queryset por fecha
         historico_filtrado = self.queryset.select_related('pedido').filter(
-            pedido__fechaentrega__gte=fecha_corte,
+            #pedido__fechaentrega__gte=fecha_corte,
             pedido__estado_pedido = Pedido.DESPACHADO
         )
         
@@ -120,9 +121,12 @@ class ServicePrediccion:
             last_year_data = product_data[product_data['año'] == last_year]
             prev_year_data = product_data[product_data['año'] == prev_year]
 
+            #print(last_year_data)
+            #print(prev_year_data)
+
             if not last_year_data.empty and not prev_year_data.empty:
-                avg_last_year = last_year_data['cantidad'].mean()
-                avg_prev_year = prev_year_data['cantidad'].mean()
+                avg_last_year = last_year_data['cantidad'].sum()/12
+                avg_prev_year = prev_year_data['cantidad'].sum()/12
                 
                 if avg_last_year > 0 and avg_prev_year > 0:
                     G_i = avg_last_year / avg_prev_year
@@ -154,7 +158,7 @@ class ServicePrediccion:
                 mes: (average_quantities * indice * factor_crecimiento)
                 for mes, indice in indices_estacionales[product].items()
             }
-            #if product == 'comedor de 8 sillas':
+            #if product == 'comedor de 4 sillas':
             #    print(average_quantities,indices_estacionales[product].items() , factor_crecimiento)
             predicciones[product] = predicciones_producto
         
@@ -180,7 +184,8 @@ class ServicePrediccion:
         
         try:
             # Obtener histórico de pedidos
-            data = self.obtener_historico_pedidos(meses_historico)
+            #data = self.obtener_historico_pedidos(meses_historico)
+            data = self.obtener_historico_pedidos()
             
             # Verificar si hay datos suficientes
             if data.empty:

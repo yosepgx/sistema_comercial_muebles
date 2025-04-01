@@ -2,7 +2,7 @@
 
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
-import { z } from "zod"
+import { number, z } from "zod"
 
 import {
   Form,
@@ -15,15 +15,15 @@ import {
 } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import CustomButton from "@/components/customButtom"
-import { GenerarRequisicionesApi } from "./api/prediccionApis"
-import { useState } from "react"
+import { GenerarRequisicionesApi, CargarInventarioApi, CargarClientesApi, CargarVentasApi, CargarComprasApi } from "./api/prediccionApis"
+import { useRef, useState } from "react"
 
 const FormSchema = z.object({
   horizonte: z.coerce.number().int().max(12, {
     message: "El horizonte debe de ser un número menor a 12 meses",
   }),
-  pasado: z.coerce.number().int().min(24,{
-    message: "La cantidad de meses historicos debe de ser mayor o igual a 24 meses",
+  pasado: z.coerce.number().int().min(12,{
+    message: "La cantidad de meses historicos debe de ser mayor o igual a 12 meses",
   }),
 })
 
@@ -37,6 +37,37 @@ export default function PrediccionPage() {
       pasado:24,
     },
   })
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [tipoCarga, setTipoCarga] = useState<"inventario"|"compras"|"clientes"|"ventas">();
+
+
+  const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    if(event.target.files && event.target.files.length > 0){
+      const archivo = event.target.files[0]
+      
+      setMensaje( `Cargando ${tipoCarga} ...`);
+      let respuesta;
+      if(tipoCarga === "inventario"){
+        respuesta = await CargarInventarioApi(archivo);
+      }
+      else if(tipoCarga === 'clientes'){
+        respuesta = await CargarClientesApi(archivo);
+      }
+      else if(tipoCarga === 'ventas'){
+        respuesta = await CargarVentasApi(archivo);
+      }
+      else if(tipoCarga === 'compras'){
+        respuesta = await CargarComprasApi(archivo);
+      }
+
+      if (respuesta?.success) {
+        setMensaje(`${tipoCarga} cargado correctamente.`);
+      } else {
+        setMensaje(`Error al cargar ${tipoCarga}. Intenta nuevamente.`);
+      }
+
+    }
+  }
 
   async function onSubmit(data: z.infer<typeof FormSchema>) {
     const respuesta = await GenerarRequisicionesApi(data.horizonte, data.pasado);
@@ -51,6 +82,11 @@ export default function PrediccionPage() {
         );
     }
   }
+
+  const handleClick = (tipo: "inventario" | "compras" | "clientes" | "ventas") => {
+    setTipoCarga(tipo);
+    fileInputRef.current?.click();
+  };
 
   return (
     <div className="p-6">
@@ -67,7 +103,7 @@ export default function PrediccionPage() {
               <FormItem className="flex flex-col">
                 <FormLabel>Meses a promediar demanda</FormLabel>
                 <FormDescription>
-                Cantidad de meses a usar de los historicos de venta
+                Cantidad de meses historicos de venta a usar para los promedios moviles
                 </FormDescription>
                 <FormControl>
                   <Input type= "number" placeholder="24" {...field} />
@@ -96,6 +132,14 @@ export default function PrediccionPage() {
               </FormItem>
             )}
           />
+          </div>
+          <input type="file" accept=".xlsx,.xls" ref={fileInputRef} style={{display:"none"}} 
+          onChange={handleFileChange}/>
+          <div className="flex row-auto"> 
+            <CustomButton type = "button" variant="primary" onClick={() => handleClick("inventario")}>Cargar Inventario</CustomButton>
+            <CustomButton type = "button" variant="primary" onClick={() => handleClick("clientes")}>Cargar Clientes</CustomButton>
+            <CustomButton type = "button" variant="primary" onClick={() => handleClick("ventas")}>Cargar Ventas</CustomButton>
+            <CustomButton type = "button" variant="primary" onClick={() => handleClick("compras")}>Cargar Compras</CustomButton>
           </div>
           <div className="flex justify-center mt-6">
             <CustomButton variant="primary" type="submit">Generar Prediccion</CustomButton>

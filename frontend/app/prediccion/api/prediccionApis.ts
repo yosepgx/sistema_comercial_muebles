@@ -1,5 +1,96 @@
 import { formatInTimeZone } from "date-fns-tz";
 
+export async function CargarInventarioApi(archivo: File) {
+    const formData = new FormData();
+    formData.append("archivo", archivo); 
+
+    try {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}inventario/cargar-inventario/`, {
+            method: "POST",
+            body: formData,
+        });
+
+        const data = await response.json();
+        
+        if (response.ok) {
+            return { success: true, mensaje: data.mensaje || "Carga exitosa" };
+        } else {
+            return { success: false, error: data.error || "Error desconocido" };
+        }
+    } catch (error) {
+        console.error("Error al cargar el inventario:", error);
+        return { success: false, error: "Error de conexión con el servidor" };
+    }
+}
+
+export async function CargarVentasApi(archivo: File) {
+    const formData = new FormData();
+    formData.append("archivo", archivo); 
+
+    try {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}ventas/cargar-data-pedidos/`, {
+            method: "POST",
+            body: formData,
+        });
+
+        const data = await response.json();
+        
+        if (response.ok) {
+            return { success: true, mensaje: data.mensaje || "Carga exitosa" };
+        } else {
+            return { success: false, error: data.error || "Error desconocido" };
+        }
+    } catch (error) {
+        console.error("Error al cargar la data de ventas:", error);
+        return { success: false, error: "Error de conexión con el servidor" };
+    }
+}
+
+export async function CargarClientesApi(archivo: File) {
+    const formData = new FormData();
+    formData.append("archivo", archivo); 
+
+    try {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}clientes/cargar-data-clientes/`, {
+            method: "POST",
+            body: formData,
+        });
+
+        const data = await response.json();
+        
+        if (response.ok) {
+            return { success: true, mensaje: data.mensaje || "Carga exitosa" };
+        } else {
+            return { success: false, error: data.error || "Error desconocido" };
+        }
+    } catch (error) {
+        console.error("Error al cargar la data de clientes:", error);
+        return { success: false, error: "Error de conexión con el servidor" };
+    }
+}
+export async function CargarComprasApi(archivo: File) {
+    const formData = new FormData();
+    formData.append("archivo", archivo); 
+
+    try {
+        const response = await fetch("/api/cargar-data-compras/", {
+            method: "POST",
+            body: formData,
+        });
+
+        const data = await response.json();
+        
+        if (response.ok) {
+            return { success: true, mensaje: data.mensaje || "Carga exitosa" };
+        } else {
+            return { success: false, error: data.error || "Error desconocido" };
+        }
+    } catch (error) {
+        console.error("Error al cargar la data de compras:", error);
+        return { success: false, error: "Error de conexión con el servidor" };
+    }
+}
+
 export async function GenerarRequisicionesApi(horizonte: number, pasado: number) {
     try {
         const response = await fetch(

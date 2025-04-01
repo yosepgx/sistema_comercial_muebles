@@ -1,11 +1,12 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-from clientes_app import views
+from ventas_app import views
 
 router = DefaultRouter()
 #router.register(r'categoria', views.CategoriaProductoViewSet)
 
 urlpatterns = [
     #path('', include(router.urls)),
-    path('cargar-data-clientes/', views.CargarDataClienteView.as_view(), name='cargar-data-clientes'),
+    path('cargar-data-pedidos/', views.CargarDataPedidosView.as_view(), name='cargar-data-pedidos'),
 ]
+
