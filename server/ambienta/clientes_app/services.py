@@ -1,5 +1,5 @@
 import pandas as pd
-from clientes_app.models import CategoriaCliente, Contacto, DocumentoID, Empresa
+from clientes_app.models import CategoriaCliente, Contacto, DocumentoID
 
 #categorias -> contactos -> documentos
 class ServiceCargarDataClientes:
@@ -23,8 +23,8 @@ class ServiceCargarDataClientes:
     def Contactos(archivo):
         try:
             campos = {'nombre': str,'correo': str,'telefono': str, 
-                      'direccion_entrega': str, 'tipo_interes': str, 'fecha_conversion': str, 
-                      'naturaleza': str, 'empresa': str, 'categoria': int , 'activo': bool}
+                      'tipo_interes': str, 'fecha_conversion': str, 
+                      'naturaleza': str, 'categoria': int , 'activo': bool}
             df = pd.read_excel(archivo, sheet_name="Contacto", 
                                usecols=campos.keys(),
                                dtype=campos,
@@ -42,11 +42,9 @@ class ServiceCargarDataClientes:
                     nombre = row['nombre'],
                     correo = row['correo'],
                     telefono = row['telefono'],
-                    direccion_entrega = row['direccion_entrega'],
                     tipo_interes= row['tipo_interes'],
                     fecha_conversion = row['fecha_conversion'].date() if pd.notna(row['fecha_conversion']) else None,
                     naturaleza = row['naturaleza'],
-                    empresa = None if pd.isna(row['empresa']) else Empresa.objects.get(id=row['empresa']),
                     categoria = cat,
                     activo= row['activo'],
                 )

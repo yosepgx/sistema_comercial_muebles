@@ -10,12 +10,12 @@ class ServiceCargarDataVenta:
             campos = {'fecha':str,'fechaentrega': str,'direccion': str,
                       'cotizacion': int,'moneda': str,'RUC_emisor': str ,'cliente': str ,
                       'DOC_cliente': str ,'monto_sin_impuesto': float ,'forma_pago': str,
-                      'estado_pedido': str ,'fecha_pago': str,'fecha_despacho': str,
+                      'estado_pedido': str ,'fecha_pago': str,
                       'monto_total': float ,'IGV': float ,'codigo_tributo': float,
                       'descuento_adicional': float, 'activo':bool}
             df = pd.read_excel(archivo, sheet_name='Pedido', 
                                usecols=campos.keys(),
-                               parse_dates=['fecha', 'fechaentrega','fecha_pago','fecha_despacho'],
+                               parse_dates=['fecha', 'fechaentrega','fecha_pago'],
                                )
             
             objetos = []

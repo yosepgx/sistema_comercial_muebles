@@ -1,6 +1,6 @@
 from django.test import TestCase
 from clientes_app.services import ServiceCargarDataClientes
-from clientes_app.models import CategoriaCliente, Contacto, DocumentoID, Empresa
+from clientes_app.models import CategoriaCliente, Contacto, DocumentoID
 
 class CargarDataTest(TestCase):
     archivo_excel = "datacargable/DataClientes.xlsx"

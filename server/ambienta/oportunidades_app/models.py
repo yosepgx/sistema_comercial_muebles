@@ -18,7 +18,8 @@ class Oportunidad(models.Model):
         (PERDIDO, 'Perdido'),
     ]
 
-    contacto = models.ForeignKey(Contacto, on_delete=models.CASCADE) 
+    contacto = models.ForeignKey(Contacto, on_delete=models.CASCADE)
+    #sede = models.ForeignKey(Sede, on_delete=models.CASCADE) #TODO: agregar model Sede
     valor_neto = models.DecimalField(max_digits=12, decimal_places=2)
     fecha_contacto = models.DateField()
     vendedor_asignado = models.IntegerField(null=True, blank=True)  # TODO: Debería ser ForeignKey a un modelo Usuario si existe
@@ -52,8 +53,10 @@ class Cotizacion(models.Model):
     validez = models.IntegerField()  # Número de días de validez
     monto_sin_impuesto = models.DecimalField(max_digits=12, decimal_places=2)
     monto_total = models.DecimalField(max_digits=12, decimal_places=2)
-    IGV = models.DecimalField(max_digits=12, decimal_places=2)  # En valor no descuento
+    IGV = models.DecimalField(max_digits=12, decimal_places=2)  # En valor no porcentaje
+    descuento_adicional = models.DecimalField( max_digits=12, decimal_places=2)
     observaciones = models.TextField(blank=True, null=True)
+    direccion_entrega = models.CharField(max_length=255)
     activo = models.BooleanField(default=True)
 
     def __str__(self):

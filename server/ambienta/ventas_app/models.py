@@ -30,7 +30,6 @@ class Pedido(models.Model):
     estado_pedido = models.CharField(max_length=15, choices=ESTADOS_PEDIDO, default=PENDIENTE)
     
     fecha_pago = models.DateField(null=True, blank=True)
-    fecha_despacho = models.DateField(null=True, blank=True)
 
     monto_total = models.DecimalField(max_digits=10, decimal_places=2)#incluye IGV
     IGV = models.DecimalField(max_digits=5, decimal_places=2, default=18.00)

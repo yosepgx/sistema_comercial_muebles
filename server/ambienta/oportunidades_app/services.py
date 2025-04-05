@@ -32,8 +32,8 @@ class ServiceCargarDatosOportunidades:
     def Cotizacion(archivo):
         try:
             campos = {'fecha': str ,'estado_cotizacion': str ,'oportunidad': str ,'validez': int,
-                      'monto_sin_impuesto': float,'monto_total': float,'IGV': float,
-                      'observaciones': str,'activo': bool}
+                      'monto_sin_impuesto': float,'monto_total': float,'IGV': float, 'descuento_adicional': float,
+                      'observaciones': str,'direccion_entrega':str ,'activo': bool}
             df = pd.read_excel(archivo, sheet_name='Cotizacion', 
                                usecols=campos.keys(),
                                parse_dates=['fecha'],
