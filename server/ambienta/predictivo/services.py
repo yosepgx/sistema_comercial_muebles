@@ -13,6 +13,13 @@ from django.utils import timezone
 import os
 import environ
 
+class Compra:
+    def __init__(self, codigo: int, nombre: str, cantidad: int):
+        self.codigo = codigo
+        self.nombre = nombre
+        self.cantidad = cantidad
+    
+
 class ServicePrediccion:
     def __init__(self, queryset=None):
         
@@ -232,7 +239,7 @@ class ServicePrediccion:
     
 
 
-    def GenerarRequisicion(prediccion: pd.DataFrame, horizonte_meses: int = 1, meses_historico: int = 12) -> pd.DataFrame:
+    def GenerarRequisicion(prediccion: pd.DataFrame, compras,horizonte_meses: int = 1, meses_historico: int = 12 ) -> pd.DataFrame:
         # Generar predicciones
         #prediccion = self.generar_prediccion(horizonte_meses, meses_historico)
         
@@ -243,12 +250,12 @@ class ServicePrediccion:
         for item in inventarioNow:
             stock_actual[item.producto.nombre] += item.cantidad
 
-        # Pedidos actuales
-        pedidosNow = Pedido.objects.filter(activo=True)#TODO:AGREGAR filtro por Pedidos pagados y pedidos con estado pagado
-        pedidos_actuales = defaultdict(int)
-        for pedido in pedidosNow:
-            for detalle in pedido.detalles.all():
-                pedidos_actuales[detalle.nombre_producto] += detalle.cantidad
+        # Pedidos en transito
+        #TODO:AGREGAR filtro por Pedidos pagados y pedidos con estado pagado
+        compras_actuales = defaultdict(int)
+        print(compras)
+        for compra in compras:
+            compras_actuales[compra.nombre] += compra.cantidad
         
         # Calcular la necesidad de reposición
         requisicion = []
@@ -257,7 +264,7 @@ class ServicePrediccion:
             cantidad_predicha = row["Cantidad_Predicha"]
             
             # Obtener stock disponible y pedidos actuales, con valor 0 si no existe
-            stock_disponible = stock_actual.get(producto, 0) - pedidos_actuales.get(producto, 0)
+            stock_disponible = stock_actual.get(producto, 0) + compras_actuales.get(producto, 0)
             
             # Calcular cantidad requerida
             cantidad_requerida = max(0, cantidad_predicha - stock_disponible)
@@ -267,7 +274,7 @@ class ServicePrediccion:
                     "Producto": producto, 
                     "Cantidad_Predicha": cantidad_predicha,
                     "Stock_Actual": stock_actual.get(producto, 0),
-                    "Pedidos_Actuales": pedidos_actuales.get(producto, 0),
+                    "Pedidos_Transito": compras_actuales.get(producto, 0),
                     "Cantidad_Requerida": cantidad_requerida
                 })
         
@@ -284,5 +291,22 @@ class ServicePrediccion:
         
         return df    
 
-        
+class ServiceCargarCompras:
+    def Compras(archivo):
+        try:
+            campos = ['codigo', 'nombre','cantidad']
+            df = pd.read_excel(archivo, 
+                               usecols=campos,
+                               dtype={'codigo':int ,'nombre': str, 'cantidad': int}
+                               )
+            
+            compras = [
+                {'codigo': row['codigo'], 'nombre': row['nombre'], 'cantidad': row['cantidad']}
+                for _, row in df.iterrows()
+            ]
+            return compras
+            
+
+        except Exception as e:
+            print(e)
         

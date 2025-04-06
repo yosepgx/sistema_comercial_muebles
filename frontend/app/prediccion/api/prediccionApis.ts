@@ -6,6 +6,7 @@ export async function CargarInventarioApi(archivo: File) {
 
     try {
         const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}inventario/cargar-inventario/`, {
+            credentials: 'include',
             method: "POST",
             body: formData,
         });
@@ -29,6 +30,7 @@ export async function CargarVentasApi(archivo: File) {
 
     try {
         const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}ventas/cargar-data-pedidos/`, {
+            credentials: 'include',
             method: "POST",
             body: formData,
         });
@@ -52,6 +54,7 @@ export async function CargarClientesApi(archivo: File) {
 
     try {
         const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}clientes/cargar-data-clientes/`, {
+            credentials: 'include',
             method: "POST",
             body: formData,
         });
@@ -73,7 +76,8 @@ export async function CargarComprasApi(archivo: File) {
     formData.append("archivo", archivo); 
 
     try {
-        const response = await fetch("/api/cargar-data-compras/", {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}predictivo/cargar-compras/`, {
+            credentials: 'include',
             method: "POST",
             body: formData,
         });
@@ -96,6 +100,7 @@ export async function GenerarRequisicionesApi(horizonte: number, pasado: number)
         const response = await fetch(
             `${process.env.NEXT_PUBLIC_BACKEND_URL}predictivo/generar-requisiciones/`,
             {
+                credentials: 'include',
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -131,7 +136,7 @@ export async function GenerarRequisicionesApiBucket(horizonte: number, pasado: n
     try {
         const response = await fetch(
             `${process.env.NEXT_PUBLIC_API_URL}/generar-requisiciones/?horizonte=${horizonte}&pasado=${pasado}`,
-            { method: 'GET' }
+            { credentials: 'include', method: 'GET' }
         );
 
         if (!response.ok) throw new Error('Error al generar el archivo');
