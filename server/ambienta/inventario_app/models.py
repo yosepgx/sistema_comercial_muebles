@@ -2,9 +2,6 @@ from django.db import models
 
 #categoria -> producto -> almacen -> inventario
 class CategoriaProducto(models.Model):
-    """
-    modelo de CategoriaProducto con campos descripcion, activo
-    """
     descripcion = models.CharField(max_length=255)
     activo = models.BooleanField(default=True)
 
@@ -113,11 +110,12 @@ class Almacen(models.Model):
 class Inventario(models.Model):
     producto = models.ForeignKey(Producto, on_delete=models.CASCADE)
     almacen = models.ForeignKey(Almacen, on_delete=models.CASCADE)
-    cantidad = models.PositiveIntegerField()
+    cantidad_disponible = models.PositiveIntegerField()
+    cantidad_comprometida = models.PositiveIntegerField()
 
     class Meta:
         unique_together = ('producto', 'almacen')  # Evita duplicados del mismo producto en la misma ubicación
 
     def __str__(self):
-        return f"{self.producto} - {self.almacen} ({self.cantidad})"
+        return f"{self.producto} - {self.almacen} ({self.cantidad_disponible})"
 

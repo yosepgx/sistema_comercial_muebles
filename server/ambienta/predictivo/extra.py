@@ -154,7 +154,7 @@ class ServicePrediccion:
         inventarioNow = Inventario.objects.all()
         stock_actual = defaultdict(int)
         for item in inventarioNow:
-            stock_actual[item.producto.id] += item.cantidad
+            stock_actual[item.producto.id] += item.cantidad_disponible
 
         #Pedidos actuales
         pedidosNow = Pedido.objects.filter(activo=True)

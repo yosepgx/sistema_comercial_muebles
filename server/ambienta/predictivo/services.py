@@ -248,10 +248,9 @@ class ServicePrediccion:
         stock_actual = defaultdict(int)
         
         for item in inventarioNow:
-            stock_actual[item.producto.nombre] += item.cantidad
+            stock_actual[item.producto.nombre] += item.cantidad_disponible
 
         # Pedidos en transito
-        #TODO:AGREGAR filtro por Pedidos pagados y pedidos con estado pagado
         compras_actuales = defaultdict(int)
         for compra in compras:
             compras_actuales[compra.nombre] += compra.cantidad
