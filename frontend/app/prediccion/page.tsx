@@ -39,7 +39,7 @@ export default function PrediccionPage() {
   })
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [tipoCarga, setTipoCarga] = useState<"inventario"|"compras"|"clientes"|"ventas">();
-
+  const [compras, setCompras] = useState([]);
 
   const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     if(event.target.files && event.target.files.length > 0){
@@ -58,6 +58,12 @@ export default function PrediccionPage() {
       }
       else if(tipoCarga === 'compras'){
         respuesta = await CargarComprasApi(archivo);
+        if(respuesta?.data?.compras){
+          const saca = respuesta.data.compras
+          console.log("saca:", saca)
+          setCompras(respuesta.data.compras);
+        }
+
       }
 
       if (respuesta?.success) {
@@ -70,7 +76,7 @@ export default function PrediccionPage() {
   }
 
   async function onSubmit(data: z.infer<typeof FormSchema>) {
-    const respuesta = await GenerarRequisicionesApi(data.horizonte, data.pasado);
+    const respuesta = await GenerarRequisicionesApi(data.horizonte, data.pasado, compras);
 
     if (respuesta?.success) {
       setMensaje(

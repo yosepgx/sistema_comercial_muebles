@@ -253,7 +253,6 @@ class ServicePrediccion:
         # Pedidos en transito
         #TODO:AGREGAR filtro por Pedidos pagados y pedidos con estado pagado
         compras_actuales = defaultdict(int)
-        print(compras)
         for compra in compras:
             compras_actuales[compra.nombre] += compra.cantidad
         
@@ -280,14 +279,14 @@ class ServicePrediccion:
         
         df = pd.DataFrame(requisicion)
         
-        nombre = f"{datetime.now().strftime('%Y%m%d_%H%M%S')}_ho-{horizonte_meses}_pa-{meses_historico}.xlsx"
+        #nombre = f"{datetime.now().strftime('%Y%m%d_%H%M%S')}_ho-{horizonte_meses}_pa-{meses_historico}.xlsx"
 
-        directorio_base = os.environ.get("PREDICTIVO_PATH", os.path.dirname(os.path.abspath(__file__)))
-        ruta_requisiciones = os.path.join(directorio_base, "requisiciones")
-        os.makedirs(ruta_requisiciones, exist_ok=True)
-        ruta_completa = os.path.join(ruta_requisiciones, nombre)
+        #directorio_base = os.environ.get("PREDICTIVO_PATH", os.path.dirname(os.path.abspath(__file__)))
+        #ruta_requisiciones = os.path.join(directorio_base, "requisiciones")
+        #os.makedirs(ruta_requisiciones, exist_ok=True)
+        #ruta_completa = os.path.join(ruta_requisiciones, nombre)
 
-        df.to_excel(ruta_completa, index=False)
+        #df.to_excel(ruta_completa, index=False)
         
         return df    
 

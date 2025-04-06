@@ -83,20 +83,22 @@ export async function CargarComprasApi(archivo: File) {
         });
 
         const data = await response.json();
-        
+        console.log("la data de la carga es", data)
         if (response.ok) {
-            return { success: true, mensaje: data.mensaje || "Carga exitosa" };
+            return { success: true, mensaje: data.mensaje || "Carga exitosa", data: data };
         } else {
-            return { success: false, error: data.error || "Error desconocido" };
+            return { success: false, error: data.error || "Error desconocido", data: data };
         }
     } catch (error) {
         console.error("Error al cargar la data de compras:", error);
-        return { success: false, error: "Error de conexión con el servidor" };
+        return { success: false, error: "Error de conexión con el servidor",data:[] };
     }
 }
 
-export async function GenerarRequisicionesApi(horizonte: number, pasado: number) {
+export async function GenerarRequisicionesApi(horizonte: number, pasado: number, compras: any) {
     try {
+
+        console.log("recibe: ", JSON.stringify({ horizonte, pasado, compras }))
         const response = await fetch(
             `${process.env.NEXT_PUBLIC_BACKEND_URL}predictivo/generar-requisiciones/`,
             {
@@ -105,7 +107,7 @@ export async function GenerarRequisicionesApi(horizonte: number, pasado: number)
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ horizonte, pasado }),
+                body: JSON.stringify({ horizonte, pasado, compras }),
             }
         );
 
