@@ -32,11 +32,16 @@ DEBUG = env.bool('DEBUG')
 
 ALLOWED_HOSTS = env.list('ALLOWED_HOSTS')
 
+CORS_ALLOW_CREDENTIALS  = True
+
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",  
 ]
 #CORS_ALLOW_ALL_ORIGINS = True
 
+SESSION_SAVE_EVERY_REQUEST = True
+SESSION_ENGINE = 'django.contrib.sessions.backends.db'  # Si estás usando la base de datos para las sesiones
+SESSION_COOKIE_AGE = 3600  
 # Application definition
 
 INSTALLED_APPS = [

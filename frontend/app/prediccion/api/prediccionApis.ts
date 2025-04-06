@@ -6,6 +6,7 @@ export async function CargarInventarioApi(archivo: File) {
 
     try {
         const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}inventario/cargar-inventario/`, {
+            credentials: 'include',
             method: "POST",
             body: formData,
         });
@@ -29,6 +30,7 @@ export async function CargarVentasApi(archivo: File) {
 
     try {
         const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}ventas/cargar-data-pedidos/`, {
+            credentials: 'include',
             method: "POST",
             body: formData,
         });
@@ -52,6 +54,7 @@ export async function CargarClientesApi(archivo: File) {
 
     try {
         const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}clientes/cargar-data-clientes/`, {
+            credentials: 'include',
             method: "POST",
             body: formData,
         });
@@ -73,34 +76,38 @@ export async function CargarComprasApi(archivo: File) {
     formData.append("archivo", archivo); 
 
     try {
-        const response = await fetch("/api/cargar-data-compras/", {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}predictivo/cargar-compras/`, {
+            credentials: 'include',
             method: "POST",
             body: formData,
         });
 
         const data = await response.json();
-        
+        console.log("la data de la carga es", data)
         if (response.ok) {
-            return { success: true, mensaje: data.mensaje || "Carga exitosa" };
+            return { success: true, mensaje: data.mensaje || "Carga exitosa", data: data };
         } else {
-            return { success: false, error: data.error || "Error desconocido" };
+            return { success: false, error: data.error || "Error desconocido", data: data };
         }
     } catch (error) {
         console.error("Error al cargar la data de compras:", error);
-        return { success: false, error: "Error de conexión con el servidor" };
+        return { success: false, error: "Error de conexión con el servidor",data:[] };
     }
 }
 
-export async function GenerarRequisicionesApi(horizonte: number, pasado: number) {
+export async function GenerarRequisicionesApi(horizonte: number, pasado: number, compras: any) {
     try {
+
+        console.log("recibe: ", JSON.stringify({ horizonte, pasado, compras }))
         const response = await fetch(
             `${process.env.NEXT_PUBLIC_BACKEND_URL}predictivo/generar-requisiciones/`,
             {
+                credentials: 'include',
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ horizonte, pasado }),
+                body: JSON.stringify({ horizonte, pasado, compras }),
             }
         );
 
@@ -131,7 +138,7 @@ export async function GenerarRequisicionesApiBucket(horizonte: number, pasado: n
     try {
         const response = await fetch(
             `${process.env.NEXT_PUBLIC_API_URL}/generar-requisiciones/?horizonte=${horizonte}&pasado=${pasado}`,
-            { method: 'GET' }
+            { credentials: 'include', method: 'GET' }
         );
 
         if (!response.ok) throw new Error('Error al generar el archivo');
