@@ -199,7 +199,6 @@ class ServicePrediccion:
         
         #df = pd.DataFrame(df_predicciones)
         df = pd.DataFrame(predicciones)
-        print(df)
 
         #desactivar para mostrar cantidad_predicha para cada mes
         # Totalizar por producto (sumar cantidades)
@@ -260,9 +259,7 @@ class ServicePrediccion:
 
 
     def GenerarRequisicion(prediccion: pd.DataFrame, compras,horizonte_meses: int = 1, meses_historico: int = 12 ) -> pd.DataFrame:
-        # Generar predicciones
-        #prediccion = self.generar_prediccion(horizonte_meses, meses_historico)
-        print(prediccion)
+        
         # Stock actual
         inventarioNow = Inventario.objects.all()
         stock_actual = defaultdict(int)
