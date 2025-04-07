@@ -10,7 +10,7 @@ import io
 
 class GenerarRequisicionesView(APIView):
     def post(self, request, *args, **kwargs):
-        #try:
+        try:
             horizonte = request.data.get('horizonte', 1)
             pasado = request.data.get('pasado', 36)
             compras = request.data.get('compras')
@@ -32,9 +32,9 @@ class GenerarRequisicionesView(APIView):
             requisicion.to_excel(response, index=False, sheet_name='Requisiciones', engine='openpyxl')
 
             return response
-        #except Exception as e:
-        #    print("❌ Error en GenerarRequisicionesView:", str(e))  # Mensaje simple
-        #    return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        except Exception as e:
+            print("❌ Error en GenerarRequisicionesView:", str(e))  # Mensaje simple
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 class CargarComprasView(APIView):
     parser_classes = (MultiPartParser, FormParser)

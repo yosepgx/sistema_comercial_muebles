@@ -12,7 +12,7 @@ from datetime import datetime, timedelta
 from django.utils import timezone
 import os
 import environ
-#TODO: PONER CODIGO DE PROD A LAS LISTAS DE REQUISICION
+
 class Compra:
     def __init__(self, codigo: int, nombre: str, cantidad: int):
         self.codigo = codigo
