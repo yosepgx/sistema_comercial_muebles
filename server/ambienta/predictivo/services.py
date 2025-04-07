@@ -12,7 +12,7 @@ from datetime import datetime, timedelta
 from django.utils import timezone
 import os
 import environ
-
+#TODO: PONER CODIGO DE PROD A LAS LISTAS DE REQUISICION
 class Compra:
     def __init__(self, codigo: int, nombre: str, cantidad: int):
         self.codigo = codigo
@@ -41,14 +41,15 @@ class ServicePrediccion:
         historicos = historico_filtrado.values_list(
             'pedido__pk', 
             'pedido__fechaentrega', 
-            'pk', 
+            'pk',
+            'cod_producto', 
             'nombre_producto', 
             'cantidad', 
             'subtotal'
         )
 
         data = pd.DataFrame(list(historicos), columns=[
-            'pedido_pk', 'fechaentrega', 'detalle_pk', 'producto', 'cantidad', 'subtotal'
+            'pedido_pk', 'fechaentrega', 'detalle_pk','cod_producto', 'producto', 'cantidad', 'subtotal'
         ])
         
         data['fechaentrega'] = pd.to_datetime(data['fechaentrega'])
@@ -70,6 +71,10 @@ class ServicePrediccion:
         # Merge con el índice completo y rellenar los NaN con 0
         full_data = pd.DataFrame(index=full_index).reset_index().merge(grouped_data, on=['Mes', 'producto'], how='left')
         full_data['cantidad'] = full_data['cantidad'].fillna(0)
+
+        # Recuperar cod_producto
+        producto_cod = data[['producto', 'cod_producto']].drop_duplicates()
+        full_data = full_data.merge(producto_cod, on='producto', how='left')
 
         return full_data
 
@@ -149,41 +154,55 @@ class ServicePrediccion:
     def predecir_cantidades(self, monthly_product_quantities: pd.DataFrame, indices_estacionales: dict, meses_historico: int) -> pd.DataFrame:
         
         factores_crecimiento = self.calcular_factor_crecimiento(monthly_product_quantities)
-        predicciones = {}
+        #predicciones = {}
+        predicciones = []
         count=0
+        #print(monthly_product_quantities)
         for product in monthly_product_quantities['producto'].unique():
             product_data = monthly_product_quantities[monthly_product_quantities['producto'] == product]
-            
+            cod_producto = product_data['cod_producto'].iloc[0]
             # Promedio de los últimos x meses -> Moving averages
-            average_quantities = product_data['cantidad'].tail(meses_historico).mean()
+            promedio_movil = product_data['cantidad'].tail(meses_historico).mean()
             
             # Aplicar factor de crecimiento
             factor_crecimiento = factores_crecimiento.get(product, 1)
             
             # Predecir para cada mes del horizonte
             predicciones_producto = {
-                mes: (average_quantities * indice * factor_crecimiento)
+                mes: (promedio_movil * indice * factor_crecimiento)
                 for mes, indice in indices_estacionales[product].items()
             }
             #if product == 'comedor de 4 sillas':
-            #    print(average_quantities,indices_estacionales[product].items() , factor_crecimiento)
-            predicciones[product] = predicciones_producto
+            #    print(promedio_movil,indices_estacionales[product].items() , factor_crecimiento)
+            #predicciones[(product, cod_producto)] = predicciones_producto
+
+            for mes, cantidad in predicciones_producto.items():
+                predicciones.append({
+                    'cod_producto': cod_producto,
+                    'Producto': product,
+                    'Mes': mes,
+                    'Cantidad_Predicha': round(cantidad)
+                })
         
         # Convertir a DataFrame para mejor visualización
-        df_predicciones = []
-        for producto, predicciones_mes in predicciones.items():
-            for mes, cantidad in predicciones_mes.items():
-                df_predicciones.append({
-                    'Producto': producto, 
-                    'Mes': mes, 
-                    'Cantidad_Predicha': round(cantidad)
-                    #'Cantidad_Predicha': cantidad
-                })
-        df = pd.DataFrame(df_predicciones)
+        #df_predicciones = []
+        #for producto, predicciones_mes in predicciones.items():
+        #    for mes, cantidad in predicciones_mes.items():
+        #        df_predicciones.append({
+        #            'Producto': producto, 
+        #            'Mes': mes, 
+        #            'Cantidad_Predicha': round(cantidad)
+        #            #'Cantidad_Predicha': cantidad
+        #        })
+
+        
+        
+        #df = pd.DataFrame(df_predicciones)
+        df = pd.DataFrame(predicciones)
 
         #desactivar para mostrar cantidad_predicha para cada mes
         # Totalizar por producto (sumar cantidades)
-        df = df.groupby('Producto', as_index=False)['Cantidad_Predicha'].sum()
+        df = df.groupby(['Producto','cod_producto'], as_index=False)['Cantidad_Predicha'].sum()
         #df.to_excel("C:\\Users\\jhosept\\Documents\\GitHub\\sistema_comercial_muebles\\server\\ambienta\\predictivo\\requisiciones\\prediccion.xlsx")
         return df
 
@@ -197,7 +216,7 @@ class ServicePrediccion:
             # Verificar si hay datos suficientes
             if data.empty:
                 print(f"No hay datos históricos para los últimos {meses_historico} meses.")
-                return pd.DataFrame(columns=['Producto', 'Mes', 'Cantidad_Predicha'])
+                return pd.DataFrame(columns=['cod_producto','Producto', 'Mes', 'Cantidad_Predicha'])
             
             # Preparar datos mensuales
             monthly_product_quantities = self.preparar_datos_mensuales(data)
@@ -229,7 +248,7 @@ class ServicePrediccion:
         except Exception as e:
             # Manejo de errores
             print(f"Error en generación de predicción: {e}")
-            return pd.DataFrame(columns=['Producto', 'Mes', 'Cantidad_Predicha'])
+            return pd.DataFrame(columns=['cod_producto','Producto', 'Mes', 'Cantidad_Predicha'])
 
     @classmethod
     def predecir_productos(cls, horizonte_meses:int =1, meses_historico:int =12, queryset=None) ->pd.DataFrame:
@@ -240,8 +259,6 @@ class ServicePrediccion:
 
 
     def GenerarRequisicion(prediccion: pd.DataFrame, compras,horizonte_meses: int = 1, meses_historico: int = 12 ) -> pd.DataFrame:
-        # Generar predicciones
-        #prediccion = self.generar_prediccion(horizonte_meses, meses_historico)
         
         # Stock actual
         inventarioNow = Inventario.objects.all()
@@ -258,6 +275,7 @@ class ServicePrediccion:
         # Calcular la necesidad de reposición
         requisicion = []
         for _, row in prediccion.iterrows():
+            cod_producto = row['cod_producto']
             producto = row["Producto"]
             cantidad_predicha = row["Cantidad_Predicha"]
             
@@ -269,6 +287,7 @@ class ServicePrediccion:
             
             if cantidad_requerida > 0:
                 requisicion.append({
+                    "cod_producto": cod_producto,
                     "Producto": producto, 
                     "Cantidad_Predicha": cantidad_predicha,
                     "Stock_Actual": stock_actual.get(producto, 0),

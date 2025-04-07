@@ -77,7 +77,7 @@ class ServiceCargarDataInventario:
     
     def DataInventario(archivo):
         try:
-            campos = ["producto", "cantidad", "almacen"]
+            campos = ["producto", "cantidad_disponible", "cantidad_comprometida", "almacen"]
             df = pd.read_excel(archivo, sheet_name="Inventario", 
                                usecols=campos,
                                dtype={"producto": int, "cantidad":int, "almacen":int})
@@ -95,16 +95,14 @@ class ServiceCargarDataInventario:
                     return
                 
                 inv = Inventario(
-                    producto =prod,
-                    cantidad = row['cantidad'],
+                    producto = prod,
+                    cantidad_disponible = row['cantidad_disponible'],
+                    cantidad_comprometida = row['cantidad_comprometida'],
                     almacen = alm,
                 )
                 objetos.append(inv)
 
             Inventario.objects.bulk_create(objetos)
-            #for obj in objetos:
-            #    print(obj,"\n")
-            #    obj.save()
 
         except Exception as e:
             print(e)
