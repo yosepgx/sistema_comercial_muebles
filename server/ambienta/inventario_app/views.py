@@ -10,6 +10,8 @@ from inventario_app.serializers import AlmacenSerializer, CategoriaProductoSeria
 from rest_framework import viewsets
 import openpyxl
 
+#TODO: FALTA AGREGAR PERMISOS PARA ESTOS VIEW
+
 class AlmacenViewSet(viewsets.ModelViewSet):
     queryset = Almacen.objects.all()
     serializer_class = AlmacenSerializer

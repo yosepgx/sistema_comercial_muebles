@@ -67,7 +67,7 @@ export default function PrediccionPage() {
       }
 
       if (respuesta?.success) {
-        setMensaje(`${tipoCarga} cargado correctamente.`);
+        setMensaje(`Carga de ${tipoCarga} completado correctamente.`);
       } else {
         setMensaje(`Error al cargar ${tipoCarga}. Intenta nuevamente.`);
       }
@@ -141,7 +141,7 @@ export default function PrediccionPage() {
           </div>
           <input type="file" accept=".xlsx,.xls" ref={fileInputRef} style={{display:"none"}} 
           onChange={handleFileChange}/>
-          <div className="flex row-auto"> 
+          <div className="flex row-auto justify-center mt-6 gap-4"> 
             <CustomButton type = "button" variant="primary" onClick={() => handleClick("inventario")}>Cargar Inventario</CustomButton>
             <CustomButton type = "button" variant="primary" onClick={() => handleClick("clientes")}>Cargar Clientes</CustomButton>
             <CustomButton type = "button" variant="primary" onClick={() => handleClick("ventas")}>Cargar Ventas</CustomButton>
