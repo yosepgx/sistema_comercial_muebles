@@ -95,7 +95,7 @@ export default function PrediccionPage() {
   };
 
   return (
-    <div className="p-6">
+    <div>
       <h1 className="text-xl font-bold mb-4">Módulo Predictivo</h1>
 
       <Form {...form}>

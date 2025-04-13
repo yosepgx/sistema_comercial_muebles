@@ -1,5 +1,19 @@
-export default function inventarioPage(){
+import { Payment, columns, defaultColumnCell } from "@/components/table/columns"
+import { DataTable } from "@/components/table/dataTable"
+import { payments } from "@/components/table/tablaEditable"
+
+async function getData(): Promise<Payment[]> {
+    // Fetch data from your API here.
+    return payments
+    
+  }
+
+export default async function inventarioPage(){
+    const data = await getData()
+
     return(
-        <div>Hola inventario</div>
+        <div className="container mx-auto">
+        <DataTable columns={columns} odata={data} defaultColumn={defaultColumnCell}/>
+        </div>
     )
 }
