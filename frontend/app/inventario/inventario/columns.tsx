@@ -1,11 +1,12 @@
 "use client"
  
+import { Button } from "@/components/ui/button";
 import { ColumnDef } from "@tanstack/react-table"
 import { Pen, Pencil, Save, Trash2 } from 'lucide-react';
 import { ArrowUpDown } from "lucide-react"
-import { Button } from "../ui/button";
+import * as inventarioApis from "./api/InventarioApis"
 import React from "react";
-
+import { Inventario } from "./api/InventarioApis";
 
 
 export type Payment = {
@@ -18,7 +19,7 @@ export type Payment = {
    
 
   
-export const defaultColumnCell: Partial<ColumnDef<Payment>> = {
+export const defaultColumnCell: Partial<ColumnDef<Inventario>> = {
     cell: ({ getValue, row: { index }, column: { id }, table }) => {
       const initialValue = getValue()
       const [value, setValue] = React.useState(initialValue)
@@ -44,43 +45,42 @@ export const defaultColumnCell: Partial<ColumnDef<Payment>> = {
     },
   }
 
-export const columns: ColumnDef<Payment>[] = [
+export const columns: ColumnDef<Inventario>[] = [
     {
       accessorKey: "id",
       header: "Codigo",
       cell: ({ getValue }) => <span>{getValue() as string}</span>,
     }, 
+    
     {
-      accessorKey: "status",
-      header: "Status",
+      accessorKey: "producto",
+      header: "Producto",
+      cell: ({ getValue }) => <span>{getValue() as string}</span>,
     },
     {
-      accessorKey: "email",
-      header: ({ column }) => {
-        return (
-          <Button
-            variant="ghost"
-            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-          >
-            Email
-            <ArrowUpDown className="ml-2 h-4 w-4" />
-          </Button>
-        )
-      },
+      accessorKey: "almacen",
+      header: "Almacen",
+      cell: ({ getValue }) => <span>{getValue() as string}</span>,
     },
     {
-      accessorKey: "amount",
-      header: () => <div className="text-right">Amount</div>,
-      cell: ({ row }) => {
-      const amount = parseFloat(row.getValue("amount"))
-      const formatted = new Intl.NumberFormat("es-PE", {
-        style: "currency",
-        currency: "PEN",
-      }).format(amount)
- 
-      return <div className="text-right font-medium">{formatted}</div>
-     },
+      accessorKey: "cantidad_disponible",
+      header: "Cantidad Disponible",
     },
+    // {
+    //   accessorKey: "email",
+    //   header: ({ column }) => {
+    //     return (
+    //       <Button
+    //         variant="ghost"
+    //         onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+    //       >
+    //         Email
+    //         <ArrowUpDown className="ml-2 h-4 w-4" />
+    //       </Button>
+    //     )
+    //   },
+    // },
+    
     {
       accessorKey: "action",
       header: "Acciones",

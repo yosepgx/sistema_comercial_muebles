@@ -1,4 +1,4 @@
-import { Payment } from "./columns";
+import { Payment } from "@/app/inventario/inventario/columns";
 
 export const payments: Payment[] = [
   { id: "e5f6g7h8", amount: 250, status: "success", email: "user2@example.com", editable: true },
