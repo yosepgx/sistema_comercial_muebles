@@ -58,7 +58,7 @@ export function DataTable<TData, TValue>({
     const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([])
     const [autoResetPageIndex, skipAutoResetPageIndex] = useSkipper()
     const [data, setData] = React.useState(() => odata)
-
+    const [isEditable, setEditable] = React.useState(false)
 
     const table = useReactTable({
       data,
@@ -91,6 +91,7 @@ export function DataTable<TData, TValue>({
             })
           )
         },
+        isEditable,
       },
       debugTable: true,
     })
@@ -98,7 +99,7 @@ export function DataTable<TData, TValue>({
 
     return (
     <div>
-      <div className="flex items-center py-4">
+      <div className="flex items-center justify-between p-2 py-4">
         <Input
           placeholder="Filter emails..."
           value={(table.getColumn("email")?.getFilterValue() as string) ?? ""}
@@ -107,6 +108,8 @@ export function DataTable<TData, TValue>({
           }
           className="max-w-sm"
         />
+        <Button onClick={()=> setEditable(prev => !prev)}>Editar</Button>
+        <Button>Guardar</Button>
       </div>
       <div className="rounded-md border">
         <Table>

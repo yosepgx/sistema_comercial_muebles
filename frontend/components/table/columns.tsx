@@ -10,6 +10,7 @@ import {RowData} from '@tanstack/react-table'
 declare module '@tanstack/react-table' {
     interface TableMeta<TData extends RowData> {
       updateData: (rowIndex: number, columnId: string, value: unknown) => void;
+      isEditable: boolean
     }
   }
 
@@ -18,12 +19,13 @@ export type Payment = {
     amount: number
     status: "pending" | "processing" | "success" | "failed"
     email: string
+    editable: boolean
   }
    
 
   
 export const defaultColumnCell: Partial<ColumnDef<Payment>> = {
-    cell: ({ getValue, row: { index }, column: { id }, table }) => {
+    cell: ({ getValue, row: { index, }, column: { id }, table }) => {
       const initialValue = getValue()
       const [value, setValue] = React.useState(initialValue)
   
@@ -34,12 +36,14 @@ export const defaultColumnCell: Partial<ColumnDef<Payment>> = {
       React.useEffect(() => {
         setValue(initialValue)
       }, [initialValue])
-  
+      
+      const isEditable = table.options.meta?.isEditable
       return (
         <input
           value={value as string}
           onChange={e => setValue(e.target.value)}
           onBlur={onBlur}
+          disabled = {!isEditable}
         />
       )
     },
@@ -47,13 +51,16 @@ export const defaultColumnCell: Partial<ColumnDef<Payment>> = {
 
 export const columns: ColumnDef<Payment>[] = [
     {
+      accessorKey: "id",
+      header: "Codigo",
+      cell: ({ getValue }) => <span>{getValue() as string}</span>,
+    }, 
+    {
       accessorKey: "status",
-      footer: props => props.column.id,
       header: "Status",
     },
     {
       accessorKey: "email",
-      footer: props => props.column.id,
       header: ({ column }) => {
         return (
           <Button
@@ -68,7 +75,6 @@ export const columns: ColumnDef<Payment>[] = [
     },
     {
       accessorKey: "amount",
-      footer: props => props.column.id,
       header: () => <div className="text-right">Amount</div>,
       cell: ({ row }) => {
       const amount = parseFloat(row.getValue("amount"))
@@ -82,7 +88,6 @@ export const columns: ColumnDef<Payment>[] = [
     },
     {
       accessorKey: "action",
-      footer: props => props.column.id,
       header: "Acciones",
       cell: ({row}) => {
         return <div className="flex gap-2"><Pencil/><Save/><Trash2/></div>
