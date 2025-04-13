@@ -3,9 +3,7 @@ import { DataTable } from "@/components/table/dataTable"
 import { payments } from "@/components/table/tablaEditable"
 
 async function getData(): Promise<Payment[]> {
-    // Fetch data from your API here.
     return payments
-    
   }
 
 export default async function inventarioPage(){

@@ -20,50 +20,50 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
+import {RowData} from '@tanstack/react-table'
 
 import { Button } from "@/components/ui/button"
 import { DataTablePagination } from "./tablePagination"
 import { Input } from "@/components/ui/input"
+import { useSkipper } from "./useSkipper"
+
+declare module '@tanstack/react-table' {
+  interface TableMeta<TData extends RowData> {
+    updateData: (rowIndex: number, columnId: string, value: unknown) => void;
+    editableRowIndex: number | null,
+    setEditableRowIndex: React.Dispatch<React.SetStateAction<number | null>>,
+    setData: React.Dispatch<React.SetStateAction<TData[]>>,
+    saveFunction?: Function,
+    viewFunction?: Function,
+  }
+}
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[]
   odata: TData[]
-  defaultColumn: Partial<ColumnDef<TData>>
+  defaultColumn?: Partial<ColumnDef<TData>>
+  saveFunction?: Function
+  viewFunction?: Function
 }
-
-function useSkipper() {
-    const shouldSkipRef = React.useRef(true)
-    const shouldSkip = shouldSkipRef.current
-  
-    // Wrap a function with this to skip a pagination reset temporarily
-    const skip = React.useCallback(() => {
-      shouldSkipRef.current = false
-    }, [])
-  
-    React.useEffect(() => {
-      shouldSkipRef.current = true
-    })
-  
-    return [shouldSkip, skip] as const
-  }
-
 
 export function DataTable<TData, TValue>({
     columns,
     odata,
     defaultColumn,
+    saveFunction,
+    viewFunction,
   }: DataTableProps<TData, TValue>) {
 
     const [sorting, setSorting] = React.useState<SortingState>([])
     const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([])
     const [autoResetPageIndex, skipAutoResetPageIndex] = useSkipper()
     const [data, setData] = React.useState(() => odata)
-    const [isEditable, setEditable] = React.useState(false)
+    const [editableRowIndex, setEditableRowIndex] = React.useState<number | null>(null)
 
     const table = useReactTable({
       data,
       columns,
-      defaultColumn,
+      ...(defaultColumn && {defaultColumn}),
       getCoreRowModel: getCoreRowModel(),
       getPaginationRowModel: getPaginationRowModel(),
       onSortingChange: setSorting,
@@ -77,7 +77,6 @@ export function DataTable<TData, TValue>({
       autoResetPageIndex,
       meta: {
         updateData: (rowIndex, columnId, value) => {
-          // Skip page index reset until after next rerender
           skipAutoResetPageIndex()
           setData(old =>
             old.map((row, index) => {
@@ -91,7 +90,11 @@ export function DataTable<TData, TValue>({
             })
           )
         },
-        isEditable,
+        editableRowIndex,
+        setEditableRowIndex,
+        setData,
+        ...(saveFunction && {saveFunction}),
+        ...(viewFunction && {viewFunction}),
       },
       debugTable: true,
     })
@@ -108,8 +111,7 @@ export function DataTable<TData, TValue>({
           }
           className="max-w-sm"
         />
-        <Button onClick={()=> setEditable(prev => !prev)}>Editar</Button>
-        <Button>Guardar</Button>
+        
       </div>
       <div className="rounded-md border">
         <Table>

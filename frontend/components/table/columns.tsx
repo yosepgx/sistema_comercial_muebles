@@ -1,18 +1,12 @@
 "use client"
  
 import { ColumnDef } from "@tanstack/react-table"
-import { Pencil, Save, Trash2 } from 'lucide-react';
+import { Pen, Pencil, Save, Trash2 } from 'lucide-react';
 import { ArrowUpDown } from "lucide-react"
 import { Button } from "../ui/button";
 import React from "react";
-import {RowData} from '@tanstack/react-table'
 
-declare module '@tanstack/react-table' {
-    interface TableMeta<TData extends RowData> {
-      updateData: (rowIndex: number, columnId: string, value: unknown) => void;
-      isEditable: boolean
-    }
-  }
+
 
 export type Payment = {
     id: string
@@ -25,25 +19,26 @@ export type Payment = {
 
   
 export const defaultColumnCell: Partial<ColumnDef<Payment>> = {
-    cell: ({ getValue, row: { index, }, column: { id }, table }) => {
+    cell: ({ getValue, row: { index }, column: { id }, table }) => {
       const initialValue = getValue()
       const [value, setValue] = React.useState(initialValue)
   
       const onBlur = () => {
         table.options.meta?.updateData(index, id, value)
+        table.options.meta?.setEditableRowIndex(null)
       }
   
       React.useEffect(() => {
         setValue(initialValue)
       }, [initialValue])
       
-      const isEditable = table.options.meta?.isEditable
+      const isEditing = table.options.meta?.editableRowIndex === index
       return (
         <input
           value={value as string}
           onChange={e => setValue(e.target.value)}
           onBlur={onBlur}
-          disabled = {!isEditable}
+          disabled = {!isEditing}
         />
       )
     },
@@ -89,8 +84,34 @@ export const columns: ColumnDef<Payment>[] = [
     {
       accessorKey: "action",
       header: "Acciones",
-      cell: ({row}) => {
-        return <div className="flex gap-2"><Pencil/><Save/><Trash2/></div>
+      cell: ({row, table}) => {
+        const rowIndex = row.index
+        return (
+        <div className="flex gap-2">
+          <Pencil 
+          className="cursor-pointer hover:text-blue-600 transition-colors duration-200 active:scale-90"
+          onClick={() => {
+          const current = table.options.meta?.editableRowIndex
+          const setter = table.options.meta?.setEditableRowIndex
+          if (setter) setter(current === rowIndex ? null : rowIndex)
+          }}/>
+          <Save
+          className="cursor-pointer hover:text-blue-600 transition-colors duration-200 active:scale-90" 
+          onClick={()=>{
+            const setter = table.options.meta?.saveFunction
+            setter && setter()}}
+          />
+          <Trash2
+          className="cursor-pointer hover:text-red-500 transition"
+          onClick={() => {
+            const setter = table.options.meta?.setData
+            const rowIndex = row.index
+            if(window.confirm("Esta seguro que desea borrar?"))
+            setter && setter(prev => prev.filter((_, i) => i !== rowIndex))
+          }}
+        />
+        </div>
+        )
       },
 
     },
