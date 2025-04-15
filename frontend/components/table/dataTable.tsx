@@ -21,8 +21,6 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import {RowData} from '@tanstack/react-table'
-
-import { Button } from "@/components/ui/button"
 import { DataTablePagination } from "./tablePagination"
 import { Input } from "@/components/ui/input"
 import { useSkipper } from "./useSkipper"
@@ -44,6 +42,7 @@ interface DataTableProps<TData, TValue> {
   defaultColumn?: Partial<ColumnDef<TData>>
   saveFunction?: Function
   viewFunction?: Function
+  placeholder?: string
 }
 
 export function DataTable<TData, TValue>({
@@ -52,13 +51,14 @@ export function DataTable<TData, TValue>({
     defaultColumn,
     saveFunction,
     viewFunction,
+    placeholder,
   }: DataTableProps<TData, TValue>) {
 
     const [sorting, setSorting] = React.useState<SortingState>([])
-    const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([])
     const [autoResetPageIndex, skipAutoResetPageIndex] = useSkipper()
     const [data, setData] = React.useState(() => odata)
     const [editableRowIndex, setEditableRowIndex] = React.useState<number | null>(null)
+    const [globalFilter, setGlobalFilter] = React.useState("")
 
     const table = useReactTable({
       data,
@@ -68,11 +68,11 @@ export function DataTable<TData, TValue>({
       getPaginationRowModel: getPaginationRowModel(),
       onSortingChange: setSorting,
       getSortedRowModel: getSortedRowModel(),
-      onColumnFiltersChange: setColumnFilters,
+      onGlobalFilterChange: setGlobalFilter,
       getFilteredRowModel: getFilteredRowModel(),
       state: {
         sorting,
-        columnFilters,
+        globalFilter,
       },
       autoResetPageIndex,
       meta: {
@@ -102,6 +102,15 @@ export function DataTable<TData, TValue>({
 
     return (
     <div>
+      <div className="flex items-center py-4">
+      <Input
+        value={globalFilter ?? ""}
+        onChange={(e) => setGlobalFilter(e.target.value)}
+        placeholder={placeholder? placeholder:""}
+        className="border px-3 py-1 rounded w-full max-w-sm"
+        
+      />
+      </div>
       <div className="rounded-md border">
         <Table>
           <TableHeader>

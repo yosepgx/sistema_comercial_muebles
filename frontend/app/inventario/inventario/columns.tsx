@@ -49,6 +49,7 @@ export const columns: ColumnDef<Inventario>[] = [
     {
       accessorKey: "id",
       header: "Codigo",
+      enableGlobalFilter: false,
       cell: ({ getValue }) => <span>{getValue() as string}</span>,
     }, 
     
@@ -56,34 +57,23 @@ export const columns: ColumnDef<Inventario>[] = [
       accessorKey: "producto",
       header: "Producto",
       cell: ({ getValue }) => <span>{getValue() as string}</span>,
+      filterFn: "includesString",
     },
     {
       accessorKey: "almacen",
       header: "Almacen",
       cell: ({ getValue }) => <span>{getValue() as string}</span>,
+      enableGlobalFilter: false
     },
     {
       accessorKey: "cantidad_disponible",
       header: "Cantidad Disponible",
+      enableGlobalFilter: false
     },
-    // {
-    //   accessorKey: "email",
-    //   header: ({ column }) => {
-    //     return (
-    //       <Button
-    //         variant="ghost"
-    //         onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-    //       >
-    //         Email
-    //         <ArrowUpDown className="ml-2 h-4 w-4" />
-    //       </Button>
-    //     )
-    //   },
-    // },
-    
     {
       accessorKey: "action",
       header: "Acciones",
+      enableGlobalFilter: false,
       cell: ({row, table}) => {
         const rowIndex = row.index
         return (
