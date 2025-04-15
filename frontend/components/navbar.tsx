@@ -15,10 +15,10 @@ export default function Navbar() {
 const itemsInventario : IMenuItem[]= [
     {
     label: "Productos",
-    href:  "/productos",
+    href:  "/inventario/producto",
     },
     {label: "Recuento de Stock",
-    href: "/recuento",
+    href: "/inventario/inventario",
     },
 ]
 const itemsVentas: IMenuItem[] = [
