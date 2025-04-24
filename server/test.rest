@@ -2,7 +2,7 @@
 POST http://127.0.0.1:8000/login
 Content-Type: application/json
 
-{"username": "yosep", "password":"Contra123"}
+{"username": "giogio", "password":"pass123"}
 
 
 ###
@@ -16,3 +16,8 @@ Content-Type: application/json
 GET http://127.0.0.1:8000/test_token
 Content-Type: application/json
 Authorization: Token f19175b6c60612542e4a85e0880424c352300a0e
+
+###
+GET http://127.0.0.1:8000/usuarios_app/groups
+Content-Type: application/json
+Authorization: Token 3c19a9b914689d0e87c89f5a7f0bba771dad7941
