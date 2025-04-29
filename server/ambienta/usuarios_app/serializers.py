@@ -29,7 +29,7 @@ class PerfilUsuarioSerializer(serializers.ModelSerializer):
 #La creacion de los campos de perfil solo se hace por front, no hay signal para hacerlo en back
 class UserGroupSerializer(serializers.ModelSerializer):
     """serializador de usuario"""
-    groups = serializers.SlugRelatedField(slug_field='name', queryset=Group.objects.all(), many=True)
+    groups = serializers.SlugRelatedField(slug_field='name', queryset=Group.objects.all(), many=True, required=False)
     perfil = PerfilUsuarioSerializer()
     class Meta:
         model = User
@@ -41,6 +41,10 @@ class UserGroupSerializer(serializers.ModelSerializer):
         instance.username = validated_data.get('username', instance.username)
         instance.email = validated_data.get('email', instance.email)
         instance.save()
+        groups_data = validated_data.pop('groups', None)
+        if groups_data is not None:
+            instance.groups.set(groups_data)
+
 
         # Actualiza el Perfil
         perfil = instance.perfil
@@ -52,8 +56,15 @@ class UserGroupSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         perfil_data = validated_data.pop('perfil')
+        groups_data = validated_data.pop('groups', [])
+
         user = User.objects.create(**validated_data)
         PerfilUsuario.objects.create(user=user, **perfil_data)
+        user.groups.set(groups_data) 
         return user
     
+class UserLogInSerializer(serializers.ModelSerializer):
+    class Meta(object):
+        model = User
+        fields = ['id','username','password', 'email']    
     

@@ -11,7 +11,5 @@ urlpatterns = [
     path('predictivo/', include('predictivo.urls')),
     path('usuarios/', include('usuarios_app.urls')),
     path('ventas/', include('ventas_app.urls')),
-    re_path('login',views.login),
-    re_path('signup',views.signup),
-    re_path('test_token',views.test_token),
+    
 ]
