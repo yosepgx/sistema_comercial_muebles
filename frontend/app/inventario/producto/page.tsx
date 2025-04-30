@@ -1,5 +1,13 @@
+import Navbar from "@/components/navbar";
+import { ProtectedRoute } from "@/components/protectedRoute";
+
 export default function productoPage(){
     return(
-        <div>Hola producto</div>
+        <>
+            <ProtectedRoute>
+                <Navbar/>
+                <div>Hola producto</div>
+            </ProtectedRoute>
+        </>
     )
 }

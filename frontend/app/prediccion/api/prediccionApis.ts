@@ -1,12 +1,12 @@
+import { customFetch } from "@/components/customFetch";
 import { formatInTimeZone } from "date-fns-tz";
 
-export async function CargarInventarioApi(archivo: File) {
+export async function CargarInventarioApi(token: string | null, archivo: File) {
     const formData = new FormData();
     formData.append("archivo", archivo); 
 
     try {
-        const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}inventario/cargar-inventario/`, {
-            credentials: 'include',
+        const response = await customFetch(token, `inventario/cargar-inventario/`, {
             method: "POST",
             body: formData,
         });
@@ -24,13 +24,12 @@ export async function CargarInventarioApi(archivo: File) {
     }
 }
 
-export async function CargarVentasApi(archivo: File) {
+export async function CargarVentasApi(token: string | null, archivo: File) {
     const formData = new FormData();
     formData.append("archivo", archivo); 
 
     try {
-        const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}ventas/cargar-data-pedidos/`, {
-            credentials: 'include',
+        const response = await customFetch(token, `ventas/cargar-data-pedidos/`, {
             method: "POST",
             body: formData,
         });
@@ -48,13 +47,12 @@ export async function CargarVentasApi(archivo: File) {
     }
 }
 
-export async function CargarClientesApi(archivo: File) {
+export async function CargarClientesApi(token: string | null, archivo: File) {
     const formData = new FormData();
     formData.append("archivo", archivo); 
 
     try {
-        const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}clientes/cargar-data-clientes/`, {
-            credentials: 'include',
+        const response = await customFetch(token, `clientes/cargar-data-clientes/`, {
             method: "POST",
             body: formData,
         });
@@ -71,13 +69,12 @@ export async function CargarClientesApi(archivo: File) {
         return { success: false, error: "Error de conexión con el servidor" };
     }
 }
-export async function CargarComprasApi(archivo: File) {
+export async function CargarComprasApi(token: string | null, archivo: File) {
     const formData = new FormData();
     formData.append("archivo", archivo); 
 
     try {
-        const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}predictivo/cargar-compras/`, {
-            credentials: 'include',
+        const response = await customFetch(token, `predictivo/cargar-compras/`, {
             method: "POST",
             body: formData,
         });
@@ -95,14 +92,13 @@ export async function CargarComprasApi(archivo: File) {
     }
 }
 
-export async function GenerarRequisicionesApi(horizonte: number, pasado: number, compras: any) {
+export async function GenerarRequisicionesApi(token: string | null, horizonte: number, pasado: number, compras: any) {
     try {
 
         console.log("recibe: ", JSON.stringify({ horizonte, pasado, compras }))
-        const response = await fetch(
-            `${process.env.NEXT_PUBLIC_BACKEND_URL}predictivo/generar-requisiciones/`,
+        const response = await customFetch(token,
+            `predictivo/generar-requisiciones/`,
             {
-                credentials: 'include',
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -134,11 +130,11 @@ export async function GenerarRequisicionesApi(horizonte: number, pasado: number,
 }
 
 
-export async function GenerarRequisicionesApiBucket(horizonte: number, pasado: number) {
+export async function GenerarRequisicionesApiBucket(token: string | null, horizonte: number, pasado: number) {
     try {
-        const response = await fetch(
-            `${process.env.NEXT_PUBLIC_API_URL}/generar-requisiciones/?horizonte=${horizonte}&pasado=${pasado}`,
-            { credentials: 'include', method: 'GET' }
+        const response = await customFetch(token, 
+            `/generar-requisiciones/?horizonte=${horizonte}&pasado=${pasado}`,
+            { method: 'GET' }
         );
 
         if (!response.ok) throw new Error('Error al generar el archivo');

@@ -48,7 +48,7 @@ def login(request):
         return Response({"detail": "Not Found"}, status=status.HTTP_404_NOT_FOUND)
     token, created = Token.objects.get_or_create(user=user)
     serializer = UserLogInSerializer(instance=user)
-    return Response({"token": token.key, "user":serializer.data})
+    return Response({"token": token.key, "user":serializer.data}, status=status.HTTP_200_OK)
 
 
 #para este caso el grupo seria null
@@ -67,10 +67,13 @@ def signup(request):
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 @api_view(['GET'])
-@permission_classes([AllowAny])
-@authentication_classes([])
-def test_token(request): 
-    return Response("ha pasado la prueba para {}".format(request.user.email))
+def test_token(request):
+    if(not request.user):
+        return Response({"is_valid": False, "user": None }, status=status.HTTP_400_BAD_REQUEST)
+
+    user = request.user
+    serializer = UserGroupSerializer(instance=user)
+    return Response({"is_valid": True, "user": serializer.data }, status=status.HTTP_200_OK)
 
 @api_view(['POST'])
 def logout(request):

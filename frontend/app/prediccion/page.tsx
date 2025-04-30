@@ -17,6 +17,9 @@ import { Input } from "@/components/ui/input"
 import CustomButton from "@/components/customButtom"
 import { GenerarRequisicionesApi, CargarInventarioApi, CargarClientesApi, CargarVentasApi, CargarComprasApi } from "./api/prediccionApis"
 import { useRef, useState } from "react"
+import Navbar from "@/components/navbar"
+import { ProtectedRoute } from "@/components/protectedRoute"
+import { useAuth } from "@/context/authContext"
 
 const FormSchema = z.object({
   horizonte: z.coerce.number().int().max(12, {
@@ -40,24 +43,25 @@ export default function PrediccionPage() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [tipoCarga, setTipoCarga] = useState<"inventario"|"compras"|"clientes"|"ventas">();
   const [compras, setCompras] = useState([]);
-
+  const {ct} = useAuth();
+  
   const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     if(event.target.files && event.target.files.length > 0){
       const archivo = event.target.files[0]
-      
+      const token = ct;
       setMensaje( `Cargando ${tipoCarga} ...`);
       let respuesta;
       if(tipoCarga === "inventario"){
-        respuesta = await CargarInventarioApi(archivo);
+        respuesta = await CargarInventarioApi(token, archivo);
       }
       else if(tipoCarga === 'clientes'){
-        respuesta = await CargarClientesApi(archivo);
+        respuesta = await CargarClientesApi(token, archivo);
       }
       else if(tipoCarga === 'ventas'){
-        respuesta = await CargarVentasApi(archivo);
+        respuesta = await CargarVentasApi(token, archivo);
       }
       else if(tipoCarga === 'compras'){
-        respuesta = await CargarComprasApi(archivo);
+        respuesta = await CargarComprasApi(token, archivo);
         if(respuesta?.data?.compras){
           const saca = respuesta.data.compras
           console.log("saca:", saca)
@@ -76,7 +80,8 @@ export default function PrediccionPage() {
   }
 
   async function onSubmit(data: z.infer<typeof FormSchema>) {
-    const respuesta = await GenerarRequisicionesApi(data.horizonte, data.pasado, compras);
+    const token = ct;
+    const respuesta = await GenerarRequisicionesApi(token, data.horizonte, data.pasado, compras);
 
     if (respuesta?.success) {
       setMensaje(
@@ -95,7 +100,10 @@ export default function PrediccionPage() {
   };
 
   return (
-    <div>
+    <>
+      <ProtectedRoute>
+      <Navbar/>
+      <div>
       <h1 className="text-xl font-bold mb-4">Módulo Predictivo</h1>
 
       <Form {...form}>
@@ -159,5 +167,7 @@ export default function PrediccionPage() {
         {mensaje}
       </div>
     </div>
+    </ProtectedRoute>
+    </>
   )
 }
