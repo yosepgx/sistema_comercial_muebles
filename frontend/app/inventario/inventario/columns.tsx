@@ -51,10 +51,10 @@ export const columns: ColumnDef<Inventario>[] = [
       header: "Codigo",
       enableGlobalFilter: false,
       cell: ({ getValue }) => <span>{getValue() as string}</span>,
-    }, 
+    },
     
     {
-      accessorKey: "producto",
+      accessorKey: "nombre_producto",
       header: "Producto",
       cell: ({ getValue }) => <span>{getValue() as string}</span>,
       filterFn: "includesString",

@@ -4,12 +4,12 @@ import { ProtectedRoute } from "@/components/protectedRoute";
 
 export default function productoPage(){
     return(
-        <>
-            <ProtectedRoute>
-                <MainWrap>
-                    <div>Hola producto</div>
-                </MainWrap>
-            </ProtectedRoute>
-        </>
+    <>
+        <ProtectedRoute>
+            <MainWrap>
+                <div>Hola producto</div>
+            </MainWrap>
+        </ProtectedRoute>
+    </>
     )
 }

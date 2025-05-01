@@ -12,9 +12,10 @@ class CategoriaProductoSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 class InventarioSerializer(serializers.ModelSerializer):
+    nombre_producto = serializers.CharField(source= 'producto.nombre', read_only = True)
     class Meta:
         model = Inventario
-        fields = '__all__'
+        fields = ['producto','almacen', 'cantidad_disponible', 'cantidad_comprometida', 'nombre_producto' ]
 
 class ProductoSerializer(serializers.ModelSerializer):
     class Meta:
