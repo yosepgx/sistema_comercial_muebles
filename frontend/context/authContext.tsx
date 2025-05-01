@@ -90,7 +90,7 @@ export const AuthProvider = ({children}: {children: ReactNode}) => {
         } catch (error) {
             console.error(`Error, fetchRefresh: No se pudo comprobar el token ${error}`);
             setIsAuth(false);
-            //localStorage.removeItem('access-token'); //si pierde la conexion tendria que volver a logearse
+            localStorage.removeItem('access-token'); //si pierde la conexion tendria que volver a logearse
         } finally {
             setIsLoading(false);
           }
