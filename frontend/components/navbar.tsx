@@ -6,12 +6,15 @@ import { ReactNode } from "react";
 import { Home, Armchair, ShoppingBag, LineChart, BadgePercent, Settings, Bell } from "lucide-react";
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
+import { useAuth } from "@/context/authContext";
 
 export default function Navbar() {
   interface IMenuItem {
     label:string;
     href: string;
 }
+
+const {fetchLogout} = useAuth();
 const itemsInventario : IMenuItem[]= [
     {
     label: "Productos",
@@ -88,7 +91,7 @@ const itemsAjustes: IMenuItem[] = [
       {/* Sección Derecha */}
       <div className="flex items-center space-x-4">
         <Bell size={20} className="cursor-pointer" />
-        <Button className="bg-blue-500 text-white">Cerrar Sesión</Button>
+        <Button className="bg-blue-500 text-white" onClick={fetchLogout}>Cerrar Sesión</Button>
       </div>
     </nav>
   );

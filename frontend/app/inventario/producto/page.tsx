@@ -1,5 +1,15 @@
+import MainWrap from "@/components/mainwrap";
+import Navbar from "@/components/navbar";
+import { ProtectedRoute } from "@/components/protectedRoute";
+
 export default function productoPage(){
     return(
-        <div>Hola producto</div>
+        <>
+            <ProtectedRoute>
+                <MainWrap>
+                    <div>Hola producto</div>
+                </MainWrap>
+            </ProtectedRoute>
+        </>
     )
 }

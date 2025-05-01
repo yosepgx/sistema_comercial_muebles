@@ -1,3 +1,5 @@
+import { customFetch } from "@/components/customFetch"
+
 export interface Inventario {
     id: number
     cantidad_disponible: string
@@ -6,14 +8,15 @@ export interface Inventario {
     almacen: string
   }
 
-export async function GetInventarioListApi() {
+export async function GetInventarioListApi(token:string | null) {
     try {
-        const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}inventario/inventario/`, {
-            credentials: 'include',
+        const response = await customFetch(token, `inventario/inventario`, {
+            
             method: "get",
             headers:{
                 'Content-Type':'application/json' ,
-            }
+            },
+            credentials: "include",
         });
 
         
@@ -33,10 +36,10 @@ export async function GetInventarioListApi() {
     }
 }
 
-export async function GetInventarioDetailApi(id: number){
+export async function GetInventarioDetailApi(token:string | null, id: number){
     try {
-        const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}inventario/inventario/${id}/`, {
-            credentials: 'include',
+        const response = await customFetch(token,`inventario/inventario/${id}`, {
+            
             method: "get",
             headers:{
                 'Content-Type':'application/json' ,
@@ -56,10 +59,10 @@ export async function GetInventarioDetailApi(id: number){
         return null;
     }
 }
-export async function PostInventarioAPI(data: Inventario){
+export async function PostInventarioAPI(token:string | null, data: Inventario){
     try {
-        const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}inventario/inventario/`, {
-            credentials: 'include',
+        const response = await customFetch(token,`inventario/inventario`, {
+            
             method: "POST",
             headers:{
                 'Content-Type':'application/json' ,
@@ -81,10 +84,10 @@ export async function PostInventarioAPI(data: Inventario){
     }
 }
 
-export async function DeleteInventarioAPI(id: number){
+export async function DeleteInventarioAPI(token:string | null, id: number){
     try {
-        const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}inventario/inventario/${id}/`, {
-            credentials: 'include',
+        const response = await customFetch(token, `inventario/inventario/${id}`, {
+            
             method: "DELETE",
             headers:{
                 'Content-Type':'application/json' ,
@@ -104,10 +107,10 @@ export async function DeleteInventarioAPI(id: number){
     }
 }
 
-export async function UpdateInventarioAPI(id: number, data: Inventario) {
+export async function UpdateInventarioAPI(token:string | null, id: number, data: Inventario) {
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}inventario/inventario/${id}/`, {
-        credentials: 'include',
+      const response = await customFetch(token, `inventario/inventario/${id}`, {
+        
         method: "PUT",
         headers: {
           'Content-Type': 'application/json',
