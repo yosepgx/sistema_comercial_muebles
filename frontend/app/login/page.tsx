@@ -3,7 +3,6 @@
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { useRouter } from 'next/navigation'
 import { useContext, useState } from 'react'
 import { useAuth } from '@/context/authContext'
 
@@ -15,7 +14,6 @@ const loginSchema = z.object({
 type LoginForm = z.infer<typeof loginSchema>
 
 export default function LoginPage() {
-  const router = useRouter()
   const [error, setError] = useState('')
   const {fetchLogin} = useAuth()
   
@@ -30,8 +28,6 @@ export default function LoginPage() {
   const onSubmit = async (data: LoginForm) => {
     try {
       fetchLogin(data)
-      //verificar que funciono el login
-      router.push('/');
       
     } catch (err) {
       console.error(err)

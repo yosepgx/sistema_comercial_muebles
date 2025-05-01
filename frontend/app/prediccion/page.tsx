@@ -20,6 +20,7 @@ import { useRef, useState } from "react"
 import Navbar from "@/components/navbar"
 import { ProtectedRoute } from "@/components/protectedRoute"
 import { useAuth } from "@/context/authContext"
+import MainWrap from "@/components/mainwrap"
 
 const FormSchema = z.object({
   horizonte: z.coerce.number().int().max(12, {
@@ -102,7 +103,7 @@ export default function PrediccionPage() {
   return (
     <>
       <ProtectedRoute>
-      <Navbar/>
+      <MainWrap>
       <div>
       <h1 className="text-xl font-bold mb-4">Módulo Predictivo</h1>
 
@@ -167,6 +168,7 @@ export default function PrediccionPage() {
         {mensaje}
       </div>
     </div>
+    </MainWrap>
     </ProtectedRoute>
     </>
   )

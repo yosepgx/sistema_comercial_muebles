@@ -1,42 +1,55 @@
 "use client"
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import {createContext, useContext, useState, ReactNode, useEffect, SetStateAction, Dispatch} from "react"
 interface UserLogin{
     username: string;
     password: string;
 }
-interface UserRecover{
-    token: string;
+
+interface User{
     username: string;
-    password: string;
+    email: string;
+    groups: [number];
     perfil: {
         dni: string;
         telefono: string;
     }
 }
+interface UserRecover{
+    token: string;
+    user: User;
+}
 
 interface AuthContextType{
-    user: UserRecover | null;
+    user: User | null;
     ct: string | null;
-    fetchLogin: (userData: UserLogin) => void; //guardar estados
-    fetchLogout: () => void; //quitar estados
+    fetchLogin: (userData: UserLogin) => void; 
+    fetchLogout: () => void; 
     fetchRefresh: () => Promise<void>;
+    isLoading: boolean;
+    isAuth: boolean;
+
 }
 
 const AuthContext = createContext<AuthContextType| undefined>(undefined);
 
 export const AuthProvider = ({children}: {children: ReactNode}) => {
-    const [user, setUser] = useState<UserRecover | null> (null);
+    const [user, setUser] = useState<User | null> (null);
     const [ct, setCt] = useState<string | null>(null)
+    const [isLoading, setIsLoading] = useState<boolean>(true);
+    const [isAuth, setIsAuth] = useState<boolean>(false);
     const currentPath = usePathname()
+    const router = useRouter()
     const ApiURL = process.env.NEXT_PUBLIC_BACKEND_URL
-
+ 
     const fetchRefresh = async() => {
         try {
             const token = localStorage.getItem('access-token');
             
             if (!token) {
-                console.error("No hay token disponible");
+                setIsLoading(false)
+                setIsAuth(false)
+                console.log("No hay token disponible");
                 return;
             }
             setCt(token)
@@ -49,6 +62,12 @@ export const AuthProvider = ({children}: {children: ReactNode}) => {
             });
             
             if (!response.ok) {
+                //si el back no responde ya no tiene acceso
+                localStorage.removeItem('access-token');
+                //localStorage.removeItem('user-data');
+                setUser(null);
+                setIsAuth(false);
+                setIsLoading(false);
                 console.error("El token no es válido o hubo un problema con la API");
                 return;
             }
@@ -56,22 +75,35 @@ export const AuthProvider = ({children}: {children: ReactNode}) => {
             const data = await response.json();
             
             if (!data.is_valid) {
+                localStorage.removeItem('access-token');
+                //localStorage.removeItem('user-data');
+                setUser(null);
+                setIsAuth(false);
                 console.error("El usuario no está identificado");
                 return;
             }
             
             setUser(data.user);
+            setIsAuth(true);
+            //localStorage.setItem('user-data', JSON.stringify(data.user));
             
         } catch (error) {
             console.error(`Error, fetchRefresh: No se pudo comprobar el token ${error}`);
-        }
+            setIsAuth(false);
+            //localStorage.removeItem('access-token'); //si pierde la conexion tendria que volver a logearse
+        } finally {
+            setIsLoading(false);
+          }
     };
 
     useEffect(()=>{
         if(currentPath !== '/login'){
             fetchRefresh();
         }
-    },[])
+        else{
+            setIsLoading(false);
+        }
+    },[currentPath])
 
     const fetchLogin = async (loginData: UserLogin) =>{
         try{
@@ -86,8 +118,10 @@ export const AuthProvider = ({children}: {children: ReactNode}) => {
               }
               const data: UserRecover = await response.json();
               
-              setUser(data);
+              setUser(data.user);
+              setIsAuth(true);
               localStorage.setItem('access-token',data.token)
+              router.push('/')
               return
 
         }
@@ -111,6 +145,7 @@ export const AuthProvider = ({children}: {children: ReactNode}) => {
                 console.error('Error de servidor logout')
                 return
             }
+            router.push('/login')
             
         } catch (error) {
             console.error(`Fallo en el logout ${error}`)
@@ -118,7 +153,7 @@ export const AuthProvider = ({children}: {children: ReactNode}) => {
     }
 
     return(
-        <AuthContext.Provider value = {{user, fetchLogin, fetchLogout, fetchRefresh, ct}}>
+        <AuthContext.Provider value = {{user, fetchLogin, fetchLogout, fetchRefresh, ct, isAuth, isLoading}}>
             {children}
         </AuthContext.Provider>
     );

@@ -7,6 +7,7 @@ import { GetInventarioListApi, Inventario } from "./api/InventarioApis"
 import Navbar from "@/components/navbar"
 import { ProtectedRoute } from "@/components/protectedRoute"
 import { useAuth } from "@/context/authContext"
+import MainWrap from "@/components/mainwrap"
 
 export default function InventarioPage() {
   const [data, setData] = useState<Inventario[]>([])
@@ -38,19 +39,20 @@ export default function InventarioPage() {
   return (
     <>
     <ProtectedRoute>
-    <Navbar/>
-    <div>
-        <div className="container mx-auto">
-        <DataTable
-            columns={columns}
-            odata={data}
-            defaultColumn={defaultColumnCell}
-            placeholder={"Buscar por codigo de producto"}
-        >
-        
-        </DataTable>
+      <MainWrap>
+        <div>
+            <div className="container mx-auto">
+            <DataTable
+                columns={columns}
+                odata={data}
+                defaultColumn={defaultColumnCell}
+                placeholder={"Buscar por codigo de producto"}
+            >
+            
+            </DataTable>
+            </div>
         </div>
-    </div>
+      </MainWrap>
     </ProtectedRoute>
     </>
   )

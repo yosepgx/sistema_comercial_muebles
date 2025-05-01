@@ -1,3 +1,4 @@
+//"use client";
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
@@ -36,10 +37,7 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <AuthProvider>
-          
-          <div className="ml-10 mr-6 mt-4">
-            {children}
-          </div>
+          {children}
         </AuthProvider>
       </body>
     </html>
