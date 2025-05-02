@@ -7,17 +7,6 @@ import { ArrowUpDown } from "lucide-react"
 import * as inventarioApis from "./api/InventarioApis"
 import React from "react";
 import { Inventario } from "./api/InventarioApis";
-
-
-export type Payment = {
-    id: string
-    amount: number
-    status: "pending" | "processing" | "success" | "failed"
-    email: string
-    editable: boolean
-  }
-   
-
   
 export const defaultColumnCell: Partial<ColumnDef<Inventario>> = {
     cell: ({ getValue, row: { index }, column: { id }, table }) => {
