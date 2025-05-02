@@ -1,6 +1,6 @@
 "use client"
 import { useRouter } from 'next/navigation';
-import { useProductoContext } from '../../productoContext';
+import { useProductoContext } from '../productoContext';
 import { useAuth } from '@/context/authContext';
 
 //interface Params {

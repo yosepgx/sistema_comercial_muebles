@@ -1,7 +1,7 @@
 "use client"
 
 import { createContext, Dispatch, ReactNode, SetStateAction, useContext, useState } from "react";
-import { TProducto } from "./producto/api/productoTypes";
+import { TProducto } from "./api/productoTypes";
 import { useRouter } from "next/navigation";
 
 

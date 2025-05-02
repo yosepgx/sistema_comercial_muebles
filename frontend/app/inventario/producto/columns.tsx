@@ -4,7 +4,7 @@ import { ColumnDef } from "@tanstack/react-table"
 import { Eye, Trash2 } from 'lucide-react';
 import React from "react";
 import { TProducto } from "./api/productoTypes";
-import { useProductoContext } from "../productoContext";
+import { useProductoContext } from "./productoContext";
 
 
 export const columns: ColumnDef<TProducto>[] = [
