@@ -15,7 +15,7 @@ class InventarioSerializer(serializers.ModelSerializer):
     nombre_producto = serializers.CharField(source= 'producto.nombre', read_only = True)
     class Meta:
         model = Inventario
-        fields = ['producto','almacen', 'cantidad_disponible', 'cantidad_comprometida', 'nombre_producto' ]
+        fields = ['id','producto','almacen', 'cantidad_disponible', 'cantidad_comprometida', 'nombre_producto' ]
 
 class ProductoSerializer(serializers.ModelSerializer):
     class Meta:

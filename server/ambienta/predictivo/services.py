@@ -285,8 +285,8 @@ class ServicePrediccion:
             # Calcular cantidad requerida
             cantidad_requerida = max(0, cantidad_predicha - stock_disponible)
             
-            if cantidad_requerida > 0:
-                requisicion.append({
+            #if cantidad_requerida > 0:
+            requisicion.append({
                     "cod_producto": cod_producto,
                     "Producto": producto, 
                     "Cantidad_Predicha": cantidad_predicha,
