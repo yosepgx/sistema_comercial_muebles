@@ -3,12 +3,12 @@ from django.core.validators import MinLengthValidator, MaxLengthValidator, Regex
 
 #TODO: configurar validadores para cada clase
 
-class CategoriaCliente(models.Model):
-    descripcion = models.CharField(max_length=255, unique=True)
-    activo = models.BooleanField(default=True)
+# class CategoriaCliente(models.Model):
+#     descripcion = models.CharField(max_length=255, unique=True)
+#     activo = models.BooleanField(default=True)
 
-    def __str__(self):
-        return self.descripcion
+#     def __str__(self):
+#         return self.descripcion
     
 class Contacto(models.Model):
     TIPOCLIENTE = 'cliente'
@@ -33,7 +33,7 @@ class Contacto(models.Model):
     tipo_interes = models.CharField(max_length=10, choices=TIPO_INTERES_CHOICES)
     fecha_conversion = models.DateField(blank=True, null=True)  # Puede ser NULL si aún no se convierte
     naturaleza = models.CharField(max_length=10, choices=NATURALEZA_CHOICES)
-    categoria = models.ForeignKey(CategoriaCliente, on_delete=models.SET_NULL, null=True)
+    #categoria = models.ForeignKey(CategoriaCliente, on_delete=models.SET_NULL, null=True)
     activo = models.BooleanField(default=True)
     
     def __str__(self):

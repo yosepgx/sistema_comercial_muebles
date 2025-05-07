@@ -1,24 +1,24 @@
 import pandas as pd
-from clientes_app.models import CategoriaCliente, Contacto, DocumentoID
+from clientes_app.models import Contacto, DocumentoID
 
 #categorias -> contactos -> documentos
 class ServiceCargarDataClientes:
-    def Categorias(archivo):
-        try:
-            campos = {'descripcion':str, 'activo': bool}
-            df = pd.read_excel(archivo, sheet_name="CategoriaCliente", 
-                               usecols=campos.keys(),
-                               dtype=campos)
+    # def Categorias(archivo):
+    #     try:
+    #         campos = {'descripcion':str, 'activo': bool}
+    #         df = pd.read_excel(archivo, sheet_name="CategoriaCliente", 
+    #                            usecols=campos.keys(),
+    #                            dtype=campos)
             
-            objetos = [
-                CategoriaCliente(**row.to_dict())
-                for _, row in df.iterrows()
-            ] 
+    #         objetos = [
+    #             CategoriaCliente(**row.to_dict())
+    #             for _, row in df.iterrows()
+    #         ] 
 
-            CategoriaCliente.objects.bulk_create(objetos)
+    #         CategoriaCliente.objects.bulk_create(objetos)
 
-        except Exception as e:
-            print(e)
+    #     except Exception as e:
+    #         print(e)
 
     def Contactos(archivo):
         try:
@@ -37,7 +37,7 @@ class ServiceCargarDataClientes:
             objetos = [] 
 
             for _, row in df.iterrows():
-                cat = CategoriaCliente.objects.get(id=row['categoria'])
+                #cat = CategoriaCliente.objects.get(id=row['categoria'])
                 cont = Contacto(
                     nombre = row['nombre'],
                     correo = row['correo'],

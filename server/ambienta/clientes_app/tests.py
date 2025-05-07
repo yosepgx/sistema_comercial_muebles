@@ -1,14 +1,12 @@
 from django.test import TestCase
 from clientes_app.services import ServiceCargarDataClientes
-from clientes_app.models import CategoriaCliente, Contacto, DocumentoID
+from clientes_app.models import Contacto, DocumentoID
 
 class CargarDataTest(TestCase):
     archivo_excel = "datacargable/DataClientes.xlsx"
 
     def setUp(self):
-        ServiceCargarDataClientes.Categorias(self.archivo_excel)
-        if(CategoriaCliente.objects.count()<=0):
-            self.fail("No se cargo ninguna categoria")
+        
 
         ServiceCargarDataClientes.Contactos(self.archivo_excel)
         if(Contacto.objects.count()<=0):

@@ -1,5 +1,6 @@
 from django.db import models
 from oportunidades_app.models import Cotizacion
+from inventario_app.models import Producto
 class Pedido(models.Model):
     PENDIENTE = 'pendiente'
     PAGADO = 'pagado'
@@ -32,9 +33,10 @@ class Pedido(models.Model):
     fecha_pago = models.DateField(null=True, blank=True)
 
     monto_total = models.DecimalField(max_digits=10, decimal_places=2)#incluye IGV
-    IGV = models.DecimalField(max_digits=5, decimal_places=2, default=18.00)
+    monto_igv = models.DecimalField(max_digits=5, decimal_places=2, default=18.00)
     codigo_tributo = models.CharField(max_length=10, default="1000")
     descuento_adicional = models.DecimalField(max_digits=8, decimal_places=2)
+    observaciones = models.TextField(blank=True, null=True)
 
     activo = models.BooleanField(default=True)
     def __str__(self):
@@ -43,9 +45,7 @@ class Pedido(models.Model):
 
 class PedidoDetalle(models.Model):
     pedido = models.ForeignKey(Pedido, on_delete=models.CASCADE, related_name="detalles")
-    cod_producto = models.IntegerField(blank=False)
-    nombre_producto = models.CharField(max_length=255, blank=False)
-    precio_unitario = models.DecimalField(max_digits=10, decimal_places=2 , blank=False)
+    producto = models.ForeignKey(Producto, on_delete=models.CASCADE, related_name="pedidos_detalle")(blank=False)
     cantidad = models.PositiveIntegerField(default=1, blank=False)
     descuento = models.DecimalField(max_digits=8, decimal_places=2, default=0.00, blank=False)
     subtotal = models.DecimalField(max_digits=10, decimal_places=2, blank=False)
