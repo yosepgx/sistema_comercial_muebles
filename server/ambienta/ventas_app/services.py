@@ -2,16 +2,17 @@ import pandas as pd
 from clientes_app.models import Contacto
 from ventas_app.models import PedidoDetalle, Pedido
 from oportunidades_app.models import Cotizacion
+from inventario_app.models import Producto
 
 #Pedido -> PedidoDetalle
 class ServiceCargarDataVenta:
     def Pedido(archivo):
         try:
             campos = {'fecha':str,'fechaentrega': str,'direccion': str,
-                      'cotizacion': int,'moneda': str,'RUC_emisor': str ,'cliente': str ,
-                      'DOC_cliente': str ,'monto_sin_impuesto': float ,'forma_pago': str,
+                      'cotizacion': int,'moneda': str,'monto_sin_impuesto': float ,
                       'estado_pedido': str ,'fecha_pago': str,
-                      'monto_total': float ,'IGV': float ,'codigo_tributo': float,
+                      'monto_total': float ,'monto_igv': float ,'codigo_tributo': int,
+                      'observaciones': str ,
                       'descuento_adicional': float, 'activo':bool}
             df = pd.read_excel(archivo, sheet_name='Pedido', 
                                usecols=campos.keys(),
@@ -19,7 +20,7 @@ class ServiceCargarDataVenta:
                                )
             
             objetos = []
-
+            df['observaciones'] = None
             for _, row in df.iterrows():
                 datos = row.to_dict()
                 
@@ -36,8 +37,7 @@ class ServiceCargarDataVenta:
 
     def PedidoDetalle(archivo):
         try:
-            campos = {'pedido':int , 'cod_producto':int, 'nombre_producto': str,
-                      'precio_unitario': float,'cantidad': int,'descuento':float ,
+            campos = {'pedido':int , 'producto':int, 'cantidad': int,'descuento':float ,
                       'subtotal': float,'nrolinea': int ,'activo': bool}
             
             df = pd.read_excel(archivo, sheet_name='PedidoDetalle', 
@@ -48,10 +48,13 @@ class ServiceCargarDataVenta:
             for _, row in df.iterrows():
                 datos = row.to_dict()
                 
+                id_producto = datos.pop('producto')
+                prod = Producto.objects.get(id=id_producto)
+
                 id_pedido = datos.pop('pedido')
                 ped = Pedido.objects.get(id=id_pedido)
                 
-                obj = PedidoDetalle(pedido = ped, **datos)
+                obj = PedidoDetalle(pedido = ped, producto = prod, **datos)
                 objetos.append(obj)
             
             PedidoDetalle.objects.bulk_create(objetos)

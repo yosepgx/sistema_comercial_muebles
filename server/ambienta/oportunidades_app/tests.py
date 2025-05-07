@@ -3,7 +3,7 @@ from oportunidades_app.services import ServiceCargarDatosOportunidades
 from oportunidades_app.models import Oportunidad, CotizacionDetalle, Cotizacion
 from django.db import transaction
 from clientes_app.services import ServiceCargarDataClientes
-from clientes_app.models import CategoriaCliente, Contacto, DocumentoID
+from clientes_app.models import Contacto, DocumentoID
 from inventario_app.services import ServiceCargarDataInventario
 from inventario_app.models import CategoriaProducto, Producto
 class CargarDataTest(TestCase):
@@ -13,10 +13,6 @@ class CargarDataTest(TestCase):
 
     def setUp(self):
         
-        ServiceCargarDataClientes.Categorias(self.archivo_clientes)
-        if(CategoriaCliente.objects.count()<=0):
-            self.fail("No se cargo ninguna categoria")
-
         ServiceCargarDataClientes.Contactos(self.archivo_clientes)
         if(Contacto.objects.count()<=0):
             self.fail("No se cargo ningun contacto")
@@ -32,7 +28,6 @@ class CargarDataTest(TestCase):
         ServiceCargarDatosOportunidades.Cotizacion(self.archivo_ventas)
         if(Cotizacion.objects.count()<=0):
             self.fail("No se cargo ninguna cotizacion")
-            ServiceCargarDataInventario.Categorias(self.archivo_producto)
         
         ServiceCargarDataInventario.Categorias(self.archivo_producto)
         if(CategoriaProducto.objects.count()<=0):

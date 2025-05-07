@@ -1,8 +1,8 @@
-from inventario_app.models import Producto,Almacen,CategoriaProducto,Inventario
+from inventario_app.models import Producto,Almacen,CategoriaProducto,Inventario, Precio
 import pandas as pd
 from django.db import IntegrityError
-
-#categoria -> producto -> almacen -> inventario
+#TODO agregar precios
+#categoria -> precios -> producto -> almacen -> inventario
 class ServiceCargarDataInventario:
     def Categorias(archivo):
         try:
@@ -21,12 +21,45 @@ class ServiceCargarDataInventario:
         except Exception as e:
             print(e)
 
+    def Precios(archivo):
+        try:
+            df = pd.read_excel(archivo, sheet_name="Precio", 
+                               names=["precio_id","producto", "precio", "fecha_inicio", "fecha_fin", "activo"], 
+                               usecols=["precio_id","producto", "precio", "fecha_inicio", "fecha_fin", "activo"],
+            )
+            
+            df['fecha_inicio'] = pd.to_datetime(df['fecha_inicio'])
+            df['fecha_fin'] = pd.to_datetime(df['fecha_fin'])
+            precios = []
+            for _, row in df.iterrows():
+                try:
+                    
+                    productoObj = Producto.objects.get(id=int(row['producto']))
+                except (Producto.DoesNotExist, ValueError):
+                    print(f"Advertencia: No se encontró el producto con ID {row['producto']}. Se cancela")
+                    return
+                
+                precio = Precio(
+                    producto = productoObj,
+                    precio = row['precio'],
+                    fecha_inicio = row['fecha_inicio'],
+                    fecha_fin = row['fecha_fin'],
+                    activo = row['activo'],
+                )
+                precios.append(precio)
+
+
+            Precio.objects.bulk_create(precios)
+
+        except Exception as e:
+            print("error en precios", e)
+
     def Productos(archivo):
         try:
-            campos = ['nombre', 'umedida_sunat','descripcion', 'precio', 'categoria','igv','afecto_igv','codigo_afecion_igv','activo']
+            campos = ['nombre', 'umedida_sunat','descripcion', 'categoria','igv','afecto_igv','codigo_afecion_igv','activo']
             df = pd.read_excel(archivo, sheet_name="Producto", 
                                usecols=campos,
-                               dtype={'nombre': str, 'umedida_sunat': str,'descripcion': str, 'precio': float, 'categoria': str,
+                               dtype={'nombre': str, 'umedida_sunat': str,'descripcion': str, 'categoria': str,
                                       'igv': float,'afecto_igv': bool,'codigo_afecion_igv': str,'activo': bool},
                                na_values= 'null')
             
@@ -44,7 +77,7 @@ class ServiceCargarDataInventario:
                     nombre=row['nombre'],
                     umedida_sunat=row['umedida_sunat'],
                     descripcion= None if pd.isna(row['descripcion']) else row['descripcion'],
-                    precio=row['precio'],
+                    
                     categoria=categoria,  
                     igv=row['igv'],
                     afecto_igv=row['afecto_igv'],
@@ -56,7 +89,7 @@ class ServiceCargarDataInventario:
             Producto.objects.bulk_create(productos)
 
         except Exception as e:
-            print(e)
+            print("error en producto", e)
 
     def Almacenes(archivo):
         try:

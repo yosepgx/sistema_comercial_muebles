@@ -80,17 +80,25 @@ class Producto(models.Model):
     nombre = models.CharField(max_length=255)
     descripcion = models.TextField(blank=True, null=True)
     #material = models.CharField(max_length=255, blank=True, null=True)
-    precio = models.DecimalField(max_digits=10, decimal_places=2)
+    #precio = models.DecimalField(max_digits=10, decimal_places=2)
     categoria = models.ForeignKey(CategoriaProducto, on_delete=models.CASCADE, related_name="productos_rel")
     #umedida_sunat = models.CharField(max_length=50, default='NIU') #NIU se usa para unidades de bienes
     #codigop_sunat = models.CharField(max_length=50) #opcional
     igv = models.DecimalField(max_digits=5, decimal_places=2, default=0.18) #18% de igv 
     afecto_igv = models.BooleanField(default=True) #sirve por si hay producto sin igv
     codigo_afecion_igv = models.CharField(max_length=4, default='10') #codigo 10 indica que es venta gravada a igv
-    activo = models.BooleanField(default=True)
+    es_servicio = models.BooleanField(default=False, null=False)
+    activo = models.BooleanField(default=True, null=False)
 
     def __str__(self):
         return self.nombre
+
+class Precio (models.Model):
+    producto = models.ForeignKey(Producto, on_delete=models.CASCADE, related_name="precios_de_producto")
+    precio = models.DecimalField(max_digits=10, decimal_places=2, null=False)
+    fecha_inicio = models.DateTimeField(null=False)
+    fecha_fin = models.DateTimeField(null=False)
+    activo = models.BooleanField(default=True, null=False)
 
 class Almacen(models.Model):
     TIPOALMACEN = 'almacen'
