@@ -290,8 +290,8 @@ class ServicePrediccion:
             
             #if cantidad_requerida > 0:
             requisicion.append({
+                    "Producto": producto,
                     "Nombre_Producto": nombre_producto,
-                    "Producto": producto, 
                     "Cantidad_Predicha": cantidad_predicha,
                     "Stock_Actual": stock_actual.get(producto, 0),
                     "Pedidos_Transito": compras_actuales.get(producto, 0),
