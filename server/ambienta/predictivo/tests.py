@@ -8,13 +8,14 @@ from clientes_app.services import ServiceCargarDataClientes
 from clientes_app.models import Contacto, DocumentoID
 from inventario_app.services import ServiceCargarDataInventario
 from inventario_app.models import CategoriaProducto, Producto
-from predictivo.services import ServicePrediccion
+from predictivo.services import ServicePrediccion, ServiceCargarCompras
 import pandas as pd
 class TestPrediccion(TestCase):
     
     archivo_ventas = "datacargable/DataVenta.xlsx"
     archivo_clientes = "datacargable/DataClientes.xlsx"
     archivo_producto = "datacargable/DataProducto.xlsx"
+    archivo_compras = "datacargable/DataCompra.xlsx"
     prediccion = pd.DataFrame()
     requisicion = pd.DataFrame()
     horizonte = 1
@@ -23,6 +24,7 @@ class TestPrediccion(TestCase):
         #carga de DataProducto        
         ServiceCargarDataInventario.Categorias(self.archivo_producto)
         ServiceCargarDataInventario.Productos(self.archivo_producto)
+        ServiceCargarDataInventario.Precios(self.archivo_producto)
         ServiceCargarDataInventario.Almacenes(self.archivo_producto)
         ServiceCargarDataInventario.DataInventario(self.archivo_producto)
         
@@ -38,6 +40,9 @@ class TestPrediccion(TestCase):
         #carga de DataVenta
         ServiceCargarDataVenta.Pedido(self.archivo_ventas)
         ServiceCargarDataVenta.PedidoDetalle(self.archivo_ventas)
+
+        #carga de compras
+        ServiceCargarCompras.Compras(self.archivo_compras)
 
         #prediccion
         self.prediccion = ServicePrediccion.predecir_productos(horizonte_meses= self.horizonte, meses_historico= self.pasado)

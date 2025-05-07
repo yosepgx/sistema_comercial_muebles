@@ -30,7 +30,6 @@ class ServiceCargarDataInventario:
             
             df['fecha_inicio'] = pd.to_datetime(df['fecha_inicio'])
             df['fecha_fin'] = pd.to_datetime(df['fecha_fin'])
-            print(df)
             precios = []
             for _, row in df.iterrows():
                 try:
