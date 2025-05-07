@@ -26,7 +26,6 @@ class CargarDataClienteView(APIView):
                 return Response({'error': f'Faltan las siguientes hojas: {", ".join(faltantes)}'},
                                 status=status.HTTP_400_BAD_REQUEST)
 
-            ServiceCargarDataClientes.Categorias(archivo)
             ServiceCargarDataClientes.Contactos(archivo)
             ServiceCargarDataClientes.Documentos(archivo)
 

@@ -2,6 +2,7 @@ import pandas as pd
 from clientes_app.models import Contacto
 from ventas_app.models import PedidoDetalle, Pedido
 from oportunidades_app.models import Cotizacion
+from inventario_app.models import Producto
 
 #Pedido -> PedidoDetalle
 class ServiceCargarDataVenta:
@@ -47,10 +48,13 @@ class ServiceCargarDataVenta:
             for _, row in df.iterrows():
                 datos = row.to_dict()
                 
+                id_producto = datos.pop('producto')
+                prod = Producto.objects.get(id=id_producto)
+
                 id_pedido = datos.pop('pedido')
                 ped = Pedido.objects.get(id=id_pedido)
                 
-                obj = PedidoDetalle(pedido = ped, **datos)
+                obj = PedidoDetalle(pedido = ped, producto = prod, **datos)
                 objetos.append(obj)
             
             PedidoDetalle.objects.bulk_create(objetos)

@@ -13,8 +13,6 @@ class CargarDataTest(TestCase):
 
     def setUp(self):
         
-        
-
         ServiceCargarDataClientes.Contactos(self.archivo_clientes)
         if(Contacto.objects.count()<=0):
             self.fail("No se cargo ningun contacto")
@@ -30,7 +28,6 @@ class CargarDataTest(TestCase):
         ServiceCargarDatosOportunidades.Cotizacion(self.archivo_ventas)
         if(Cotizacion.objects.count()<=0):
             self.fail("No se cargo ninguna cotizacion")
-            ServiceCargarDataInventario.Categorias(self.archivo_producto)
         
         ServiceCargarDataInventario.Categorias(self.archivo_producto)
         if(CategoriaProducto.objects.count()<=0):

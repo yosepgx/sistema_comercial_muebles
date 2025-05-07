@@ -11,14 +11,15 @@ class CargarDataTest(TestCase):
         if(CategoriaProducto.objects.count()<=0):
             self.fail("No se cargo ninguna categoria")
 
-        ServiceCargarDataInventario.Precios(self.archivo_excel)
-        if(Precio.objects.count()<=0):
-            self.fail("No se cargo ningun registro de precio")
 
         ServiceCargarDataInventario.Productos(self.archivo_excel)
         if(Producto.objects.count()<=0):
             self.fail("No se cargo ningun producto")
 
+        ServiceCargarDataInventario.Precios(self.archivo_excel)
+        if(Precio.objects.count()<=0):
+            self.fail("No se cargo ningun registro de precio")
+            
         ServiceCargarDataInventario.Almacenes(self.archivo_excel)
         if(Almacen.objects.count()<=0):
             self.fail("No se cargo almacenes")

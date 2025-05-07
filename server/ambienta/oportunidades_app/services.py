@@ -27,7 +27,7 @@ class ServiceCargarDatosOportunidades:
             
             Oportunidad.objects.bulk_create(objetos)
         except Exception as e:
-            print(e)
+            print("error en oportunidades", e)
 
     def Cotizacion(archivo):
         try:
@@ -53,7 +53,7 @@ class ServiceCargarDatosOportunidades:
             Cotizacion.objects.bulk_create(objetos)
 
         except Exception as e:
-            print(e)
+            print("error en cotizacion", e)
 
     def CotizacionDetalle(archivo):
         try:
@@ -81,4 +81,4 @@ class ServiceCargarDatosOportunidades:
             CotizacionDetalle.objects.bulk_create(objetos)
 
         except Exception as e:
-            print(e)
+            print("error en linea cotizacion", e)

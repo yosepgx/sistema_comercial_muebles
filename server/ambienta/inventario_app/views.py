@@ -51,6 +51,7 @@ class CargarInventariosView(APIView):
 
             ServiceCargarDataInventario.Categorias(archivo)
             ServiceCargarDataInventario.Productos(archivo)
+            ServiceCargarDataInventario.Precios(archivo)
             ServiceCargarDataInventario.Almacenes(archivo)
             ServiceCargarDataInventario.DataInventario(archivo)
 

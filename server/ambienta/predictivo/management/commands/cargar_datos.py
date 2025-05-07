@@ -31,12 +31,12 @@ class Command(BaseCommand):
             self.stdout.write(self.style.NOTICE("📦 Cargando datos de productos..."))
             ServiceCargarDataInventario.Categorias(archivo_productos)
             ServiceCargarDataInventario.Productos(archivo_productos)
+            ServiceCargarDataInventario.Precios(archivo_productos)
             ServiceCargarDataInventario.Almacenes(archivo_productos)
             ServiceCargarDataInventario.DataInventario(archivo_productos)
             self.stdout.write(self.style.SUCCESS("✅ Datos de productos cargados."))
 
             self.stdout.write(self.style.NOTICE("👥 Cargando datos de clientes..."))
-            ServiceCargarDataClientes.Categorias(archivo_clientes)
             ServiceCargarDataClientes.Contactos(archivo_clientes)
             ServiceCargarDataClientes.Documentos(archivo_clientes)
             self.stdout.write(self.style.SUCCESS("✅ Datos de clientes cargados."))
