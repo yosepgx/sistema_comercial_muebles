@@ -1,8 +1,8 @@
-from inventario_app.models import Producto,Almacen,CategoriaProducto,Inventario
+from inventario_app.models import Producto,Almacen,CategoriaProducto,Inventario, Precio
 import pandas as pd
 from django.db import IntegrityError
-
-#categoria -> producto -> almacen -> inventario
+#TODO agregar precios
+#categoria -> precios -> producto -> almacen -> inventario
 class ServiceCargarDataInventario:
     def Categorias(archivo):
         try:
@@ -17,6 +17,26 @@ class ServiceCargarDataInventario:
             ]
 
             CategoriaProducto.objects.bulk_create(categorias)
+
+        except Exception as e:
+            print(e)
+
+    def Precios(archivo):
+        try:
+            df = pd.read_excel(archivo, sheet_name="Precios", 
+                               names=["producto", "precio", "fecha_inicio", "fecha_fin", "activo"], 
+                               usecols=["producto", "precio", "fecha_inicio", "fecha_fin", "activo"],
+            )
+            
+            df['fecha_inicio'] = pd.to_datetime(df['fecha_inicio'])
+            df['fecha_fin'] = pd.to_datetime(df['fecha_fin'])
+            
+            objetos = [
+                Precio(**row.to_dict())
+                for _, row in df.iterrows()
+            ]
+
+            Precio.objects.bulk_create(objetos)
 
         except Exception as e:
             print(e)

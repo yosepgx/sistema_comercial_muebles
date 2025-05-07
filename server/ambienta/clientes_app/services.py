@@ -1,7 +1,7 @@
 import pandas as pd
 from clientes_app.models import Contacto, DocumentoID
 
-#categorias -> contactos -> documentos
+# contactos -> documentos
 class ServiceCargarDataClientes:
     # def Categorias(archivo):
     #     try:
@@ -24,7 +24,7 @@ class ServiceCargarDataClientes:
         try:
             campos = {'nombre': str,'correo': str,'telefono': str, 
                       'tipo_interes': str, 'fecha_conversion': str, 
-                      'naturaleza': str, 'categoria': int , 'activo': bool}
+                      'naturaleza': str, 'activo': bool}
             df = pd.read_excel(archivo, sheet_name="Contacto", 
                                usecols=campos.keys(),
                                dtype=campos,
@@ -45,7 +45,7 @@ class ServiceCargarDataClientes:
                     tipo_interes= row['tipo_interes'],
                     fecha_conversion = row['fecha_conversion'].date() if pd.notna(row['fecha_conversion']) else None,
                     naturaleza = row['naturaleza'],
-                    categoria = cat,
+                    #categoria = cat,
                     activo= row['activo'],
                 )
                 objetos.append(cont)

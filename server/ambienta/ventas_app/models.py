@@ -45,7 +45,7 @@ class Pedido(models.Model):
 
 class PedidoDetalle(models.Model):
     pedido = models.ForeignKey(Pedido, on_delete=models.CASCADE, related_name="detalles")
-    producto = models.ForeignKey(Producto, on_delete=models.CASCADE, related_name="pedidos_detalle")(blank=False)
+    producto = models.ForeignKey(Producto, on_delete=models.CASCADE, related_name="pedidos_detalle", blank=False)
     cantidad = models.PositiveIntegerField(default=1, blank=False)
     descuento = models.DecimalField(max_digits=8, decimal_places=2, default=0.00, blank=False)
     subtotal = models.DecimalField(max_digits=10, decimal_places=2, blank=False)
