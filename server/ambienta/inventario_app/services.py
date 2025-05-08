@@ -24,8 +24,8 @@ class ServiceCargarDataInventario:
     def Precios(archivo):
         try:
             df = pd.read_excel(archivo, sheet_name="Precio", 
-                               names=["precio_id","producto", "precio", "fecha_inicio", "fecha_fin", "activo"], 
-                               usecols=["precio_id","producto", "precio", "fecha_inicio", "fecha_fin", "activo"],
+                               names=["precio_id","producto", "valor", "fecha_inicio", "fecha_fin", "activo"], 
+                               usecols=["precio_id","producto", "valor", "fecha_inicio", "fecha_fin", "activo"],
             )
             
             df['fecha_inicio'] = pd.to_datetime(df['fecha_inicio'])
@@ -41,7 +41,7 @@ class ServiceCargarDataInventario:
                 
                 precio = Precio(
                     producto = productoObj,
-                    precio = row['precio'],
+                    valor = row['valor'],
                     fecha_inicio = row['fecha_inicio'],
                     fecha_fin = row['fecha_fin'],
                     activo = row['activo'],

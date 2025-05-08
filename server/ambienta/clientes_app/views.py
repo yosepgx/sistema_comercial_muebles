@@ -2,9 +2,20 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework import status
-
+from rest_framework import viewsets
 from .services import ServiceCargarDataClientes  
+from .models import DocumentoID, Contacto
+from .serializers import DocumentoIDSerializer, ContactoSerializer
 import openpyxl
+
+#DocumentoID -> Contacto
+class DocumentoIDViewSet(viewsets.ModelViewSet):
+    queryset = DocumentoID.objects.all()
+    serializer_class = DocumentoIDSerializer
+
+class ContactoViewSet(viewsets.ModelViewSet):
+    queryset = Contacto.objects.all()
+    serializer_class = ContactoSerializer
 
 class CargarDataClienteView(APIView):
     parser_classes = (MultiPartParser, FormParser)  

@@ -68,10 +68,10 @@ class ServiceCargarDataClientes:
             for _, row in df.iterrows():
                 cont = Contacto.objects.get(id=row['contacto'])
                 doc = DocumentoID(
-                    tipo = row['tipo'],
+                    #tipo = row['tipo'],
                     cod_dni = None if pd.isna(row['cod_dni']) else row['cod_dni'],
                     cod_ruc = None if pd.isna(row['cod_ruc']) else row['cod_ruc'],
-                    cod_ce = None if pd.isna(row['cod_ce']) else row['cod_ce'] ,
+                    #cod_ce = None if pd.isna(row['cod_ce']) else row['cod_ce'] ,
                     contacto= cont,
                     activo= row['activo'],
                 )

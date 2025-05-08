@@ -38,6 +38,10 @@ class Contacto(models.Model):
     
     def __str__(self):
         return f"{self.nombre} ({self.get_tipo_interes_display()})"
+    
+    def delete(self):
+        self.activo = False
+        self.save()
 
 
 class DocumentoID(models.Model):
@@ -51,12 +55,16 @@ class DocumentoID(models.Model):
         (TIPOCE, 'CE'),
     ]
 
-    tipo = models.CharField(max_length=3, choices=TIPO_DOCUMENTO_CHOICES)
+    #tipo = models.CharField(max_length=3, choices=TIPO_DOCUMENTO_CHOICES, blank=True, null=True)
     cod_dni = models.CharField(max_length=8, blank=True, null=True)
     cod_ruc = models.CharField(max_length=11, blank=True, null=True)
-    cod_ce = models.CharField(max_length=9, blank=True, null=True)
-    contacto = models.ForeignKey(Contacto, on_delete=models.CASCADE, related_name='documentos')
+    #cod_ce = models.CharField(max_length=9, blank=True, null=True)
+    contacto = models.OneToOneField(Contacto, on_delete=models.CASCADE, related_name='documento')
     activo = models.BooleanField(default=True)
     def __str__(self):
         return f"{self.tipo}: {self.contacto.nombre}"
+    
+    def delete(self):
+        self.activo = False
+        self.save()
 
