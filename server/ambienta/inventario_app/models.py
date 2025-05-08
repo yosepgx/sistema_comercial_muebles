@@ -1,12 +1,22 @@
 from django.db import models
+from django.utils import timezone
+from datetime import datetime, timedelta
+from django.db.models import Q
+from rest_framework import serializers
 
-#categoria -> producto -> almacen -> inventario
+#categoria -> producto -> precio -> almacen -> inventario
 class CategoriaProducto(models.Model):
     descripcion = models.CharField(max_length=255)
     activo = models.BooleanField(default=True)
 
     def __str__(self):
         return self.descripcion
+    
+    def delete(self, *args, **kwargs):
+        self.activo = False
+        self.save()
+        #for producto in self.productos_rel.all():
+        #    producto.delete()
 
 class Producto(models.Model):
     UNIDAD_MEDIDA_CHOICES = [
@@ -92,13 +102,36 @@ class Producto(models.Model):
 
     def __str__(self):
         return self.nombre
+    
+    def delete(self, *args, **kwargs):
+        self.activo = False
+        self.save()
+        #los precios relacionados tambien podrian desactivarse
+        #el inventario relacionado tambien podria desactivarse
+        #for inventario in self.registros_inventario:
+        #    inventario.delete()
+
+
+    @property
+    def precio(self):
+        precio_activo = self.precio.filter(activo=True).first()
+        if precio_activo:
+            return precio_activo.valor
+        return None
 
 class Precio (models.Model):
-    producto = models.ForeignKey(Producto, on_delete=models.CASCADE, related_name="precios_de_producto")
-    precio = models.DecimalField(max_digits=10, decimal_places=2, null=False)
-    fecha_inicio = models.DateTimeField(null=False)
+    producto = models.ForeignKey(Producto, on_delete=models.CASCADE, related_name="precios")
+    valor = models.DecimalField(max_digits=10, decimal_places=2, null=False)
+    fecha_inicio = models.DateTimeField(default=timezone.now,null=False)
     fecha_fin = models.DateTimeField(null=False)
     activo = models.BooleanField(default=True, null=False)
+
+    def __str__(self):
+        return f"{self.producto.nombre} - {self.valor} desde {self.fecha_inicio}"
+    
+    def delete(self, *args, **kwargs):
+        self.activo = False
+        self.save()
 
 class Almacen(models.Model):
     TIPOALMACEN = 'almacen'
@@ -114,16 +147,27 @@ class Almacen(models.Model):
     activo = models.BooleanField(default=True)
     def __str__(self):
         return self.nombre
+    
+    def delete(self, *args, **kwargs):
+        self.activo = False
+        self.save()
+        #el inventario podria desactivarse
 
+#al activar un producto se tiene que activar sus regitros
 class Inventario(models.Model):
-    producto = models.ForeignKey(Producto, on_delete=models.CASCADE)
+    producto = models.ForeignKey(Producto, on_delete=models.CASCADE, related_name="registros_inventario")
     almacen = models.ForeignKey(Almacen, on_delete=models.CASCADE)
     cantidad_disponible = models.PositiveIntegerField()
     cantidad_comprometida = models.PositiveIntegerField()
+    activo = models.BooleanField(default=True)
 
     class Meta:
         unique_together = ('producto', 'almacen')  # Evita duplicados del mismo producto en la misma ubicación
 
     def __str__(self):
         return f"{self.producto} - {self.almacen} ({self.cantidad_disponible})"
+    
+    def delete(self, *args, **kwargs):
+        self.activo = False
+        self.save()
 
