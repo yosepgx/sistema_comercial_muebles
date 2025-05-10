@@ -1,8 +1,13 @@
-from django.urls import path
-from .views import CargarOportunidadesView, CargarCotizacionDetalleView, CargarCotizacionView
+from django.urls import path, include
+from .views import CotizacionDetalleViewSet, CotizacionViewSet,OportunidadViewSet
+from rest_framework.routers import DefaultRouter
+
+router = DefaultRouter()
+#oportunidad -> cotizacion -> cotizacionDetalle 
+router.register(r'oportunidad', OportunidadViewSet)
+router.register(r'cotizacion', CotizacionViewSet)
+router.register(r'cotizacion-detalle', CotizacionDetalleViewSet)
 
 urlpatterns = [
-    #path('cargar-oportunidades/', CargarOportunidadesView.as_view(), name='cargar-oportunidades'),
-    #path('cargar-cotizacion-detalle/', CargarCotizacionDetalleView.as_view(), name='cargar-cotizacion-detalle'),
-    #path('cargar-cotizacion/', CargarCotizacionView.as_view(), name='cargar-cotizacion'),
+    path('', include(router.urls)),
 ]
