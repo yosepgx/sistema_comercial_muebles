@@ -3,12 +3,22 @@ from django.views.decorators.csrf import csrf_exempt
 from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework import status
+from rest_framework import status, viewsets
 from .services import ServiceCargarDataVenta  
+from .models import Pedido, PedidoDetalle
+from .serializers import PedidoSerializer, PedidoDetalleSerializer
 from oportunidades_app.services import ServiceCargarDatosOportunidades
 import openpyxl
 
-# Create your views here.
+class PedidoViewSet(viewsets.ModelViewSet):
+    queryset = Pedido
+    serializer_class = PedidoSerializer
+
+class PedidoDetalleViewSet(viewsets.ModelViewSet):
+    queryset = PedidoDetalle
+    serializer_class = PedidoDetalleSerializer
+
+
 class CargarDataPedidosView(APIView):
     parser_classes = (MultiPartParser, FormParser)  
 

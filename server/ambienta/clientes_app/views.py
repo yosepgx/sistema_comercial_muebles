@@ -13,6 +13,7 @@ class DocumentoIDViewSet(viewsets.ModelViewSet):
     queryset = DocumentoID.objects.all()
     serializer_class = DocumentoIDSerializer
 
+#cuando haya un pedido despachado se revisa si el contacto asociado es un lead, si lo es entonces se lo pasa a cliente
 class ContactoViewSet(viewsets.ModelViewSet):
     queryset = Contacto.objects.all()
     serializer_class = ContactoSerializer

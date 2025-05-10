@@ -7,7 +7,7 @@ class DocumentoIDSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 class ContactoSerializer(serializers.ModelSerializer):
-    rdocumento = DocumentoIDSerializer(source= 'documento', readonly = True)
+    rdocumento = DocumentoIDSerializer(source= 'documento', read_only = True)
     class Meta:
         model = Contacto
         fields = '__all__'

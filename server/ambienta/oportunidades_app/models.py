@@ -31,6 +31,11 @@ class Oportunidad(models.Model):
     def __str__(self):
         return f"Oportunidad {self.id} - {self.estado_oportunidad}"
     
+    def delete(self):
+        self.activo = False
+        self.save()
+
+    
 class Cotizacion(models.Model):
     PROPUESTA = 'propuesta'
     ACEPTADA = 'aceptada'
@@ -48,7 +53,9 @@ class Cotizacion(models.Model):
     )
     
     oportunidad = models.ForeignKey(Oportunidad, on_delete=models.CASCADE, related_name="cotizaciones")
+    #TODO quitar validez y ponerlo en oportunidad
     validez = models.IntegerField()  # Número de días de validez
+
     monto_sin_impuesto = models.DecimalField(max_digits=12, decimal_places=2)
     monto_total = models.DecimalField(max_digits=12, decimal_places=2)
     monto_igv = models.DecimalField(max_digits=12, decimal_places=2)  # En valor no porcentaje
@@ -60,6 +67,9 @@ class Cotizacion(models.Model):
     def __str__(self):
         return f"Cotización {self.id} - {self.estado_cotizacion}"
     
+    def delete(self):
+        self.activo = False
+        self.save()
 
 class CotizacionDetalle(models.Model):
     producto = models.ForeignKey(Producto, on_delete=models.CASCADE, related_name="cotizaciones_detalle")
@@ -73,5 +83,9 @@ class CotizacionDetalle(models.Model):
 
     def __str__(self):
         return f"Detalle de Pedido {self.pedido.id} - {self.nombre_producto}"
+    
+    def delete(self):
+        self.activo = False
+        self.save()
 
 
