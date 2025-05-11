@@ -6,13 +6,11 @@ from clientes_app.models import Contacto
 
 class Oportunidad(models.Model):
 
-    NUEVA = 'nueva'
     EN_NEGOCIACION = 'negociacion'
     GANADO = 'ganado'
     PERDIDO = 'perdido'
     
     ESTADO_OPORTUNIDAD_CHOICES = [
-        (NUEVA, 'Nuevo'),
         (EN_NEGOCIACION, 'En Negociación'),
         (GANADO, 'Ganado'),
         (PERDIDO, 'Perdido'),
@@ -21,10 +19,10 @@ class Oportunidad(models.Model):
     contacto = models.ForeignKey(Contacto, on_delete=models.CASCADE)
     #sede = models.ForeignKey(Sede, on_delete=models.CASCADE) #TODO: agregar model Sede
     valor_neto = models.DecimalField(max_digits=12, decimal_places=2)
-    fecha_contacto = models.DateField()
+    fecha_contacto = models.DateField(auto_now_add=True)
     vendedor_asignado = models.IntegerField(null=True, blank=True)  # TODO: Debería ser ForeignKey a un modelo Usuario si existe
     estado_oportunidad = models.CharField(
-        max_length=20, choices=ESTADO_OPORTUNIDAD_CHOICES, default=NUEVA
+        max_length=20, choices=ESTADO_OPORTUNIDAD_CHOICES, default=EN_NEGOCIACION
     )
     activo = models.BooleanField(default=True)
 
@@ -39,12 +37,10 @@ class Oportunidad(models.Model):
 class Cotizacion(models.Model):
     PROPUESTA = 'propuesta'
     ACEPTADA = 'aceptada'
-    RECHAZADA = 'rechazada'
 
     ESTADO_COTIZACION_CHOICES = [
         (PROPUESTA, 'Propuesta'),
         (ACEPTADA, 'Aceptada'),
-        (RECHAZADA, 'Rechazada'),
     ]
 
     fecha = models.DateField(auto_now_add=True)

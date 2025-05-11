@@ -5,7 +5,7 @@ from rest_framework import status, viewsets
 from rest_framework.exceptions import ValidationError
 from .models import Oportunidad,Cotizacion, CotizacionDetalle
 from .serializers import OportunidadSerializer, CotizacionSerializer, CotizacionDetalleSerializer
-from ventas_app.models import Pedido
+from ventas_app.models import Pedido, PedidoDetalle
 from django.db import transaction
 
 #oportunidad -> cotizacion -> cotizacionDetalle -> pedido -> pedidoDetalle
@@ -76,10 +76,23 @@ class CotizacionViewSet(viewsets.ModelViewSet):
             monto_igv = cotizacion.monto_igv,
             descuento_adicional = cotizacion.descuento_adicional,
             observaciones = cotizacion.observaciones,
-            direccion = cotizacion.direccion,
+            direccion = cotizacion.direccion_entrega,
             activo = True
         )
-        return pedido
+
+        # Copiar cada línea de detalle de la cotización al pedido
+        for detalle in cotizacion.detalles.all():
+            PedidoDetalle.objects.create(
+            pedido=pedido,
+            producto=detalle.producto,
+            cantidad=detalle.cantidad,
+            descuento=detalle.descuento,
+            subtotal=detalle.subtotal,
+            nrolinea=detalle.nrolinea,
+            activo = detalle.activo,
+        )
+        
+        return Response({"pedido": pedido}, status=status.HTTP_200_OK)
 
 class CotizacionDetalleViewSet(viewsets.ModelViewSet):
     queryset = CotizacionDetalle.objects.all()
