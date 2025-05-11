@@ -42,8 +42,9 @@ export default function productoPage(){
                     columns={columns}
                     odata={data}
                     placeholder={"Buscar por codigo, nombre o categoria de producto"}
+                    canExport ={true}
+                    canFilterActivo = {true}
                 ></DataTable>
-                
             </MainWrap>
         </ProtectedRoute>
     </>

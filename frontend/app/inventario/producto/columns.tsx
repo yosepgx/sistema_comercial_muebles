@@ -35,6 +35,11 @@ export const columns: ColumnDef<TProducto>[] = [
         filterFn: "includesString",
       },
     {
+        accessorKey: "activo",
+        header: "Activo",
+        cell: info => info.row.original.activo ? 'Activo' : 'Inactivo',
+      },
+    {
       accessorKey: "action",
       header: "Acciones",
       enableGlobalFilter: false,
