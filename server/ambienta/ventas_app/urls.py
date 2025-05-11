@@ -1,12 +1,13 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-from ventas_app import views
+from ventas_app.views import CargarDataPedidosView, PedidoViewSet, PedidoDetalleViewSet
 
 router = DefaultRouter()
-#router.register(r'categoria', views.CategoriaProductoViewSet)
+router.register(r'pedido', PedidoViewSet)
+router.register(r'pedido-detalle', PedidoDetalleViewSet)
 
 urlpatterns = [
-    #path('', include(router.urls)),
-    path('cargar-data-pedidos/', views.CargarDataPedidosView.as_view(), name='cargar-data-pedidos'),
+    path('', include(router.urls)),
+    path('cargar-data-pedidos/', CargarDataPedidosView.as_view(), name='cargar-data-pedidos'),
 ]
 

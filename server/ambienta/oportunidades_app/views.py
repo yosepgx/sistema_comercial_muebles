@@ -2,9 +2,11 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework import status, viewsets
+from rest_framework.exceptions import ValidationError
 from .models import Oportunidad,Cotizacion, CotizacionDetalle
 from .serializers import OportunidadSerializer, CotizacionSerializer, CotizacionDetalleSerializer
 from ventas_app.models import Pedido
+from django.db import transaction
 
 #oportunidad -> cotizacion -> cotizacionDetalle -> pedido -> pedidoDetalle
 #TODO: agregar vigencia a las oportunidades
@@ -28,32 +30,33 @@ class CotizacionViewSet(viewsets.ModelViewSet):
         partial = kwargs.pop('partial', False)
         instance = self.get_object()
         
-        estado_anterior = instance.estado
+        estado_anterior = instance.estado_cotizacion
         
         serializer = self.get_serializer(instance, data=request.data, partial=partial)
         serializer.is_valid(raise_exception=True)
         
         nuevo_estado = request.data.get('estado_cotizacion', estado_anterior)
         
-        if estado_anterior != Cotizacion.ACEPTADA and nuevo_estado == Cotizacion.ACEPTADA:
-            # Verificar si ya hay otra cotización aceptada para la misma oportunidad
-            oportunidad = instance.oportunidad
-            if Cotizacion.objects.filter(oportunidad=oportunidad, estado='aceptada').exclude(id=instance.id).exists():
-                raise ValidationError("Ya existe una cotización aceptada para esta oportunidad.")
-                return Response({"mensaje": "ya hay una cotizacion aceptada"}, status= status.HTTP_405_METHOD_NOT_ALLOWED)
-            
-            # 1. Actualizar la oportunidad a estado 'ganada'
-            if instance.oportunidad:
+        with transaction.atomic():
+            if estado_anterior != Cotizacion.ACEPTADA and nuevo_estado == Cotizacion.ACEPTADA:
+#               Verificar si ya hay otra cotización aceptada para la misma oportunidad
                 oportunidad = instance.oportunidad
-                oportunidad.estado = Oportunidad.GANADO
-                oportunidad.save()
+                if Cotizacion.objects.filter(oportunidad=oportunidad, estado_cotizacion='aceptada').exclude(id=instance.id).exists():
+                    raise ValidationError("Ya existe una cotización aceptada para esta oportunidad.")
+                    return Response({"mensaje": "ya hay una cotizacion aceptada"}, status= status.HTTP_405_METHOD_NOT_ALLOWED)
                 
-            # 2. Crear un pedido con la información de la cotización
-            self.crear_pedido_desde_cotizacion(instance)
+#               1. Actualizar la oportunidad a estado 'ganada'
+                if instance.oportunidad:
+                    oportunidad = instance.oportunidad
+                    oportunidad.estado_oportunidad = Oportunidad.GANADO
+                    oportunidad.save()
+                    
+#               2. Crear un pedido con la información de la cotización
+                self.crear_pedido_desde_cotizacion(instance)
+            
+            self.perform_update(serializer)
         
-        self.perform_update(serializer)
-        
-        return Response(serializer.data)
+        return Response(serializer.data, status=status.HTTP_200_OK)
     
     def crear_pedido_desde_cotizacion(self, cotizacion):
         """

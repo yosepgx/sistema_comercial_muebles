@@ -33,6 +33,10 @@ class Pedido(models.Model):
 
     def __str__(self):
         return f"Pedido {self.id} - {self.estado_pedido}"
+    
+    def delete(self):
+        self.activo = False
+        self.save()
 
 
 class PedidoDetalle(models.Model):
@@ -47,5 +51,8 @@ class PedidoDetalle(models.Model):
     def __str__(self):
         return f"Detalle de Pedido {self.pedido.id} - {self.nombre_producto}"
 
+    def delete(self):
+        self.activo = False
+        self.save()
 
 
