@@ -26,7 +26,7 @@ class InventarioSerializer(serializers.ModelSerializer):
 #cada vez que traemos un precio debe de ser el ultimo que esta activo
 #cada vez que guardamos un precio este desactiva el anterior fija el inicio como ahora, el final como el por defecto o el indicado
 class ProductoSerializer(serializers.ModelSerializer):
-    rprecio_actual = serializers.FloatField(source= 'producto.precio', read_only = True)
+    rprecio_actual = serializers.FloatField(source= 'precio', read_only = True)
     rhistorial_precio = PrecioSerializer (source = "precios", many=True, read_only = True)
     rcategoria_producto= CategoriaProductoSerializer ( source = "categoria", read_only = True)
     class Meta:

@@ -7,7 +7,7 @@ import { useEffect, useState } from "react";
 import { columns } from "./columns";
 import { useAuth } from "@/context/authContext";
 import { GetProductoListApi } from "./api/productoApis";
-import { TProducto } from "./api/productoTypes";
+import { TProducto } from "./types/productoTypes";
 
 export default function productoPage(){
     const [data, setData] = useState<TProducto[]>([])

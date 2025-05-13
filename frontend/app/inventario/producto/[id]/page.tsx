@@ -7,6 +7,22 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { useState } from "react";
 import { Input } from '@/components/ui/input';
+import { ProtectedRoute } from '@/components/protectedRoute';
+import MainWrap from '@/components/mainwrap';
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import HistorialPrecio from './HistorialPrecio';
+import { UNIDADES_MEDIDA } from '@/constants/unidadesMedidaConstants';
 
 const formSchema = z.object({
   codigo: z.string().min(1),
@@ -16,7 +32,7 @@ const formSchema = z.object({
   precioFechaFin: z.string().min(1),
   categoria: z.string(),
   unidad: z.string(),
-  activo: z.enum(["Activo", "Inactivo"]),
+  activo: z.enum(["true", "false"]),
   igv: z.string(),
   afectoIgv: z.enum(["10", "20", "30"]),
   descripcion: z.string().optional()
@@ -24,14 +40,13 @@ const formSchema = z.object({
 
 type FormValues = z.infer<typeof formSchema>;
 
-const categorias = ["Comedores", "Sillas", "Otros"];
 const unidades = ["Unidades (Bienes)", "Servicios"];
-const enumActivo = ["Activo", "Inactivo"];
+
 
 export default function ProductoDetailPage() {
-  const {crrProduct} = useProductoContext()
+  const {crrProduct, categorias} = useProductoContext()
   const {user, ct} = useAuth()
-  const {register, handleSubmit, formState: { errors },} = useForm<FormValues>({
+  const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       codigo: crrProduct?`${crrProduct.id}`:"",
@@ -41,64 +56,243 @@ export default function ProductoDetailPage() {
       precioFechaFin: crrProduct?`${crrProduct.id}`:"",
       categoria: crrProduct?`${crrProduct.categoria}`:"",
       unidad: crrProduct?`${crrProduct.umedida_sunat}`:"Unidades (Bienes)",
-      activo: crrProduct?"Inactivo":"Activo",
+      activo: crrProduct?"true":"false",
       igv: crrProduct?`${crrProduct.igv}`:"0.18",
-      afectoIgv: crrProduct?`30`:"10", //10 es afecto
+      afectoIgv: crrProduct?`${crrProduct.codigo_afecion_igv}`:"10", //10 es afecto
       descripcion: crrProduct?`${crrProduct.descripcion}`:""
     },
   });
-
-  
   const router = useRouter()
+
   const onSubmit = (data: FormValues) => {
     console.log("Guardando producto:", data);
     // Aquí se puede hacer un POST o PUT al backend
   };
-
+  //className="p-4 space-y-4  rounded-md"
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="p-4 space-y-4  rounded-md">
-      <h2 className="text-xl font-bold">Detalles</h2>
-      <div className="grid grid-cols-2 gap-4">
+    <ProtectedRoute>
+      <MainWrap>
+      <Tabs defaultValue="formulario">
+        <TabsList className="grid w-full grid-cols-2">
+          <TabsTrigger value= "formulario">Formulario</TabsTrigger>
+          <TabsTrigger value= "precios">Historial de precios</TabsTrigger>
+        </TabsList>
         
-        <Input className="p-2 rounded" {...register("codigo")} placeholder="Código" disabled />
-        <Input className="p-2 rounded" {...register("precio")} placeholder="Precio" />
+        <TabsContent value = "formulario">
+          <h2 className="text-xl font-bold">Detalles</h2>
+          <Form {...form}>
 
-        <Input className="p-2 rounded" {...register("nombre")} placeholder="Nombre" />
-        <div className="flex gap-2">
-          <Input className="p-2 rounded w-1/2" {...register("precioFechaInicio")} placeholder="Fecha Inicio" />
-          <Input className="p-2 rounded w-1/2" {...register("precioFechaFin")} placeholder="Fecha Fin" />
-        </div>
-
-        <select className="p-2 rounded" {...register("categoria")}>{categorias.map(c => <option key={c}>{c}</option>)}</select>
-        <select className="p-2 rounded" {...register("unidad")}>{unidades.map(u => <option key={u}>{u}</option>)}</select>
-
-        <select className="p-2 rounded" {...register("activo")}> 
-          <option value="Activo">Activo</option>
-          <option value="Inactivo">Inactivo</option>
-        </select>
-
-        <select className="p-2 rounded" {...register("igv")}> 
-          <option value="0.18">0.18</option>
-          <option value="0">0</option>
-        </select>
-
-        <div className="col-span-2">
-          <label className="block mb-2">Afecto a IGV</label>
-          <div className="flex gap-4">
-            <label><Input type="radio" value="10" {...register("afectoIgv")} /> Afecto</label>
-            <label><Input type="radio" value="20" {...register("afectoIgv")} /> Inafecto</label>
-            <label><Input type="radio" value="30" {...register("afectoIgv")} /> Exonerado</label>
+          <form onSubmit={form.handleSubmit(onSubmit)} >
+            <div className="grid grid-cols-2 gap-4">
+            <FormField
+              control = {form.control}
+              name = "codigo"
+              render={({field}) => (
+                <FormItem className='flex flex-col'>
+                  <FormLabel> Codigo</FormLabel>
+                  <FormControl>
+                    <Input type = "number" {...field}/>
+                  </FormControl>
+                  <FormMessage className="min-h-[24px]"/>
+                </FormItem>
+              )}
+            />
+            <FormField
+              control = {form.control}
+              name = "precio"
+              render={({field}) => (
+                <FormItem className='flex flex-col'>
+                  <FormLabel> Precio</FormLabel>
+                  <FormControl>
+                    <Input type = "number" {...field}/>
+                  </FormControl>
+                  <FormMessage className="min-h-[24px]"/>
+                </FormItem>
+              )}
+            />
+            <FormField
+              control = {form.control}
+              name = "nombre"
+              render={({field}) => (
+                <FormItem className='flex flex-col'>
+                  <FormLabel> Nombre</FormLabel>
+                  <FormControl>
+                    <Input type = "text" {...field}/>
+                  </FormControl>
+                  <FormMessage className="min-h-[24px]"/>
+                </FormItem>
+              )}
+            />
+            <div className='flex grid-rows-2 gap-4'>
+            <FormField
+              control = {form.control}
+              name = "precioFechaInicio"
+              render={({field}) => (
+                <FormItem className='flex flex-col'>
+                  <FormLabel> Fecha de Inicio</FormLabel>
+                  <FormControl>
+                    <Input type = "date" {...field}/>
+                  </FormControl>
+                  <FormMessage className="min-h-[24px]"/>
+                </FormItem>
+              )}
+            />
+            <FormField
+              control = {form.control}
+              name = "precioFechaFin"
+              render={({field}) => (
+                <FormItem className='flex flex-col'>
+                  <FormLabel> Fecha de Fin</FormLabel>
+                  <FormControl>
+                    <Input type = "date" {...field}/>
+                  </FormControl>
+                  <FormMessage className="min-h-[24px]"/>
+                </FormItem>
+              )}
+            />
+            </div>
+            <FormField
+              control = {form.control}
+              name = "categoria"
+              render={({field}) => (
+                <FormItem className='flex flex-col'>
+                  <FormLabel> Categoria</FormLabel>
+                  <Select onValueChange = {field.onChange} defaultValue={field.value}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Seleccionar categoria de producto"/>
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {categorias.map(c => <SelectItem key={c?.id} value={c?.id.toString()}>{c?.descripcion}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage className="min-h-[24px]"/>
+                </FormItem>
+              )}
+            />
+            <FormField
+              control = {form.control}
+              name = "unidad"
+              render={({field}) => (
+                <FormItem className='flex flex-col'>
+                  <FormLabel>Unidad</FormLabel>
+                  <Select onValueChange = {field.onChange} defaultValue={field.value}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Seleccionar unidad de medida"/>
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {UNIDADES_MEDIDA.map(u => <SelectItem key={u.codigo} value={u.codigo}>{u.descripcion}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage className="min-h-[24px]"/>
+                </FormItem>
+              )}
+            />
+            <FormField
+              control = {form.control}
+              name = "activo"
+              render={({field}) => (
+                <FormItem className='flex flex-col'>
+                  <FormLabel>Activo</FormLabel>
+                  <Select onValueChange = {field.onChange} defaultValue={field.value}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="activo o inactivo"/>
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value='true'>Activo</SelectItem>
+                      <SelectItem value='false'>Inactivo</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <FormMessage className="min-h-[24px]"/>
+                </FormItem>
+              )}
+            />
+            <FormField
+              control = {form.control}
+              name = "igv"
+              render={({field}) => (
+                <FormItem className='flex flex-col'>
+                  <FormLabel>IGV</FormLabel>
+                  <FormControl>
+                    <Input type = "number" {...field}/>
+                  </FormControl>
+                  <FormMessage className="min-h-[24px]"/>
+                </FormItem>
+              )}
+            />
+            <FormField
+              control = {form.control}
+              name = "afectoIgv"
+              render={({field}) => (
+                <FormItem className='flex flex-col'>
+                  <FormLabel>Tipo de affección de igv:</FormLabel>
+                  <FormControl>
+                    <RadioGroup
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                      className="flex flex-col space-y-1"
+                    >
+                      <FormItem className="flex items-center space-x-3 space-y-0">
+                        <FormControl>
+                          <RadioGroupItem value="10" />
+                        </FormControl>
+                        <FormLabel>
+                          Afecto
+                        </FormLabel>
+                      </FormItem>
+                      <FormItem className="flex items-center space-x-3 space-y-0">
+                        <FormControl>
+                          <RadioGroupItem value="20" />
+                        </FormControl>
+                        <FormLabel>
+                          Inafecto
+                        </FormLabel>
+                      </FormItem>
+                      <FormItem className="flex items-center space-x-3 space-y-0">
+                        <FormControl>
+                          <RadioGroupItem value="30" />
+                        </FormControl>
+                        <FormLabel>Exonerado</FormLabel>
+                      </FormItem>
+                    </RadioGroup>
+                  </FormControl>
+                  <FormMessage className="min-h-[24px]"/>
+                </FormItem>
+              )}
+            />
+            <FormField
+              control = {form.control}
+              name = "descripcion"
+              render={({field}) => (
+                <FormItem className='flex flex-col'>
+                  <FormLabel>Descripcion</FormLabel>
+                  <FormControl>
+                    <Input type = "text" placeholder='Opcional'{...field}/>
+                  </FormControl>
+                  <FormMessage className="min-h-[24px]"/>
+                </FormItem>
+              )}
+            />
+            
           </div>
-        </div>
 
-        <textarea className="p-2 rounded col-span-2" {...register("descripcion")} placeholder="Descripción" />
-      </div>
-
-      <div className="flex justify-end gap-4 mt-4">
-        <button type="button" className="bg-orange-400 px-4 py-2 rounded" onClick={()=> router.push('/inventario/producto')}>Cancelar</button>
-        <button type="submit" className="bg-blue-600 text-white px-4 py-2 rounded">Guardar</button>
-      </div>
-    </form>
+          <div className="flex justify-end gap-4 mt-4">
+            <button type="button" className="bg-orange-400 px-4 py-2 rounded" onClick={()=> router.push('/inventario/producto')}>Cancelar</button>
+            <button type="submit" className="bg-blue-600 text-white px-4 py-2 rounded">Guardar</button>
+          </div>
+        </form>
+        </Form>
+        </TabsContent>
+        <TabsContent value = "precios"><label>Hola</label></TabsContent>
+      </Tabs>
+      
+    </MainWrap>
+  </ProtectedRoute>
   );
 }
 

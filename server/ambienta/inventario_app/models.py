@@ -114,7 +114,7 @@ class Producto(models.Model):
 
     @property
     def precio(self):
-        precio_activo = self.precio.filter(activo=True).first()
+        precio_activo = self.precios.filter(activo=True).first()
         if precio_activo:
             return precio_activo.valor
         return None

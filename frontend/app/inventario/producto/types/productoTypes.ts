@@ -8,8 +8,17 @@ const Producto = z.object({
     categoria : z.number(),
     igv : z.number(),
     afecto_igv : z.boolean(),
-    codigo_afecion_igv : z.string(),
+    codigo_afecion_igv : z.enum(["10","20","30"]),
     activo : z.boolean(),
 });
 
+const Categoria = z.object({
+    id: z.number(),
+    descripcion: z.string(),
+    activo: z.boolean()
+})
+
+
+
 export type TProducto = z.infer<typeof Producto>;
+export type TCategoria = z.infer<typeof Categoria>;
