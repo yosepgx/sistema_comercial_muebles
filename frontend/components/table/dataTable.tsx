@@ -26,6 +26,7 @@ import { Input } from "@/components/ui/input"
 import { useSkipper } from "./useSkipper"
 import CustomButton from "../customButtom"
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
+import { useRouter } from "next/navigation"
 
 declare module '@tanstack/react-table' {
   interface TableMeta<TData extends RowData> {
@@ -48,6 +49,8 @@ interface DataTableProps<TData, TValue> {
   canFilterActivo?: boolean
   canExport?: boolean
   canFilterDate?: boolean
+  canCreate?: boolean
+  directionCreate?: string
 }
 
 export function DataTable<TData, TValue>({
@@ -60,6 +63,8 @@ export function DataTable<TData, TValue>({
     canFilterActivo,
     canExport,
     canFilterDate,
+    canCreate,
+    directionCreate,
   }: DataTableProps<TData, TValue>) {
 
     const [sorting, setSorting] = React.useState<SortingState>([])
@@ -71,6 +76,7 @@ export function DataTable<TData, TValue>({
     const [fechaDesde, setFechaDesde] = React.useState<Date| null>(null);
     const [fechaHasta, setFechaHasta] = React.useState<Date| null>(null);
     
+    const router = useRouter()
     const table = useReactTable({
       data,
       columns,
@@ -134,9 +140,9 @@ export function DataTable<TData, TValue>({
       debugTable: true,
     })
     
-    const filtroEstado = table
-    .getColumn('activo')
-    ?.getFilterValue() as string | undefined
+    const columnaActivo = table.getAllColumns().find(col => col.id === 'activo');
+    const filtroEstado = columnaActivo?.getFilterValue() as string | undefined;
+
 
     return (
     <div>
@@ -163,7 +169,9 @@ export function DataTable<TData, TValue>({
           <option value="false">Inactivo</option>
         </select>}
 
-      
+      {canCreate && <CustomButton onClick={()=> {
+        if(directionCreate)router.push(directionCreate);
+      }}>Crear</CustomButton>}
       {canExport && <CustomButton onClick={()=>{
         const exportData = table.getFilteredRowModel().rows.map(row => row.original)
         console.log("data a exportar:", exportData)

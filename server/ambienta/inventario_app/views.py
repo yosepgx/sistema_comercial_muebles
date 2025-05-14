@@ -67,6 +67,18 @@ class ProductoViewSet(viewsets.ModelViewSet):
         precio_valor = self.request.data.get('precio')
         if precio_valor:
             self._create_precio(producto, precio_valor)
+        
+        # Si no es servicio, crear inventario en cada almacén activo
+        if not producto.es_servicio:
+            almacenes = Almacen.objects.filter(activo=True)
+            for almacen in almacenes:
+                Inventario.objects.create(
+                    producto=producto,
+                    almacen=almacen,
+                    cantidad_disponible=0,
+                    cantidad_comprometida=0
+                )
+                
     
     def perform_update(self, serializer):
         # Actualizar el producto

@@ -6,7 +6,9 @@ import { Pen, Pencil, Save, Trash2 } from 'lucide-react';
 import { ArrowUpDown } from "lucide-react"
 import * as inventarioApis from "./api/InventarioApis"
 import React from "react";
-import { Inventario } from "./api/InventarioApis";
+import { Inventario, UpdateInventarioAPI } from "./api/InventarioApis";
+import { useProductoContext } from "../producto/productoContext";
+import { useAuth } from "@/context/authContext";
   
 export const defaultColumnCell: Partial<ColumnDef<Inventario>> = {
     cell: ({ getValue, row: { index }, column: { id }, table }) => {
@@ -77,18 +79,12 @@ export const columns: ColumnDef<Inventario>[] = [
           <Save
           className="cursor-pointer hover:text-blue-600 transition-colors duration-200 active:scale-90" 
           onClick={()=>{
-            const setter = table.options.meta?.saveFunction
-            setter && setter()}}
-          />
-          <Trash2
-          className="cursor-pointer hover:text-red-500 transition"
-          onClick={() => {
-            const setter = table.options.meta?.setData
-            const rowIndex = row.index
-            if(window.confirm("Esta seguro que desea borrar?"))
-            setter && setter(prev => prev.filter((_, i) => i !== rowIndex))
+            const data = row.original
+            const ct = localStorage.getItem('access-token')
+            UpdateInventarioAPI(ct, data.id, data)
           }}
-        />
+          />
+          
         </div>
         )
       },
