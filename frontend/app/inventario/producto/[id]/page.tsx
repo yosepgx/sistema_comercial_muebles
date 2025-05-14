@@ -311,7 +311,7 @@ export default function ProductoDetailPage() {
         </form>
         </Form>
         </TabsContent>
-        <TabsContent value = "precios"><label>Hola</label></TabsContent>
+        <TabsContent value = "precios"><HistorialPrecio/></TabsContent>
       </Tabs>
       
     </MainWrap>

@@ -1,3 +1,4 @@
+"use client"
 import MainWrap from "@/components/mainwrap";
 import Navbar from "@/components/navbar";
 import { ProtectedRoute } from "@/components/protectedRoute";
