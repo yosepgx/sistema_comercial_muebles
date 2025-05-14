@@ -123,7 +123,7 @@ class Precio (models.Model):
     producto = models.ForeignKey(Producto, on_delete=models.CASCADE, related_name="precios")
     valor = models.DecimalField(max_digits=10, decimal_places=2, null=False)
     fecha_inicio = models.DateTimeField(default=timezone.now,null=False)
-    fecha_fin = models.DateTimeField(null=False)
+    fecha_fin = models.DateTimeField(null=True)
     activo = models.BooleanField(default=True, null=False)
 
     def __str__(self):

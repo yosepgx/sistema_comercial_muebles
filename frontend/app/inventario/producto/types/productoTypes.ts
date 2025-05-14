@@ -1,15 +1,17 @@
 import {z} from "zod";
 const Producto = z.object({
     id: z.number(),
-    umedida_sunat : z.string(),
     nombre : z.string(),
+    umedida_sunat : z.string(),
     descripcion : z.string(),
-    precio : z.number(),
     categoria : z.number(),
     igv : z.number(),
     afecto_igv : z.boolean(),
     codigo_afecion_igv : z.enum(["10","20","30"]),
+    es_servicio: z.boolean(),
     activo : z.boolean(),
+    precio : z.number(),
+    rprecio_actual: z.number().optional(),
 });
 
 const Categoria = z.object({

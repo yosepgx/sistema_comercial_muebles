@@ -54,7 +54,7 @@ export async function GetProductoDetailApi(token:string | null, id: number){
 }
 export async function PostProductoAPI(token:string | null, data: TProducto){
     try {
-        const response = await customFetch(token,`inventario/producto`, {
+        const response = await customFetch(token,`inventario/producto/`, {
             
             method: "POST",
             headers:{
@@ -79,7 +79,7 @@ export async function PostProductoAPI(token:string | null, data: TProducto){
 
 export async function DeleteProductoAPI(token:string | null, id: number){
     try {
-        const response = await customFetch(token, `inventario/producto/${id}`, {
+        const response = await customFetch(token, `inventario/producto/${id}/`, {
             
             method: "DELETE",
             headers:{
@@ -102,7 +102,7 @@ export async function DeleteProductoAPI(token:string | null, id: number){
 
 export async function UpdateProductoAPI(token:string | null, id: number, data: TProducto) {
     try {
-      const response = await customFetch(token, `inventario/producto/${id}`, {
+      const response = await customFetch(token, `inventario/producto/${id}/`, {
         method: "PUT",
         headers: {
           'Content-Type': 'application/json',

@@ -11,6 +11,7 @@ from rest_framework import viewsets
 import openpyxl
 from rest_framework.decorators import action
 from django.utils import timezone
+from dateutil.relativedelta import relativedelta
 
 #TODO: FALTA AGREGAR PERMISOS PARA ESTOS VIEW
 
@@ -35,7 +36,7 @@ class ProductoViewSet(viewsets.ModelViewSet):
     queryset = Producto.objects.filter(categoria__activo = True)
     serializer_class = ProductoSerializer
 
-    def _create_precio(self, producto, valor):
+    def _create_precio(self, producto, newvalor):
         """Método privado para crear un nuevo precio y desactivar los anteriores"""
         # Desactivar precios anteriores
         precios_antiguos = Precio.objects.filter(
@@ -51,8 +52,10 @@ class ProductoViewSet(viewsets.ModelViewSet):
         # Crear nuevo precio activo
         return Precio.objects.create(
             producto=producto,
-            precio=valor,
+            valor=newvalor,
             fecha_inicio=timezone.now(),
+            fecha_fin = timezone.now() + relativedelta(years=1)
+,
             activo=True
         )
     

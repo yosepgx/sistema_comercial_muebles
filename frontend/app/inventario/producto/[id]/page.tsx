@@ -22,21 +22,36 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import HistorialPrecio from './HistorialPrecio';
-import { UNIDADES_MEDIDA } from '@/constants/unidadesMedidaConstants';
+import { UNIDADES_MEDIDA, UNIDADES_MEDIDA_BUSCA } from '@/constants/unidadesMedidaConstants';
+import { UpdateProductoAPI } from '../api/productoApis';
 
 const formSchema = z.object({
-  codigo: z.string().min(1),
-  nombre: z.string().min(1),
-  precio: z.string().min(1),
-  precioFechaInicio: z.string().min(1),
-  precioFechaFin: z.string().min(1),
+  id: z.string().min(1),
+  nombre: z.string().min(1, {message: "El nombre es obligatorio"}),
+  umedida_sunat: z.string(),
+  descripcion: z.string(),
   categoria: z.string(),
-  unidad: z.string(),
-  activo: z.enum(["true", "false"]),
-  igv: z.string(),
-  afectoIgv: z.enum(["10", "20", "30"]),
-  descripcion: z.string().optional()
+  igv: z.string().refine(val => !isNaN(parseFloat(val)) && parseFloat(val) >= 0, {
+    message: "IGV debe ser un número válido mayor o igual a 0"
+  }),
+  afecto_igv: z.boolean(),
+  codigo_afecion_igv: z.enum(["10", "20", "30"]),
+  es_servicio: z.boolean(),
+  activo: z.enum(["true", "false"]),//CAMBIAR
+  precio: z.string().refine(
+    val => !isNaN(parseFloat(val)) && parseFloat(val) > 0, {
+    message: "El precio debe ser un número mayor a 0"
+  }),
 });
+
+const formSendSchema = formSchema.transform(data => ({
+    ...data,
+    id: parseInt(data.id, 10),
+    precio: parseFloat(data.precio),
+    igv: parseFloat(data.igv),
+    categoria: parseInt(data.categoria, 10),
+    activo: data.activo === "true",
+  }));
 
 type FormValues = z.infer<typeof formSchema>;
 
@@ -44,29 +59,37 @@ const unidades = ["Unidades (Bienes)", "Servicios"];
 
 
 export default function ProductoDetailPage() {
-  const {crrProduct, categorias} = useProductoContext()
+  const {crrProduct, categorias, editing} = useProductoContext()
   const {user, ct} = useAuth()
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      codigo: crrProduct?`${crrProduct.id}`:"",
+      id: crrProduct?`${crrProduct.id}`:"",
       nombre: crrProduct?`${crrProduct.nombre}`:"",
-      precio: crrProduct?`${crrProduct.precio}`:"",
-      precioFechaInicio: crrProduct?`${crrProduct.id}`:"",
-      precioFechaFin: crrProduct?`${crrProduct.id}`:"",
+      precio: crrProduct?`${crrProduct.rprecio_actual}`:"",
       categoria: crrProduct?`${crrProduct.categoria}`:"",
-      unidad: crrProduct?`${crrProduct.umedida_sunat}`:"Unidades (Bienes)",
+      umedida_sunat: crrProduct?`${crrProduct.umedida_sunat}`:"Unidades (Bienes)",
       activo: crrProduct?"true":"false",
       igv: crrProduct?`${crrProduct.igv}`:"0.18",
-      afectoIgv: crrProduct?`${crrProduct.codigo_afecion_igv}`:"10", //10 es afecto
+      afecto_igv: crrProduct?crrProduct.afecto_igv:true,
+      codigo_afecion_igv: crrProduct?`${crrProduct.codigo_afecion_igv}`:"10", //10 es afecto
+      es_servicio: crrProduct?crrProduct.es_servicio: false,
       descripcion: crrProduct?`${crrProduct.descripcion}`:""
     },
   });
   const router = useRouter()
 
-  const onSubmit = (data: FormValues) => {
-    console.log("Guardando producto:", data);
-    // Aquí se puede hacer un POST o PUT al backend
+  const onSubmit = (rawdata: FormValues) => {
+    const data = formSendSchema.parse(rawdata)
+
+    data.codigo_afecion_igv === "10"? data.afecto_igv= true: data.afecto_igv= false;
+    data.umedida_sunat === 'ZZ'? data.es_servicio = true: data.es_servicio = false;
+    //console.log("Guardando producto:", data);
+    if(crrProduct){
+      UpdateProductoAPI(ct,crrProduct.id,data)
+      router.back()
+    }
+    
   };
   //className="p-4 space-y-4  rounded-md"
   return (
@@ -86,12 +109,12 @@ export default function ProductoDetailPage() {
             <div className="grid grid-cols-2 gap-4">
             <FormField
               control = {form.control}
-              name = "codigo"
+              name = "id"
               render={({field}) => (
                 <FormItem className='flex flex-col'>
                   <FormLabel> Codigo</FormLabel>
                   <FormControl>
-                    <Input type = "number" {...field}/>
+                    <Input type = "number" {...field} disabled={true}/>
                   </FormControl>
                   <FormMessage className="min-h-[24px]"/>
                 </FormItem>
@@ -123,7 +146,7 @@ export default function ProductoDetailPage() {
                 </FormItem>
               )}
             />
-            <div className='flex grid-rows-2 gap-4'>
+            {/* <div className='flex grid-rows-2 gap-4'>
             <FormField
               control = {form.control}
               name = "precioFechaInicio"
@@ -150,7 +173,7 @@ export default function ProductoDetailPage() {
                 </FormItem>
               )}
             />
-            </div>
+            </div> */}
             <FormField
               control = {form.control}
               name = "categoria"
@@ -173,7 +196,7 @@ export default function ProductoDetailPage() {
             />
             <FormField
               control = {form.control}
-              name = "unidad"
+              name = "umedida_sunat"
               render={({field}) => (
                 <FormItem className='flex flex-col'>
                   <FormLabel>Unidad</FormLabel>
@@ -227,7 +250,7 @@ export default function ProductoDetailPage() {
             />
             <FormField
               control = {form.control}
-              name = "afectoIgv"
+              name = "codigo_afecion_igv"
               render={({field}) => (
                 <FormItem className='flex flex-col'>
                   <FormLabel>Tipo de affección de igv:</FormLabel>

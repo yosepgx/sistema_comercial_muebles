@@ -52,7 +52,7 @@ export async function GetCategoriaDetailApi(token:string | null, id: number){
         return null;
     }
 }
-export async function PostProductoAPI(token:string | null, data: TCategoria){
+export async function PostCategoriaAPI(token:string | null, data: TCategoria){
     try {
         const response = await customFetch(token,`inventario/categoria`, {
             
@@ -77,7 +77,7 @@ export async function PostProductoAPI(token:string | null, data: TCategoria){
     }
 }
 
-export async function DeleteProductoAPI(token:string | null, id: number){
+export async function DeleteCategoriaAPI(token:string | null, id: number){
     try {
         const response = await customFetch(token, `inventario/categoria/${id}`, {
             
@@ -100,9 +100,9 @@ export async function DeleteProductoAPI(token:string | null, id: number){
     }
 }
 
-export async function UpdateProductoAPI(token:string | null, id: number, data: TCategoria) {
+export async function UpdateCategoriaAPI(token:string | null, id: number, data: TCategoria) {
     try {
-      const response = await customFetch(token, `inventario/categoria/${id}`, {
+      const response = await customFetch(token, `inventario/categoria/${id}/`, {
         method: "PUT",
         headers: {
           'Content-Type': 'application/json',
