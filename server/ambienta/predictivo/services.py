@@ -81,7 +81,7 @@ class ServicePrediccion:
 
     def calcular_indices_estacionales(self, monthly_product_quantities: pd.DataFrame, meses_horizonte: list) -> dict:
         
-        def calcular_indice_producto_mes(product: str, mes: str) -> float:
+        def calcular_indice_producto_mes(product: int, mes: str) -> float:
             
             product_data = monthly_product_quantities[monthly_product_quantities['producto'] == product]
             
@@ -140,9 +140,11 @@ class ServicePrediccion:
             if not last_year_data.empty and not prev_year_data.empty:
                 avg_last_year = last_year_data['cantidad'].sum()/12
                 avg_prev_year = prev_year_data['cantidad'].sum()/12
-                
+                #usare suavizador laplace(alpha) para reducir el factor. Ademas un acotador
                 if avg_last_year > 0 and avg_prev_year > 0:
-                    G_i = avg_last_year / avg_prev_year
+                    alpha = 10
+                    G_i = (avg_last_year + alpha) / (avg_prev_year + alpha)
+                    G_i = min(max(G_i, 0.5), 2.0)
                 else:
                     G_i = 1
             else:
@@ -166,24 +168,37 @@ class ServicePrediccion:
             promedio_movil = product_data['cantidad'].tail(meses_historico).mean()
             
             # Aplicar factor de crecimiento
-            factor_crecimiento = factores_crecimiento.get(product, 1)
+            factor_anual = factores_crecimiento.get(product, 1)
+            factor_mensual = factor_anual ** (1/12)
             
-            # Predecir para cada mes del horizonte
-            predicciones_producto = {
-                mes: (promedio_movil * indice * factor_crecimiento)
-                for mes, indice in indices_estacionales[product].items()
-            }
-            #if product == 'comedor de 4 sillas':
-            #    print(promedio_movil,indices_estacionales[product].items() , factor_crecimiento)
-            #predicciones[(product, nombre_producto)] = predicciones_producto
+             # Representación de trazabilidad
+            promedio_str = f"{promedio_movil:.2f}"
+            factor_str = f"Anual: {factor_anual:.3f}, Mensual: {factor_mensual:.4f}"
+            indices_dict = indices_estacionales.get(product, {})
+            indices_str = ', '.join(f"{mes}: {round(indice, 2)}" for mes, indice in indices_dict.items())
 
-            for mes, cantidad in predicciones_producto.items():
-                predicciones.append({
-                    'nombre_producto': nombre_producto,
-                    'Producto': product,
-                    'Mes': mes,
-                    'Cantidad_Predicha': round(cantidad)
-                })
+            # Cálculo totalizado
+            total_predicho = 0
+            for i, (mes, indice) in enumerate(indices_dict.items()):
+                crecimiento_compuesto = factor_mensual ** (i + 1)
+                total_predicho += promedio_movil * indice * crecimiento_compuesto
+
+            predicciones.append({
+                'nombre_producto': nombre_producto,
+                'Producto': product,
+                'Cantidad_Predicha': round(total_predicho),
+                'Promedio_Movil': promedio_str,
+                'Indices_Estacionales': indices_str,
+                'Factor_Crecimiento': factor_str
+            })
+
+            # if product == 60:
+            #     print(product_data['cantidad'].tail(meses_historico))
+            #     print("la media es", product_data['cantidad'].tail(meses_historico).mean())
+            #     print("indice ", indices_estacionales[product].items())
+            #     print("factor ", factor_mensual)
+
+            
         
         # Convertir a DataFrame para mejor visualización
         #df_predicciones = []
@@ -203,7 +218,7 @@ class ServicePrediccion:
 
         #desactivar para mostrar cantidad_predicha para cada mes
         # Totalizar por producto (sumar cantidades)
-        df = df.groupby(['Producto','nombre_producto'], as_index=False)['Cantidad_Predicha'].sum()
+        #df = df.groupby(['Producto','nombre_producto'], as_index=False)['Cantidad_Predicha'].sum()
         #df.to_excel("C:\\Users\\jhosept\\Documents\\GitHub\\sistema_comercial_muebles\\server\\ambienta\\predictivo\\requisiciones\\prediccion.xlsx")
         return df
 
@@ -281,22 +296,27 @@ class ServicePrediccion:
             nombre_producto = row['nombre_producto']
             producto = row["Producto"]
             cantidad_predicha = row["Cantidad_Predicha"]
-            
+            promedio_movil = row["Promedio_Movil"]
+            indices_estacionales = row["Indices_Estacionales"]
+            factor_crecimiento = row["Factor_Crecimiento"]
             # Obtener stock disponible y pedidos actuales, con valor 0 si no existe
             stock_disponible = stock_actual.get(producto, 0) + compras_actuales.get(producto, 0)
             
             # Calcular cantidad requerida
             cantidad_requerida = max(0, cantidad_predicha - stock_disponible)
             
-            #if cantidad_requerida > 0:
-            requisicion.append({
-                    "Producto": producto,
-                    "Nombre_Producto": nombre_producto,
-                    "Cantidad_Predicha": cantidad_predicha,
-                    "Stock_Actual": stock_actual.get(producto, 0),
-                    "Pedidos_Transito": compras_actuales.get(producto, 0),
-                    "Cantidad_Requerida": cantidad_requerida
-                })
+            if cantidad_requerida > 0:
+                requisicion.append({
+                        "Codigo de producto": producto,
+                        "Nombre de Producto": nombre_producto,
+                        "Cantidad Predicha": cantidad_predicha,
+                        "Stock Actual": stock_actual.get(producto, 0),
+                        "Pedidos en Transito": compras_actuales.get(producto, 0),
+                        "Cantidad Recomendada": cantidad_requerida,
+                        "Promedio Movil": promedio_movil,
+                        "Indices Estacionales": indices_estacionales,
+                        "Factor Crecimiento": factor_crecimiento
+                    })
         
         df = pd.DataFrame(requisicion)
         
