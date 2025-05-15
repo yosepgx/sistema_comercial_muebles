@@ -61,7 +61,7 @@ export async function GetInventarioDetailApi(token:string | null, id: number){
 }
 export async function PostInventarioAPI(token:string | null, data: Inventario){
     try {
-        const response = await customFetch(token,`inventario/inventario`, {
+        const response = await customFetch(token,`inventario/inventario/`, {
             
             method: "POST",
             headers:{
@@ -86,7 +86,7 @@ export async function PostInventarioAPI(token:string | null, data: Inventario){
 
 export async function DeleteInventarioAPI(token:string | null, id: number){
     try {
-        const response = await customFetch(token, `inventario/inventario/${id}`, {
+        const response = await customFetch(token, `inventario/inventario/${id}/`, {
             
             method: "DELETE",
             headers:{
@@ -109,7 +109,7 @@ export async function DeleteInventarioAPI(token:string | null, id: number){
 
 export async function UpdateInventarioAPI(token:string | null, id: number, data: Inventario) {
     try {
-      const response = await customFetch(token, `inventario/inventario/${id}`, {
+      const response = await customFetch(token, `inventario/inventario/${id}/`, {
         
         method: "PUT",
         headers: {

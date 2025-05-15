@@ -1,9 +1,9 @@
 import { customFetch } from "@/components/customFetch";
-import { TProducto } from "../types/productoTypes";
+import { TCategoria } from "../types/productoTypes";
 
-export async function GetProductoListApi(token:string | null) {
+export async function GetCategoriaListApi(token:string | null) {
     try {
-        const response = await customFetch(token, `inventario/producto`, {
+        const response = await customFetch(token, `inventario/categoria`, {
             
             method: "get",
             headers:{
@@ -19,19 +19,19 @@ export async function GetProductoListApi(token:string | null) {
         }
         const data = await response.json();
         if (data) {
-            return data as TProducto[];
+            return data as TCategoria[];
         }
         return [];
         
     } catch (error) {
-        console.error("Error al obtener datos de productos:", error);
+        console.error("Error al obtener datos de categorias de producto:", error);
         return [];
     }
 }
 
-export async function GetProductoDetailApi(token:string | null, id: number){
+export async function GetCategoriaDetailApi(token:string | null, id: number){
     try {
-        const response = await customFetch(token,`inventario/producto/${id}`, {
+        const response = await customFetch(token,`inventario/categoria/${id}`, {
             
             method: "get",
             headers:{
@@ -45,16 +45,16 @@ export async function GetProductoDetailApi(token:string | null, id: number){
         }
 
         const data = await response.json();
-        return data as TProducto;
+        return data as TCategoria;
         
     } catch (error) {
-        console.error("Error al obtener datos de detalle de producto:", error);
+        console.error("Error al obtener datos de detalle de categorias de producto:", error);
         return null;
     }
 }
-export async function PostProductoAPI(token:string | null, data: TProducto){
+export async function PostCategoriaAPI(token:string | null, data: TCategoria){
     try {
-        const response = await customFetch(token,`inventario/producto/`, {
+        const response = await customFetch(token,`inventario/categoria`, {
             
             method: "POST",
             headers:{
@@ -69,17 +69,17 @@ export async function PostProductoAPI(token:string | null, data: TProducto){
         }
 
         const responseData = await response.json();
-        return responseData as TProducto;
+        return responseData as TCategoria;
         
     } catch (error) {
-        console.error("Error al guardar detalle de producto:", error);
+        console.error("Error al guardar detalle de categoria de producto:", error);
         return null;
     }
 }
 
-export async function DeleteProductoAPI(token:string | null, id: number){
+export async function DeleteCategoriaAPI(token:string | null, id: number){
     try {
-        const response = await customFetch(token, `inventario/producto/${id}/`, {
+        const response = await customFetch(token, `inventario/categoria/${id}`, {
             
             method: "DELETE",
             headers:{
@@ -95,14 +95,14 @@ export async function DeleteProductoAPI(token:string | null, id: number){
         return true;
         
     } catch (error) {
-        console.error(`Error al borrar registro de producto ${id}: `, error);
+        console.error(`Error al borrar categoria de producto ${id}: `, error);
         return false;
     }
 }
 
-export async function UpdateProductoAPI(token:string | null, id: number, data: TProducto) {
+export async function UpdateCategoriaAPI(token:string | null, id: number, data: TCategoria) {
     try {
-      const response = await customFetch(token, `inventario/producto/${id}/`, {
+      const response = await customFetch(token, `inventario/categoria/${id}/`, {
         method: "PUT",
         headers: {
           'Content-Type': 'application/json',
@@ -115,10 +115,10 @@ export async function UpdateProductoAPI(token:string | null, id: number, data: T
       }
   
       const responseData = await response.json();
-      return responseData as TProducto;
+      return responseData as TCategoria;
   
     } catch (error) {
-      console.error("Error al actualizar registro de inventario:", error);
+      console.error("Error al actualizar categoria de producto:", error);
       return null;
     }
   }

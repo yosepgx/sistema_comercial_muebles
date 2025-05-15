@@ -1,6 +1,8 @@
 "use client"
 import { usePathname, useRouter } from "next/navigation";
 import {createContext, useContext, useState, ReactNode, useEffect, SetStateAction, Dispatch} from "react"
+import { LocalizationProvider } from '@mui/x-date-pickers';
+import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 interface UserLogin{
     username: string;
     password: string;
@@ -153,9 +155,12 @@ export const AuthProvider = ({children}: {children: ReactNode}) => {
     }
 
     return(
-        <AuthContext.Provider value = {{user, fetchLogin, fetchLogout, fetchRefresh, ct, isAuth, isLoading}}>
-            {children}
-        </AuthContext.Provider>
+        <LocalizationProvider dateAdapter={AdapterDateFns}>
+            <AuthContext.Provider value = {{user, fetchLogin, fetchLogout, fetchRefresh, ct, isAuth, isLoading}}>
+                {children}
+            </AuthContext.Provider>
+        </LocalizationProvider>
+
     );
 }
 

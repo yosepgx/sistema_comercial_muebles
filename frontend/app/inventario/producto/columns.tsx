@@ -3,9 +3,9 @@
 import { ColumnDef } from "@tanstack/react-table"
 import { Eye, Trash2 } from 'lucide-react';
 import React from "react";
-import { TProducto } from "./api/productoTypes";
+import { TProducto } from "./types/productoTypes";
 import { useProductoContext } from "./productoContext";
-
+import { UNIDADES_MEDIDA_BUSCA } from "@/constants/unidadesMedidaConstants";
 
 export const columns: ColumnDef<TProducto>[] = [
     {
@@ -20,19 +20,39 @@ export const columns: ColumnDef<TProducto>[] = [
       filterFn: "includesString",
     },
     {
-      accessorKey: "precio",
-      header: "Precio",
+      accessorKey: "rprecio_actual",
+      header: () => <div className="text-center">Precio</div>,
       enableGlobalFilter: false,
+      cell: ({ getValue }) => {
+        const valor = getValue() as number;
+        return (
+      <div className="flex justify-center">
+          <div className="text-right">{valor?.toFixed(2) ?? "0.00"}</div>
+        </div>
+        );
+      },
     },
     {
       accessorKey: "umedida_sunat",
       header: "UM",
       enableGlobalFilter: false,
+      cell: ({ getValue }) => {
+      const codigo = getValue() as string;
+      if (typeof codigo === "string") {
+        return UNIDADES_MEDIDA_BUSCA[codigo] ?? codigo;
+      }
+      return codigo;
+      },
     },
     {
-        accessorKey: "categoria",
+        accessorKey: "rcategoria_producto.descripcion",
         header: "Categoria",
         filterFn: "includesString",
+      },
+    {
+        accessorKey: "activo",
+        header: "Activo",
+        cell: info => info.row.original.activo ? 'Activo' : 'Inactivo',
       },
     {
       accessorKey: "action",

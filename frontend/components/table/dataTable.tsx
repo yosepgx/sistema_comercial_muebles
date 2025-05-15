@@ -24,6 +24,9 @@ import {RowData} from '@tanstack/react-table'
 import { DataTablePagination } from "./tablePagination"
 import { Input } from "@/components/ui/input"
 import { useSkipper } from "./useSkipper"
+import CustomButton from "../customButtom"
+import { DatePicker } from '@mui/x-date-pickers/DatePicker';
+import { useRouter } from "next/navigation"
 
 declare module '@tanstack/react-table' {
   interface TableMeta<TData extends RowData> {
@@ -43,6 +46,11 @@ interface DataTableProps<TData, TValue> {
   saveFunction?: Function
   viewFunction?: Function
   placeholder?: string
+  canFilterActivo?: boolean
+  canExport?: boolean
+  canFilterDate?: boolean
+  canCreate?: boolean
+  directionCreate?: string
 }
 
 export function DataTable<TData, TValue>({
@@ -52,6 +60,11 @@ export function DataTable<TData, TValue>({
     saveFunction,
     viewFunction,
     placeholder,
+    canFilterActivo,
+    canExport,
+    canFilterDate,
+    canCreate,
+    directionCreate,
   }: DataTableProps<TData, TValue>) {
 
     const [sorting, setSorting] = React.useState<SortingState>([])
@@ -59,7 +72,11 @@ export function DataTable<TData, TValue>({
     const [data, setData] = React.useState(() => odata)
     const [editableRowIndex, setEditableRowIndex] = React.useState<number | null>(null)
     const [globalFilter, setGlobalFilter] = React.useState("")
-
+    const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([])
+    const [fechaDesde, setFechaDesde] = React.useState<Date| null>(null);
+    const [fechaHasta, setFechaHasta] = React.useState<Date| null>(null);
+    
+    const router = useRouter()
     const table = useReactTable({
       data,
       columns,
@@ -73,7 +90,31 @@ export function DataTable<TData, TValue>({
       state: {
         sorting,
         globalFilter,
+        columnFilters,
       },
+      filterFns:{
+        fechaEntre: (row, columnId, value) => {
+          const rowDate = new Date(row.getValue(columnId));
+          const [inicio, fin] = value; // value será [fechaInicio, fechaFin]
+          if (inicio && rowDate < inicio) return false;
+          if (fin && rowDate > fin) return false;
+          return true;
+        },
+        rangoActivo: (row, columnId, value) => {
+          const [filtroInicio, filtroFin] = value; // rango que selecciona el usuario
+          const inicio = new Date(row.original.fecha_inicio);
+          const fin = new Date(row.original.fecha_fin);
+
+          // Si no hay filtro, no filtrar
+          if (!filtroInicio && !filtroFin) return true;
+
+          if (filtroInicio && fin < filtroInicio) return false;
+          if (filtroFin && inicio > filtroFin) return false;
+
+          return true;
+        },
+      },
+      onColumnFiltersChange: setColumnFilters,
       autoResetPageIndex,
       meta: {
         updateData: (rowIndex, columnId, value) => {
@@ -99,10 +140,13 @@ export function DataTable<TData, TValue>({
       debugTable: true,
     })
     
+    const columnaActivo = table.getAllColumns().find(col => col.id === 'activo');
+    const filtroEstado = columnaActivo?.getFilterValue() as string | undefined;
+
 
     return (
     <div>
-      <div className="flex items-center py-4">
+      <div className="flex items-center py-4 flex-row">
       <Input
         value={globalFilter ?? ""}
         onChange={(e) => setGlobalFilter(e.target.value)}
@@ -110,6 +154,71 @@ export function DataTable<TData, TValue>({
         className="border px-3 py-1 rounded w-full max-w-sm"
         
       />
+      {canFilterActivo && 
+      <select
+          value={filtroEstado ?? ''}
+          onChange={e => {
+            const val = e.target.value
+            table.getColumn('activo')?.setFilterValue(
+              val === '' ? undefined : val === 'true'
+            )
+          }}
+        >
+          <option value="">Todos</option>
+          <option value="true">Activo</option>
+          <option value="false">Inactivo</option>
+        </select>}
+
+      {canCreate && <CustomButton onClick={()=> {
+        if(directionCreate)router.push(directionCreate);
+      }}>Crear</CustomButton>}
+      {canExport && <CustomButton onClick={()=>{
+        const exportData = table.getFilteredRowModel().rows.map(row => row.original)
+        console.log("data a exportar:", exportData)
+        
+        /*fetch('/api/exportar', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(exportData),
+        })
+        .then(res => {
+          if (!res.ok) throw new Error("Error exportando")
+          return res.blob() // o .json() según tu API
+        })
+        .then(blob => {
+          // Por ejemplo, descargar un archivo
+          const url = window.URL.createObjectURL(blob)
+          const a = document.createElement('a')
+          a.href = url
+          a.download = 'exportacion.xlsx'
+          a.click()
+          window.URL.revokeObjectURL(url)
+        })
+        .catch(err => console.error(err))
+        */
+      }}
+      >Exportar</CustomButton>}
+      {canFilterDate && (<div>
+          <DatePicker
+            value={fechaDesde}
+            onChange={(date) => {
+              setFechaDesde(date);
+              table.getColumn("fecha_inicio")?.setFilterValue([date, fechaHasta]);
+            }}
+            label="Fecha inicio"
+          />
+
+          <DatePicker
+            value={fechaHasta}
+            onChange={(date) => {
+              setFechaHasta(date);
+              table.getColumn("fecha_inicio")?.setFilterValue([fechaDesde, date]);
+            }}
+            label="Fecha fin"
+          />
+          </div>)}
       </div>
       <div className="rounded-md border">
         <Table>
