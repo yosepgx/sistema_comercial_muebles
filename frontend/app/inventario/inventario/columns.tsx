@@ -4,9 +4,9 @@ import { Button } from "@/components/ui/button";
 import { ColumnDef } from "@tanstack/react-table"
 import { Pen, Pencil, Save, Trash2 } from 'lucide-react';
 import { ArrowUpDown } from "lucide-react"
-import * as inventarioApis from "./api/InventarioApis"
+import * as inventarioApis from "../../../api/InventarioApis"
 import React from "react";
-import { Inventario, UpdateInventarioAPI } from "./api/InventarioApis";
+import { Inventario, UpdateInventarioAPI } from "../../../api/InventarioApis";
 import { useProductoContext } from "../producto/productoContext";
 import { useAuth } from "@/context/authContext";
 

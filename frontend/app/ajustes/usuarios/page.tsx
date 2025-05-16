@@ -3,7 +3,7 @@
 import MainWrap from "@/components/mainwrap"
 import { ProtectedRoute } from "@/components/protectedRoute"
 import { useEffect, useState } from "react"
-import { GetUsuarioListApi } from "../api/usuarioApis"
+import { GetUsuarioListApi } from "../../../api/usuarioApis"
 import { Tusuario } from "../types/ajusteTypes"
 import { useAuth } from "@/context/authContext"
 import { DataGrid, GridColDef } from '@mui/x-data-grid';

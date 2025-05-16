@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react"
 import { DataTable } from "@/components/table/dataTable"
 import { columns, defaultColumnCell } from "./Columns"
-import { GetInventarioListApi, Inventario, UpdateInventarioAPI } from "./api/InventarioApis"
+import { GetInventarioListApi, Inventario, UpdateInventarioAPI } from "../../../api/InventarioApis"
 import Navbar from "@/components/navbar"
 import { ProtectedRoute } from "@/components/protectedRoute"
 import { useAuth } from "@/context/authContext"

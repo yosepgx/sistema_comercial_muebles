@@ -19,7 +19,7 @@ import {
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { UNIDADES_MEDIDA, UNIDADES_MEDIDA_BUSCA } from '@/constants/unidadesMedidaConstants';
-import { PostProductoAPI, UpdateProductoAPI } from './api/productoApis';
+import { PostProductoAPI, UpdateProductoAPI } from '../../../api/productoApis';
 import { TProducto } from './types/productoTypes';
 const formSchema = z.object({
   id: z.string().min(1),

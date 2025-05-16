@@ -4,7 +4,7 @@ import { createContext, Dispatch, ReactNode, SetStateAction, useContext, useEffe
 import { TCategoria, TProducto } from "./types/productoTypes";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/authContext";
-import { GetCategoriaListApi } from "./api/categoriaApis";
+import { GetCategoriaListApi } from "../../../api/categoriaApis";
 
 
 interface ProductoContextType{

@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import CustomButton from "@/components/customButtom"
-import { GenerarRequisicionesApi, CargarInventarioApi, CargarClientesApi, CargarVentasApi, CargarComprasApi } from "./api/prediccionApis"
+import { GenerarRequisicionesApi, CargarInventarioApi, CargarClientesApi, CargarVentasApi, CargarComprasApi } from "../../api/prediccionApis"
 import { useRef, useState } from "react"
 import Navbar from "@/components/navbar"
 import { ProtectedRoute } from "@/components/protectedRoute"
