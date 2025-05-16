@@ -9,31 +9,36 @@ import React from "react";
 import { Inventario, UpdateInventarioAPI } from "./api/InventarioApis";
 import { useProductoContext } from "../producto/productoContext";
 import { useAuth } from "@/context/authContext";
-  
+
+
+// Componente separado
+const EditableCell: React.FC<any> = ({ getValue, row, column, table }) => {
+  const initialValue = getValue()
+  const [value, setValue] = React.useState(initialValue)
+
+  const onBlur = () => {
+    table.options.meta?.updateData(row.index, column.id, value)
+    table.options.meta?.setEditableRowIndex(null)
+  }
+
+  React.useEffect(() => {
+    setValue(initialValue)
+  }, [initialValue])
+
+  const isEditing = table.options.meta?.editableRowIndex === row.index
+
+  return (
+    <input
+      value={value as string}
+      onChange={(e) => setValue(e.target.value)}
+      onBlur={onBlur}
+      disabled={!isEditing}
+    />
+  )
+}
+
 export const defaultColumnCell: Partial<ColumnDef<Inventario>> = {
-    cell: ({ getValue, row: { index }, column: { id }, table }) => {
-      const initialValue = getValue()
-      const [value, setValue] = React.useState(initialValue)
-  
-      const onBlur = () => {
-        table.options.meta?.updateData(index, id, value)
-        table.options.meta?.setEditableRowIndex(null)
-      }
-  
-      React.useEffect(() => {
-        setValue(initialValue)
-      }, [initialValue])
-      
-      const isEditing = table.options.meta?.editableRowIndex === index
-      return (
-        <input
-          value={value as string}
-          onChange={e => setValue(e.target.value)}
-          onBlur={onBlur}
-          disabled = {!isEditing}
-        />
-      )
-    },
+    cell: (props) => <EditableCell {...props} />,
   }
 
 export const columns: ColumnDef<Inventario>[] = [

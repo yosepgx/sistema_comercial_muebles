@@ -104,7 +104,7 @@ export const DataTableMUI: React.FC<DataTableProps> = ({
         <Table stickyHeader aria-label="tabla de datos">
           <TableHead>
             <TableRow>
-              {columns.map((column) => (
+              {columns.map((column: any) => (
                 <TableCell
                   key={column.id}
                   align={column.align || 'left'}
@@ -127,7 +127,7 @@ export const DataTableMUI: React.FC<DataTableProps> = ({
                 .map((row) => {
                   return (
                     <TableRow hover role="checkbox" tabIndex={-1} key={row[idField]}>
-                      {columns.map((column) => {
+                      {columns.map((column :any) => {
                         const value = row[column.id];
                         return (
                           <TableCell key={column.id} align={column.align || 'left'}>

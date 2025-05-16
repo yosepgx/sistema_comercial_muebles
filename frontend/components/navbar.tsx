@@ -59,7 +59,7 @@ const itemsAjustes: IMenuItem[] = [
     },
     {
         label: "Usuarios",
-        href: "/usuarios"
+        href: "/ajustes/usuarios"
     },
     {
         label: "Zonas de Envio",
