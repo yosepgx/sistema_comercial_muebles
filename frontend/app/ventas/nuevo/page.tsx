@@ -3,11 +3,11 @@
 import MainWrap from "@/components/mainwrap"
 import { ProtectedRoute } from "@/components/protectedRoute"
 
-export default function DatosPage(){
+export default function VentaNuevaPage(){
     return (
         <ProtectedRoute>
             <MainWrap>
-                datos
+                venta nueva
             </MainWrap>
         </ProtectedRoute>
     )

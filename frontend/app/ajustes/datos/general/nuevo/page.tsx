@@ -3,11 +3,11 @@
 import MainWrap from "@/components/mainwrap"
 import { ProtectedRoute } from "@/components/protectedRoute"
 
-export default function DatosPage(){
+export default function GeneralNuevoPage(){
     return (
         <ProtectedRoute>
             <MainWrap>
-                datos
+                nuevo general
             </MainWrap>
         </ProtectedRoute>
     )
