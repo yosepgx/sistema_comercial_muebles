@@ -1,10 +1,11 @@
 import { customFetch } from "@/components/customFetch";
-import { Tusuario } from "../components/types/ajusteTypes";
+import { TSede } from "@/components/types/sede";
+import { z } from "zod";
 
 
-export async function GetUsuarioListApi(token:string | null) {
+export async function GetSedeListApi(token:string | null) {
     try {
-        const response = await customFetch(token, `usuarios/usuarios`, {
+        const response = await customFetch(token, `ajustes/sede`, {
             
             method: "get",
             headers:{
@@ -20,19 +21,19 @@ export async function GetUsuarioListApi(token:string | null) {
         }
         const data = await response.json();
         if (data) {
-            return data as Tusuario[];
+            return data as TSede[];
         }
         return [];
         
     } catch (error) {
-        console.error("Error al obtener datos de usuarios:", error);
+        console.error("Error al obtener datos de sedes:", error);
         return [];
     }
 }
 
-export async function GetUsuarioDetailApi(token:string | null, id: number){
+export async function GetSedeDetailApi(token:string | null, id: number){
     try {
-        const response = await customFetch(token,`usuarios/usuarios/${id}`, {
+        const response = await customFetch(token,`ajustes/sede/${id}`, {
             
             method: "get",
             headers:{
@@ -46,16 +47,16 @@ export async function GetUsuarioDetailApi(token:string | null, id: number){
         }
 
         const data = await response.json();
-        return data as Tusuario;
+        return data as TSede;
         
     } catch (error) {
-        console.error("Error al obtener datos de detalle de usuario:", error);
+        console.error("Error al obtener datos de detalle de sede:", error);
         return null;
     }
 }
-export async function PostUsuarioAPI(token:string | null, data: Tusuario){
+export async function PostSedeAPI(token:string | null, data: TSede){
     try {
-        const response = await customFetch(token,`usuarios/usuarios/`, {
+        const response = await customFetch(token,`ajustes/sede/`, {
             
             method: "POST",
             headers:{
@@ -70,17 +71,17 @@ export async function PostUsuarioAPI(token:string | null, data: Tusuario){
         }
 
         const responseData = await response.json();
-        return responseData as Tusuario;
+        return responseData as TSede;
         
     } catch (error) {
-        console.error("Error al guardar detalle de usuario:", error);
+        console.error("Error al guardar detalle de sede:", error);
         return null;
     }
 }
 
-export async function DeleteUsuarioAPI(token:string | null, id: number){
+export async function DeleteSedeAPI(token:string | null, id: number){
     try {
-        const response = await customFetch(token, `usuarios/usuarios/${id}/`, {
+        const response = await customFetch(token, `ajustes/sede/${id}/`, {
             
             method: "DELETE",
             headers:{
@@ -96,14 +97,14 @@ export async function DeleteUsuarioAPI(token:string | null, id: number){
         return true;
         
     } catch (error) {
-        console.error(`Error al borrar registro de usuario ${id}: `, error);
+        console.error(`Error al borrar sede ${id}: `, error);
         return false;
     }
 }
 
-export async function UpdateUsuarioAPI(token:string | null, id: number, data: Tusuario) {
+export async function UpdateSedeAPI(token:string | null, id: number, data: TSede) {
     try {
-      const response = await customFetch(token, `usuarios/usuarios/${id}/`, {
+      const response = await customFetch(token, `ajustes/sede/${id}/`, {
         method: "PUT",
         headers: {
           'Content-Type': 'application/json',
@@ -116,10 +117,10 @@ export async function UpdateUsuarioAPI(token:string | null, id: number, data: Tu
       }
   
       const responseData = await response.json();
-      return responseData as Tusuario;
+      return responseData as TSede;
   
     } catch (error) {
-      console.error("Error al actualizar registro de usuarios:", error);
+      console.error("Error al actualizar sede:", error);
       return null;
     }
   }

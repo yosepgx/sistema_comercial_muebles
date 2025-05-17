@@ -1,5 +1,5 @@
 import { customFetch } from "@/components/customFetch";
-import { Tusuario } from "../app/ajustes/types/ajusteTypes";
+import { Tusuario } from "../components/types/ajusteTypes";
 
 
 export async function GetRolListApi(token:string | null) {

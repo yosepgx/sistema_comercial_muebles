@@ -4,7 +4,7 @@ import MainWrap from "@/components/mainwrap"
 import { ProtectedRoute } from "@/components/protectedRoute"
 import { useEffect, useState } from "react"
 import { GetUsuarioListApi } from "../../../api/usuarioApis"
-import { Tusuario } from "../types/ajusteTypes"
+import { Tusuario } from "@/components/types/usuarioType"
 import { useAuth } from "@/context/authContext"
 import { DataGrid, GridColDef } from '@mui/x-data-grid';
 import { IconButton } from "@mui/material"

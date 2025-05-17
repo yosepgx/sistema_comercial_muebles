@@ -54,7 +54,7 @@ export async function GetCategoriaDetailApi(token:string | null, id: number){
 }
 export async function PostCategoriaAPI(token:string | null, data: TCategoria){
     try {
-        const response = await customFetch(token,`inventario/categoria`, {
+        const response = await customFetch(token,`inventario/categoria/`, {
             
             method: "POST",
             headers:{
@@ -79,7 +79,7 @@ export async function PostCategoriaAPI(token:string | null, data: TCategoria){
 
 export async function DeleteCategoriaAPI(token:string | null, id: number){
     try {
-        const response = await customFetch(token, `inventario/categoria/${id}`, {
+        const response = await customFetch(token, `inventario/categoria/${id}/`, {
             
             method: "DELETE",
             headers:{
