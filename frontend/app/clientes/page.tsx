@@ -1,5 +1,6 @@
 "use client"
 
+import { GetClienteListApi } from "@/api/clienteApis";
 import { GetRolListApi } from "@/api/rolesApis";
 import MainWrap from "@/components/mainwrap"
 import { ProtectedRoute } from "@/components/protectedRoute"
@@ -90,7 +91,7 @@ export default function ClientePage(){
     const {ct} = useAuth();
     const cargarDatos = async () => {
         try {
-        const res = await GetRolListApi(ct)
+        const res = await GetClienteListApi(ct)
         console.log("Datos cargados:", res)
         setData(res)
         } catch (error) {

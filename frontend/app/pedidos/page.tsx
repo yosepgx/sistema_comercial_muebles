@@ -12,6 +12,7 @@ import { Edit, EyeIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 import { TCotizacion } from "@/components/types/cotizacion";
 import { TPedido } from "@/components/types/Pedido";
+import { GetPedidoListApi } from "@/api/pedidoApis";
 
 const userColumns: GridColDef<TPedido>[] = [
     {   field: 'id', 
@@ -20,17 +21,17 @@ const userColumns: GridColDef<TPedido>[] = [
         flex: 1
     },
     {   field: 'fecha', 
-        headerName: 'Id',
+        headerName: 'Fecha de creacion',
         resizable: false,
         flex: 1
     },
     {   field: 'fechaentrega', 
-        headerName: 'Id',
+        headerName: 'Fecha de entrega',
         resizable: false,
         flex: 1
     },
     {   field: 'fecha_pago', 
-        headerName: 'Id',
+        headerName: 'Fecha de pago',
         resizable: false,
         flex: 1
     },
@@ -85,11 +86,7 @@ const userColumns: GridColDef<TPedido>[] = [
         resizable: false,
         flex: 1
     },
-    {   field: 'direccion_entrega', 
-        headerName: 'Id',
-        resizable: false,
-        flex: 1
-    },
+    
     {   field: 'activo', 
         headerName: 'Activo',
         resizable: false,
@@ -123,7 +120,7 @@ export default function PedidosPage(){
     const {ct} = useAuth();
     const cargarDatos = async () => {
         try {
-        const res = await GetRolListApi(ct)
+        const res = await GetPedidoListApi(ct)
         console.log("Datos cargados:", res)
         setData(res)
         } catch (error) {

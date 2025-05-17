@@ -1,6 +1,7 @@
 "use client"
 
 
+import { GetCategoriaListApi } from "@/api/categoriaApis";
 import { GetRolListApi } from "@/api/rolesApis";
 import { TCategoria } from "@/app/inventario/producto/types/productoTypes";
 import MainWrap from "@/components/mainwrap"
@@ -55,7 +56,7 @@ export default function CategoriasPage(){
     const {ct} = useAuth();
     const cargarDatos = async () => {
         try {
-        const res = await GetRolListApi(ct)
+        const res = await GetCategoriaListApi(ct)
         console.log("Datos cargados:", res)
         setData(res)
         } catch (error) {

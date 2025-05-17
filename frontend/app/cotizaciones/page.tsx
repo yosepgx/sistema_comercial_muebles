@@ -11,6 +11,7 @@ import { DataGrid, GridColDef } from "@mui/x-data-grid";
 import { Edit, EyeIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 import { TCotizacion } from "@/components/types/cotizacion";
+import { GetCotizacionListApi } from "@/api/cotizacionApis";
 
 const userColumns: GridColDef<TCotizacion>[] = [
     {   field: 'id', 
@@ -91,7 +92,7 @@ export default function CotizacionesPage(){
     const {ct} = useAuth();
     const cargarDatos = async () => {
         try {
-        const res = await GetRolListApi(ct)
+        const res = await GetCotizacionListApi(ct)
         console.log("Datos cargados:", res)
         setData(res)
         } catch (error) {

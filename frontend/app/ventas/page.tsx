@@ -13,6 +13,8 @@ import { useEffect, useState } from "react";
 import { TCotizacion } from "@/components/types/cotizacion";
 import { TOportunidad } from "@/components/types/oportunidad";
 import { TPedido } from "@/components/types/Pedido";
+import { GetCotizacionListApi } from "@/api/cotizacionApis";
+import { GetOportunidadListApi } from "@/api/oportunidadApis";
 
 const userColumns: GridColDef<TOportunidad>[] = [
     {   field: 'id', 
@@ -78,7 +80,7 @@ export default function OportunidadesPage(){
     const {ct} = useAuth();
     const cargarDatos = async () => {
         try {
-        const res = await GetRolListApi(ct)
+        const res = await GetOportunidadListApi(ct)
         console.log("Datos cargados:", res)
         setData(res)
         } catch (error) {
