@@ -56,7 +56,6 @@ export const AuthProvider = ({children}: {children: ReactNode}) => {
                 console.log("No hay token disponible");
                 return;
             }
-            setCt(token)
             const response = await fetch(`${ApiURL}usuarios/test_token`, {
                 method: 'GET',
                 headers: { 
@@ -86,7 +85,8 @@ export const AuthProvider = ({children}: {children: ReactNode}) => {
                 console.error("El usuario no está identificado");
                 return;
             }
-            
+
+            setCt(token)
             setUser(data.user);
             setIsAuth(true);
             //localStorage.setItem('user-data', JSON.stringify(data.user));
