@@ -5,7 +5,7 @@ const cliente = z.object({
     nombre: z.string(),
     correo: z.string(),
     telefono: z.string(),
-    tipoInteres: z.enum(["cliente","lead"]),
+    tipo_interes: z.enum(["cliente","lead"]),
     fechaConversion: z.date(),
     naturaleza: z.enum(["Natural","Empresa"]),
     cod_dni: z.string(),

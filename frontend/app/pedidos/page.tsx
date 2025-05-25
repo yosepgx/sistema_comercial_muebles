@@ -3,10 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
 import { DatePicker } from '@mui/x-date-pickers';
-import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
-import { LocalizationProvider } from "@mui/x-date-pickers";
-import { Box, FormControl, IconButton, InputLabel, MenuItem, Select, Typography } from "@mui/material";
-import { isAfter, isBefore, addDays } from "date-fns";
+import { FormControl, IconButton, InputLabel, MenuItem, Select } from "@mui/material";
 
 import { GetPedidoListApi } from "@/api/pedidoApis"; 
 import { useAuth } from "@/context/authContext"; 
@@ -16,13 +13,8 @@ import { TPedido } from "@/components/types/Pedido";
 import { Edit, EyeIcon } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { format } from 'date-fns';
+import { transformDateUTCHourToUserTime } from "@/components/transformDate";
 
-export function transformDateUTCHourToUserTime(value: string | Date): string {
-  if (!value) return '';
-  const date = new Date(value); // Esto ya convierte a la hora local del usuario
-  return format(date, 'dd/MM/yyyy HH:mm');
-}
 
 const Columns: GridColDef<TPedido>[] = [
     {   field: 'id', 
@@ -63,12 +55,12 @@ const Columns: GridColDef<TPedido>[] = [
     //     resizable: false,
     //     flex: 1
     // },
-    {   field: 'direccion_entrega', 
+    {   field: 'direccion', 
         headerName: 'Direccion Entrega',
         resizable: false,
         flex: 1
     },
-    {   field: 'cotizacion_id', 
+    {   field: 'cotizacion', 
         headerName: 'Codigo de Cotizacion',
         resizable: false,
         flex: 1

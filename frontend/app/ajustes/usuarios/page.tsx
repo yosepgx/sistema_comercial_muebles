@@ -31,6 +31,12 @@ const userColumns: GridColDef<Tusuario>[] = [
         resizable: false,
         flex: 1
     },
+    {   field: 'is_active', 
+        headerName: 'Activo', 
+        resizable: false,
+        flex: 1,
+        valueFormatter: (value) => (value? "Activo":"Inactivo"),
+    },
     {
     field: 'acciones',
     headerName: 'Acciones',

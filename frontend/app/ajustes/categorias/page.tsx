@@ -27,7 +27,8 @@ const userColumns: GridColDef<TCategoria>[] = [
     {   field: 'activo', 
         headerName: 'Estado', 
         resizable: false,
-        flex: 1
+        flex: 1,
+        valueFormatter: (value) => (value? "Activo":"Inactivo"),
     },
     {
     field: 'acciones',

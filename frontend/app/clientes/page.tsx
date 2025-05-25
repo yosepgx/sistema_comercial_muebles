@@ -4,6 +4,7 @@ import { GetClienteListApi } from "@/api/clienteApis";
 import { GetRolListApi } from "@/api/rolesApis";
 import MainWrap from "@/components/mainwrap"
 import { ProtectedRoute } from "@/components/protectedRoute"
+import { transformOnlyDate } from "@/components/transformDate";
 import { TCliente } from "@/components/types/clienteType";
 import { Trol } from "@/components/types/rolType";
 import { useAuth } from "@/context/authContext";
@@ -33,15 +34,16 @@ const userColumns: GridColDef<TCliente>[] = [
         resizable: false,
         flex: 1
     },
-    {   field: 'tipoInteres', 
+    {   field: 'tipo_interes', 
         headerName: 'Interes',
         resizable: false,
         flex: 1
     },
-    {   field: 'fechaConversion', 
+    {   field: 'fecha_conversion', 
         headerName: 'Fecha de conversion',
         resizable: false,
-        flex: 1
+        flex: 1,
+        valueFormatter: (value) => transformOnlyDate(value),
     },
     {   field: 'naturaleza', 
         headerName: 'Tipo de cliente',
@@ -61,7 +63,8 @@ const userColumns: GridColDef<TCliente>[] = [
     {   field: 'activo', 
         headerName: 'Estado',
         resizable: false,
-        flex: 1
+        flex: 1,
+        valueFormatter: (value) => (value? "Activo" : "Inactivo"),
     },
     {
     field: 'acciones',
