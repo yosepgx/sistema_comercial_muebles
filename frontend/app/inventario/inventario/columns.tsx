@@ -1,14 +1,9 @@
 "use client"
  
-import { Button } from "@/components/ui/button";
-import { ColumnDef } from "@tanstack/react-table"
-import { Pen, Pencil, Save, Trash2 } from 'lucide-react';
-import { ArrowUpDown } from "lucide-react"
-import * as inventarioApis from "../../../api/InventarioApis"
+import { ColumnDef } from "@tanstack/react-table";
+import { Pencil, Save } from 'lucide-react';
 import React from "react";
 import { Inventario, UpdateInventarioAPI } from "../../../api/InventarioApis";
-import { useProductoContext } from "../producto/productoContext";
-import { useAuth } from "@/context/authContext";
 
 
 // Componente separado

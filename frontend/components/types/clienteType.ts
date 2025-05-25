@@ -1,6 +1,6 @@
 import {string, z} from "zod"
 
-const cliente = z.object({
+export const cliente = z.object({
     id: z.number(),
     nombre: z.string(),
     correo: z.string(),

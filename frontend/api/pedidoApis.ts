@@ -1,5 +1,5 @@
 import { customFetch } from "@/components/customFetch";
-import { TPedido } from "@/components/types/Pedido";
+import { TPedido } from "@/components/types/pedido"; 
 
 export async function GetPedidoListApi(token:string | null) {
     try {

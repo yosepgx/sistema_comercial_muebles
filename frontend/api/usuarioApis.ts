@@ -1,5 +1,5 @@
 import { customFetch } from "@/components/customFetch";
-import { Tusuario } from "../components/types/ajusteTypes";
+import { Tusuario } from "@/components/types/usuarioType"; 
 
 
 export async function GetUsuarioListApi(token:string | null) {

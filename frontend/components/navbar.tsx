@@ -3,7 +3,7 @@
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 import { ReactNode } from "react";
-import { Home, Armchair, ShoppingBag, LineChart, BadgePercent, Settings, Bell } from "lucide-react";
+import { Home, Armchair, ShoppingBag, LineChart, BadgePercent, Settings, Bell, ChevronDown } from "lucide-react";
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/context/authContext";
@@ -101,6 +101,7 @@ function NavDropdown({ icon, label, items, pathname }: { icon: ReactNode; label:
       <DropdownMenuTrigger className={`flex items-center space-x-1 ${isActive ? "text-blue-500 font-bold" : "text-black hover:text-blue-500"}`}>
         {icon}
         <span>{label}</span>
+        <ChevronDown size={16} className="ml-1" />
       </DropdownMenuTrigger>
       <DropdownMenuContent>
         {items.map((item, index) => (

@@ -1,5 +1,5 @@
 import { customFetch } from "@/components/customFetch";
-import { Tusuario } from "../components/types/ajusteTypes";
+import { Trol } from "@/components/types/rolType"; 
 
 
 export async function GetRolListApi(token:string | null) {
@@ -20,7 +20,7 @@ export async function GetRolListApi(token:string | null) {
         }
         const data = await response.json();
         if (data) {
-            return data as Tusuario[];
+            return data as Trol[];
         }
         return [];
         
@@ -46,14 +46,14 @@ export async function GetRolDetailApi(token:string | null, id: number){
         }
 
         const data = await response.json();
-        return data as Tusuario;
+        return data as Trol;
         
     } catch (error) {
         console.error("Error al obtener datos de detalle de rol:", error);
         return null;
     }
 }
-export async function PostRolAPI(token:string | null, data: Tusuario){
+export async function PostRolAPI(token:string | null, data: Trol){
     try {
         const response = await customFetch(token,`usuarios/roles/`, {
             
@@ -70,7 +70,7 @@ export async function PostRolAPI(token:string | null, data: Tusuario){
         }
 
         const responseData = await response.json();
-        return responseData as Tusuario;
+        return responseData as Trol;
         
     } catch (error) {
         console.error("Error al guardar detalle de rol:", error);
@@ -101,7 +101,7 @@ export async function DeleteRolAPI(token:string | null, id: number){
     }
 }
 
-export async function UpdateRolAPI(token:string | null, id: number, data: Tusuario) {
+export async function UpdateRolAPI(token:string | null, id: number, data: Trol) {
     try {
       const response = await customFetch(token, `usuarios/roles/${id}/`, {
         method: "PUT",
@@ -116,7 +116,7 @@ export async function UpdateRolAPI(token:string | null, id: number, data: Tusuar
       }
   
       const responseData = await response.json();
-      return responseData as Tusuario;
+      return responseData as Trol;
   
     } catch (error) {
       console.error("Error al actualizar registro de roles:", error);
