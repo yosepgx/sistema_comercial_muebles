@@ -9,7 +9,7 @@ import { GetPedidoListApi } from "@/api/pedidoApis";
 import { useAuth } from "@/context/authContext"; 
 import { ProtectedRoute } from "@/components/protectedRoute";
 import MainWrap from "@/components/mainwrap";
-import { TPedido } from "@/components/types/Pedido";
+import { TPedido } from "@/components/types/pedido";
 import { Edit, EyeIcon } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
