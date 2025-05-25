@@ -1,13 +1,13 @@
 from rest_framework import serializers
-from .models import DocumentoID, Contacto
+from .models import Contacto
 
-class DocumentoIDSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = DocumentoID
-        fields = '__all__'
+# class DocumentoIDSerializer(serializers.ModelSerializer):
+#     class Meta:
+#         model = DocumentoID
+#         fields = '__all__'
 
 class ContactoSerializer(serializers.ModelSerializer):
-    rdocumento = DocumentoIDSerializer(source= 'documento', read_only = True)
+    #rdocumento = DocumentoIDSerializer(source= 'documento', read_only = True)
     class Meta:
         model = Contacto
         fields = '__all__'
