@@ -45,8 +45,8 @@ class ServiceCargarDataClientes:
                     tipo_interes= row['tipo_interes'],
                     fecha_conversion = row['fecha_conversion'].date() if pd.notna(row['fecha_conversion']) else None,
                     naturaleza = row['naturaleza'],
-                    cod_dni = row['cod_dni'],
-                    cod_ruc = row['cod_ruc'],
+                    cod_dni = None if pd.isna(row['cod_dni']) else row['cod_dni'],
+                    cod_ruc = None if pd.isna(row['cod_ruc']) else row['cod_ruc'],
                     #categoria = cat,
                     activo= row['activo'],
                 )
