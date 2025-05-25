@@ -33,7 +33,7 @@ class UserGroupSerializer(serializers.ModelSerializer):
     perfil = PerfilUsuarioSerializer()
     class Meta:
         model = User
-        fields = ['id', 'username', 'email', 'groups', 'perfil']
+        fields = ['id', 'username', 'email', 'groups', 'perfil', 'is_active']
 
     def update(self, instance, validated_data):
         perfil_data = validated_data.pop('perfil', {})

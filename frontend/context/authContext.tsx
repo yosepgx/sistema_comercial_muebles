@@ -3,6 +3,8 @@ import { usePathname, useRouter } from "next/navigation";
 import {createContext, useContext, useState, ReactNode, useEffect, SetStateAction, Dispatch} from "react"
 import { LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
+import { es } from 'date-fns/locale';
+
 interface UserLogin{
     username: string;
     password: string;
@@ -54,7 +56,6 @@ export const AuthProvider = ({children}: {children: ReactNode}) => {
                 console.log("No hay token disponible");
                 return;
             }
-            setCt(token)
             const response = await fetch(`${ApiURL}usuarios/test_token`, {
                 method: 'GET',
                 headers: { 
@@ -84,7 +85,8 @@ export const AuthProvider = ({children}: {children: ReactNode}) => {
                 console.error("El usuario no está identificado");
                 return;
             }
-            
+
+            setCt(token)
             setUser(data.user);
             setIsAuth(true);
             //localStorage.setItem('user-data', JSON.stringify(data.user));
@@ -155,7 +157,7 @@ export const AuthProvider = ({children}: {children: ReactNode}) => {
     }
 
     return(
-        <LocalizationProvider dateAdapter={AdapterDateFns}>
+        <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={es}>
             <AuthContext.Provider value = {{user, fetchLogin, fetchLogout, fetchRefresh, ct, isAuth, isLoading}}>
                 {children}
             </AuthContext.Provider>

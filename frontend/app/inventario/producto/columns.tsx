@@ -7,6 +7,31 @@ import { TProducto } from "./types/productoTypes";
 import { useProductoContext } from "./productoContext";
 import { UNIDADES_MEDIDA_BUSCA } from "@/constants/unidadesMedidaConstants";
 
+const ActionCell: React.FC<{ row: any; table: any }> = ({ row, table }) => {
+  const rowData = row.original;
+  const { viewRedirect, setCrrProduct } = useProductoContext();
+
+  return (
+    <div className="flex gap-2">
+      <Eye 
+        className="cursor-pointer hover:text-blue-600 transition-colors duration-200 active:scale-90"
+        onClick={() => viewRedirect(rowData)}
+      />
+      <Trash2
+        className="cursor-pointer hover:text-red-500 transition"
+        onClick={() => {
+          const setter = table.options.meta?.setData;
+          const rowIndex = row.index;
+          if (window.confirm("¿Está seguro que desea borrar?")) {
+            setter && setter((prev: any[]) => prev.filter((_, i) => i !== rowIndex));
+          }
+        }}
+      />
+    </div>
+  );
+};
+
+
 export const columns: ColumnDef<TProducto>[] = [
     {
       accessorKey: "id",
@@ -58,28 +83,7 @@ export const columns: ColumnDef<TProducto>[] = [
       accessorKey: "action",
       header: "Acciones",
       enableGlobalFilter: false,
-      cell: ({row, table}) => {
-        const rowData = row.original;
-        const {viewRedirect, setCrrProduct} = useProductoContext()
-        return (
-        <div className="flex gap-2">
-          <Eye 
-          className="cursor-pointer hover:text-blue-600 transition-colors duration-200 active:scale-90"
-          onClick={()=> viewRedirect(rowData)}
-          
-          />
-          <Trash2
-          className="cursor-pointer hover:text-red-500 transition"
-          onClick={() => {
-            const setter = table.options.meta?.setData
-            const rowIndex = row.index
-            if(window.confirm("Esta seguro que desea borrar?"))
-            setter && setter(prev => prev.filter((_, i) => i !== rowIndex))
-          }}
-        />
-        </div>
-        )
-      },
+      cell: ({ row, table }) => <ActionCell row={row} table={table} />,
 
     },
   ]

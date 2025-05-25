@@ -38,7 +38,7 @@ class Command(BaseCommand):
 
             self.stdout.write(self.style.NOTICE("👥 Cargando datos de clientes..."))
             ServiceCargarDataClientes.Contactos(archivo_clientes)
-            ServiceCargarDataClientes.Documentos(archivo_clientes)
+            #ServiceCargarDataClientes.Documentos(archivo_clientes)
             self.stdout.write(self.style.SUCCESS("✅ Datos de clientes cargados."))
 
             self.stdout.write(self.style.NOTICE("💼 Cargando datos de oportunidades..."))

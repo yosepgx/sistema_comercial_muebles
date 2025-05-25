@@ -34,6 +34,8 @@ class Contacto(models.Model):
     fecha_conversion = models.DateField(blank=True, null=True)  # Puede ser NULL si aún no se convierte
     naturaleza = models.CharField(max_length=10, choices=NATURALEZA_CHOICES)
     #categoria = models.ForeignKey(CategoriaCliente, on_delete=models.SET_NULL, null=True)
+    cod_dni = models.CharField(max_length=8, blank=True, null=True)
+    cod_ruc = models.CharField(max_length=11, blank=True, null=True)
     activo = models.BooleanField(default=True)
     
     def __str__(self):
@@ -44,27 +46,27 @@ class Contacto(models.Model):
         self.save()
 
 
-class DocumentoID(models.Model):
-    TIPODNI = 'DNI'
-    TIPORUC = 'RUC'
-    TIPOCE = 'CE'
+# class DocumentoID(models.Model):
+#     TIPODNI = 'DNI'
+#     TIPORUC = 'RUC'
+#     TIPOCE = 'CE'
 
-    TIPO_DOCUMENTO_CHOICES = [
-        (TIPODNI, 'DNI'),
-        (TIPORUC, 'RUC'),
-        (TIPOCE, 'CE'),
-    ]
+#     TIPO_DOCUMENTO_CHOICES = [
+#         (TIPODNI, 'DNI'),
+#         (TIPORUC, 'RUC'),
+#         (TIPOCE, 'CE'),
+#     ]
 
-    #tipo = models.CharField(max_length=3, choices=TIPO_DOCUMENTO_CHOICES, blank=True, null=True)
-    cod_dni = models.CharField(max_length=8, blank=True, null=True)
-    cod_ruc = models.CharField(max_length=11, blank=True, null=True)
-    #cod_ce = models.CharField(max_length=9, blank=True, null=True)
-    contacto = models.OneToOneField(Contacto, on_delete=models.CASCADE, related_name='documento')
-    activo = models.BooleanField(default=True)
-    def __str__(self):
-        return f"{self.tipo}: {self.contacto.nombre}"
+#     #tipo = models.CharField(max_length=3, choices=TIPO_DOCUMENTO_CHOICES, blank=True, null=True)
+#     cod_dni = models.CharField(max_length=8, blank=True, null=True)
+#     cod_ruc = models.CharField(max_length=11, blank=True, null=True)
+#     #cod_ce = models.CharField(max_length=9, blank=True, null=True)
+#     contacto = models.OneToOneField(Contacto, on_delete=models.CASCADE, related_name='documento')
+#     activo = models.BooleanField(default=True)
+#     def __str__(self):
+#         return f"{self.tipo}: {self.contacto.nombre}"
     
-    def delete(self):
-        self.activo = False
-        self.save()
+#     def delete(self):
+#         self.activo = False
+#         self.save()
 

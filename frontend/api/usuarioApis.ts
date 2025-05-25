@@ -1,9 +1,10 @@
 import { customFetch } from "@/components/customFetch";
-import { TProducto } from "../types/productoTypes";
+import { Tusuario } from "../components/types/ajusteTypes";
 
-export async function GetProductoListApi(token:string | null) {
+
+export async function GetUsuarioListApi(token:string | null) {
     try {
-        const response = await customFetch(token, `inventario/producto`, {
+        const response = await customFetch(token, `usuarios/usuarios`, {
             
             method: "get",
             headers:{
@@ -19,19 +20,19 @@ export async function GetProductoListApi(token:string | null) {
         }
         const data = await response.json();
         if (data) {
-            return data as TProducto[];
+            return data as Tusuario[];
         }
         return [];
         
     } catch (error) {
-        console.error("Error al obtener datos de productos:", error);
+        console.error("Error al obtener datos de usuarios:", error);
         return [];
     }
 }
 
-export async function GetProductoDetailApi(token:string | null, id: number){
+export async function GetUsuarioDetailApi(token:string | null, id: number){
     try {
-        const response = await customFetch(token,`inventario/producto/${id}`, {
+        const response = await customFetch(token,`usuarios/usuarios/${id}`, {
             
             method: "get",
             headers:{
@@ -45,16 +46,16 @@ export async function GetProductoDetailApi(token:string | null, id: number){
         }
 
         const data = await response.json();
-        return data as TProducto;
+        return data as Tusuario;
         
     } catch (error) {
-        console.error("Error al obtener datos de detalle de producto:", error);
+        console.error("Error al obtener datos de detalle de usuario:", error);
         return null;
     }
 }
-export async function PostProductoAPI(token:string | null, data: TProducto){
+export async function PostUsuarioAPI(token:string | null, data: Tusuario){
     try {
-        const response = await customFetch(token,`inventario/producto/`, {
+        const response = await customFetch(token,`usuarios/usuarios/`, {
             
             method: "POST",
             headers:{
@@ -69,17 +70,17 @@ export async function PostProductoAPI(token:string | null, data: TProducto){
         }
 
         const responseData = await response.json();
-        return responseData as TProducto;
+        return responseData as Tusuario;
         
     } catch (error) {
-        console.error("Error al guardar detalle de producto:", error);
+        console.error("Error al guardar detalle de usuario:", error);
         return null;
     }
 }
 
-export async function DeleteProductoAPI(token:string | null, id: number){
+export async function DeleteUsuarioAPI(token:string | null, id: number){
     try {
-        const response = await customFetch(token, `inventario/producto/${id}/`, {
+        const response = await customFetch(token, `usuarios/usuarios/${id}/`, {
             
             method: "DELETE",
             headers:{
@@ -95,14 +96,14 @@ export async function DeleteProductoAPI(token:string | null, id: number){
         return true;
         
     } catch (error) {
-        console.error(`Error al borrar registro de producto ${id}: `, error);
+        console.error(`Error al borrar registro de usuario ${id}: `, error);
         return false;
     }
 }
 
-export async function UpdateProductoAPI(token:string | null, id: number, data: TProducto) {
+export async function UpdateUsuarioAPI(token:string | null, id: number, data: Tusuario) {
     try {
-      const response = await customFetch(token, `inventario/producto/${id}/`, {
+      const response = await customFetch(token, `usuarios/usuarios/${id}/`, {
         method: "PUT",
         headers: {
           'Content-Type': 'application/json',
@@ -115,10 +116,10 @@ export async function UpdateProductoAPI(token:string | null, id: number, data: T
       }
   
       const responseData = await response.json();
-      return responseData as TProducto;
+      return responseData as Tusuario;
   
     } catch (error) {
-      console.error("Error al actualizar registro de inventario:", error);
+      console.error("Error al actualizar registro de usuarios:", error);
       return null;
     }
   }

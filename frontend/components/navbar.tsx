@@ -37,41 +37,25 @@ const itemsVentas: IMenuItem[] = [
         label: "Clientes",
         href: "/clientes",
     },
-    {
-        label: "Consultas",
-        href: "/consultas",
-    },
+    
 ]
-const itemsDescuentos: IMenuItem[] = [
-    {
-        label: "Reglas",
-        href: "/reglas"
-    },
-    {
-        label: "Solicitudes",
-        href: "/solicitudes"
-    },
-]
+
 const itemsAjustes: IMenuItem[] = [
     {
         label: "Roles",
-        href: "/roles"
+        href: "/ajustes/roles"
     },
     {
         label: "Usuarios",
-        href: "/usuarios"
-    },
-    {
-        label: "Zonas de Envio",
-        href: "/zonasenvio"
+        href: "/ajustes/usuarios"
     },
     {
         label: "Categorias",
-        href: "/categorias"
+        href: "/ajustes/categorias"
     },
     {
-        label: "Sede",
-        href: "/sede"
+        label: "Datos Generales",
+        href: "/ajustes/datos"
     },
 ]
   const pathname = usePathname();
@@ -84,7 +68,7 @@ const itemsAjustes: IMenuItem[] = [
         <NavDropdown icon={<Armchair size={20} />} label="Productos" items={itemsInventario} pathname={pathname} />
         <NavDropdown icon={<ShoppingBag size={20} />} label="Ventas" items={itemsVentas} pathname={pathname} />
         <NavItem href="/prediccion" icon={<LineChart size={20} />} label="Prediccion" pathname={pathname} />
-        <NavDropdown icon={<BadgePercent />} label="Descuentos" items={itemsDescuentos} pathname={pathname} />
+        <NavItem href="/descuentos" icon={<BadgePercent size={20} />} label="Descuentos" pathname={pathname} />
         <NavDropdown icon={<Settings size={20} />} label="Ajustes" items={itemsAjustes} pathname={pathname} />
       </div>
 

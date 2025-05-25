@@ -1,5 +1,5 @@
-export async function customFetch(token:string | null, url: string, options: RequestInit = {}) {
-    
+export async function customFetch(ct:string | null, url: string, options: RequestInit = {}) {
+    const token = localStorage.getItem('access-token');
     const headers = {
         ...(options.headers || {}),
         ...(token && { 'Authorization': `Token ${token}` }),

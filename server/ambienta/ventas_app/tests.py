@@ -5,7 +5,7 @@ from ventas_app.services import ServiceCargarDataVenta
 from ventas_app.models import Pedido,PedidoDetalle
 from django.db import transaction
 from clientes_app.services import ServiceCargarDataClientes
-from clientes_app.models import Contacto, DocumentoID
+from clientes_app.models import Contacto
 from inventario_app.services import ServiceCargarDataInventario
 from inventario_app.models import CategoriaProducto, Producto
 class CargarDataTest(TestCase):
@@ -20,9 +20,9 @@ class CargarDataTest(TestCase):
         if(Contacto.objects.count()<=0):
             self.fail("No se cargo ningun contacto")
         
-        ServiceCargarDataClientes.Documentos(self.archivo_clientes)
-        if(DocumentoID.objects.count()<=0):
-            self.fail("No se cargo ningun documento de identidad")
+        # ServiceCargarDataClientes.Documentos(self.archivo_clientes)
+        # if(DocumentoID.objects.count()<=0):
+        #     self.fail("No se cargo ningun documento de identidad")
 
         ServiceCargarDatosOportunidades.Oportunidades(self.archivo_ventas)
         if(Oportunidad.objects.count()<=0):
