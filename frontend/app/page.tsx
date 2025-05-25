@@ -2,11 +2,11 @@
 import MainWrap from "@/components/mainwrap";
 import { ProtectedRoute } from "@/components/protectedRoute";
 import { useEffect, useMemo, useState } from "react";
-import { DataGrid, GridColDef, GridValueGetter  } from "@mui/x-data-grid";
+import { DataGrid, GridColDef } from "@mui/x-data-grid";
 import { DatePicker } from '@mui/x-date-pickers';
-import { FormControl, IconButton, InputLabel, MenuItem, Select } from "@mui/material";
+import { FormControl, IconButton } from "@mui/material";
 
-import { useAuth } from "@/context/authContext"; 
+import { useAuth } from "@/context/authContext";
 import { Edit, EyeIcon } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";

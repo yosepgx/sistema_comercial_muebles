@@ -1,7 +1,6 @@
 "use client"
-import { DataTable } from "@/components/table/dataTable"
-import { useProductoContext } from "../productoContext"
-import { Column , DataTableMUI} from "@/components/table/tableMUI"
+import { useProductoContext } from "../productoContext";
+import { Column, DataTableMUI } from "@/components/table/tableMUI";
 import { useMemo, useState } from "react";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 

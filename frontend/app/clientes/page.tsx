@@ -1,12 +1,10 @@
 "use client"
 
 import { GetClienteListApi } from "@/api/clienteApis";
-import { GetRolListApi } from "@/api/rolesApis";
-import MainWrap from "@/components/mainwrap"
-import { ProtectedRoute } from "@/components/protectedRoute"
+import MainWrap from "@/components/mainwrap";
+import { ProtectedRoute } from "@/components/protectedRoute";
 import { transformOnlyDate } from "@/components/transformDate";
 import { TCliente } from "@/components/types/clienteType";
-import { Trol } from "@/components/types/rolType";
 import { useAuth } from "@/context/authContext";
 import { IconButton } from "@mui/material";
 import { DataGrid, GridColDef } from "@mui/x-data-grid";

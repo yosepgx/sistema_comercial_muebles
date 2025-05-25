@@ -3,7 +3,7 @@
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { useContext, useState } from 'react'
+import { useState } from 'react'
 import { useAuth } from '@/context/authContext'
 
 const loginSchema = z.object({

@@ -1,13 +1,12 @@
 "use client"
 
-import { useEffect, useState } from "react"
-import { DataTable } from "@/components/table/dataTable"
-import { columns, defaultColumnCell } from "./columns"
-import { GetInventarioListApi, Inventario, UpdateInventarioAPI } from "@/api/InventarioApis";
-import Navbar from "@/components/navbar"
-import { ProtectedRoute } from "@/components/protectedRoute"
-import { useAuth } from "@/context/authContext"
-import MainWrap from "@/components/mainwrap"
+import { useEffect, useState } from "react";
+import { DataTable } from "@/components/table/dataTable";
+import { columns, defaultColumnCell } from "./columns";
+import { GetInventarioListApi, Inventario } from "@/api/InventarioApis";
+import { ProtectedRoute } from "@/components/protectedRoute";
+import { useAuth } from "@/context/authContext";
+import MainWrap from "@/components/mainwrap";
 
 export default function InventarioPage() {
   const [data, setData] = useState<Inventario[]>([])
