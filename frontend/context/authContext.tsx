@@ -3,6 +3,8 @@ import { usePathname, useRouter } from "next/navigation";
 import {createContext, useContext, useState, ReactNode, useEffect, SetStateAction, Dispatch} from "react"
 import { LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
+import { es } from 'date-fns/locale';
+
 interface UserLogin{
     username: string;
     password: string;
@@ -155,7 +157,7 @@ export const AuthProvider = ({children}: {children: ReactNode}) => {
     }
 
     return(
-        <LocalizationProvider dateAdapter={AdapterDateFns}>
+        <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={es}>
             <AuthContext.Provider value = {{user, fetchLogin, fetchLogout, fetchRefresh, ct, isAuth, isLoading}}>
                 {children}
             </AuthContext.Provider>

@@ -34,16 +34,16 @@ const userColumns: GridColDef<TCotizacion>[] = [
         resizable: false,
         flex: 1
     },
-    {   field: 'monto_sin_impuesto', 
-        headerName: 'Monto Sin Impuesto',
-        resizable: false,
-        flex: 1
-    },
-    {   field: 'monto_igv', 
-        headerName: 'Monto Con IGV',
-        resizable: false,
-        flex: 1
-    },
+    // {   field: 'monto_sin_impuesto', 
+    //     headerName: 'Monto Sin Impuesto',
+    //     resizable: false,
+    //     flex: 1
+    // },
+    // {   field: 'monto_igv', 
+    //     headerName: 'Monto Con IGV',
+    //     resizable: false,
+    //     flex: 1
+    // },
     {   field: 'monto_total', 
         headerName: 'Monto Total',
         resizable: false,

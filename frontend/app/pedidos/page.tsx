@@ -1,20 +1,30 @@
 "use client"
 
-import { GetRolListApi } from "@/api/rolesApis";
-import MainWrap from "@/components/mainwrap"
-import { ProtectedRoute } from "@/components/protectedRoute"
-import { TCliente } from "@/components/types/clienteType";
-import { Trol } from "@/components/types/rolType";
-import { useAuth } from "@/context/authContext";
-import { IconButton } from "@mui/material";
+import { useEffect, useMemo, useState } from "react";
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
-import { Edit, EyeIcon } from "lucide-react";
-import { useEffect, useState } from "react";
-import { TCotizacion } from "@/components/types/cotizacion";
-import { TPedido } from "@/components/types/Pedido";
-import { GetPedidoListApi } from "@/api/pedidoApis";
+import { DatePicker } from '@mui/x-date-pickers';
+import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
+import { LocalizationProvider } from "@mui/x-date-pickers";
+import { Box, FormControl, IconButton, InputLabel, MenuItem, Select, Typography } from "@mui/material";
+import { isAfter, isBefore, addDays } from "date-fns";
 
-const userColumns: GridColDef<TPedido>[] = [
+import { GetPedidoListApi } from "@/api/pedidoApis"; 
+import { useAuth } from "@/context/authContext"; 
+import { ProtectedRoute } from "@/components/protectedRoute";
+import MainWrap from "@/components/mainwrap";
+import { TPedido } from "@/components/types/Pedido";
+import { Edit, EyeIcon } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { format } from 'date-fns';
+
+export function transformDateUTCHourToUserTime(value: string | Date): string {
+  if (!value) return '';
+  const date = new Date(value); // Esto ya convierte a la hora local del usuario
+  return format(date, 'dd/MM/yyyy HH:mm');
+}
+
+const Columns: GridColDef<TPedido>[] = [
     {   field: 'id', 
         headerName: 'Id',
         resizable: false,
@@ -23,7 +33,9 @@ const userColumns: GridColDef<TPedido>[] = [
     {   field: 'fecha', 
         headerName: 'Fecha de creacion',
         resizable: false,
-        flex: 1
+        flex: 1,
+        valueFormatter: (value) => transformDateUTCHourToUserTime(value),
+
     },
     {   field: 'fechaentrega', 
         headerName: 'Fecha de entrega',
@@ -52,30 +64,30 @@ const userColumns: GridColDef<TPedido>[] = [
     //     flex: 1
     // },
     {   field: 'direccion_entrega', 
-        headerName: 'Validez',
+        headerName: 'Direccion Entrega',
         resizable: false,
         flex: 1
     },
     {   field: 'cotizacion_id', 
-        headerName: 'Validez',
+        headerName: 'Codigo de Cotizacion',
         resizable: false,
         flex: 1
     },
     {   field: 'estado_pedido', 
-        headerName: 'Validez',
+        headerName: 'Estado Pedido',
         resizable: false,
         flex: 1
     },
-    {   field: 'monto_sin_impuesto', 
-        headerName: 'Monto Sin Impuesto',
-        resizable: false,
-        flex: 1
-    },
-    {   field: 'monto_igv', 
-        headerName: 'Monto Con IGV',
-        resizable: false,
-        flex: 1
-    },
+    // {   field: 'monto_sin_impuesto', 
+    //     headerName: 'Monto Sin Impuesto',
+    //     resizable: false,
+    //     flex: 1
+    // },
+    // {   field: 'monto_igv', 
+    //     headerName: 'Monto Con IGV',
+    //     resizable: false,
+    //     flex: 1
+    // },
     {   field: 'monto_total', 
         headerName: 'Monto Total',
         resizable: false,
@@ -90,7 +102,9 @@ const userColumns: GridColDef<TPedido>[] = [
     {   field: 'activo', 
         headerName: 'Activo',
         resizable: false,
-        flex: 1
+        flex: 1,
+        valueFormatter: (value) => (value? "Activo":"Inactivo"),
+
     },
     {
     field: 'acciones',
@@ -118,6 +132,13 @@ export default function PedidosPage(){
     const [data, setData] = useState<TPedido[]>([])
     const [loading, setLoading] = useState(true)
     const {ct} = useAuth();
+
+    const [busquedaGeneral, setBusquedaGeneral] = useState("");
+
+    const [fechaInicio, setFechaInicio] = useState<Date | null>(null);
+    const [fechaFin, setFechaFin] = useState<Date | null>(null);
+    const [campoFecha, setCampoFecha] = useState<"fecha" | "fechaentrega" | "fecha_pago">("fecha");
+
     const cargarDatos = async () => {
         try {
         const res = await GetPedidoListApi(ct)
@@ -133,15 +154,87 @@ export default function PedidosPage(){
         cargarDatos()
     }, [])
 
+    
+
+    const fechaDentroDeRango = (fecha: Date | null | undefined) => {
+    if (!fecha) return false;
+    if (fechaInicio && fecha < fechaInicio) return false;
+    if (fechaFin && fecha > fechaFin) return false;
+    return true;
+  };
+
+  const filteredData = useMemo(() => {
+  let result = [...data]; // Copia base
+
+  // Filtro por búsqueda general
+  if (busquedaGeneral.trim() !== "") {
+  const texto = busquedaGeneral.trim().toLowerCase();
+  result = result.filter(item => {
+    const camposFiltrables = [
+      item.id?.toString().toLowerCase(),
+      item.estado_pedido?.toLowerCase(),
+      item.direccion_entrega?.toLowerCase()
+    ];
+    return camposFiltrables.some(campo => campo?.includes(texto));
+  });
+  
+  }
+
+  // Filtro por rango de fechas
+  if (fechaInicio || fechaFin) {
+    result = result.filter((item) => {
+      const fechaSeleccionada = item[campoFecha];
+      if (!fechaSeleccionada) return false;
+      const fechaDate = new Date(fechaSeleccionada);
+      return fechaDentroDeRango(fechaDate);
+    });
+  }
+
+  return result;
+}, [data, busquedaGeneral, fechaInicio, fechaFin, campoFecha]);
+
     if (loading) {
     return <div>Cargando...</div>
     }
     return (
         <ProtectedRoute>
             <MainWrap>
+                
+                <div className="flex grid-cols-3 gap-8">
+                  <div>
+                  <Label>Buscador</Label>
+                  <Input
+                    value={busquedaGeneral}
+                    onChange={(e) => setBusquedaGeneral(e.target.value)}
+                    
+                  />
+                  </div> 
+                <FormControl >
+                  <InputLabel>Campo de fecha</InputLabel>
+                  <Select
+                    value={campoFecha}
+                    onChange={(e) => setCampoFecha(e.target.value as any)}
+                    label="Campo de fecha"
+                  >
+                    <MenuItem value="fecha">Fecha de Pedido</MenuItem>
+                    <MenuItem value="fechaentrega">Fecha de Entrega</MenuItem>
+                    <MenuItem value="fecha_pago">Fecha de Pago</MenuItem>
+                  </Select>
+                </FormControl>
+                 <DatePicker
+                  label="Desde"
+                  value={fechaInicio}
+                  onChange={(newValue) => setFechaInicio(newValue)}
+                />
+                <DatePicker
+                  label="Hasta"
+                  value={fechaFin}
+                  onChange={(newValue) => setFechaFin(newValue)}
+                />
+                </div>
                 <DataGrid
-                rows = {data? data : []}
-                columns={userColumns}
+                rows = {filteredData? filteredData : []}
+                columns={Columns}
                 initialState={{
                 pagination: {
                     paginationModel: {
