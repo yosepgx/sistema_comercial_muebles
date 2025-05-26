@@ -15,11 +15,16 @@ import {
 } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import CustomButton from "@/components/customButtom"
-import { GenerarRequisicionesApi, CargarInventarioApi, CargarClientesApi, CargarVentasApi, CargarComprasApi } from "../../api/prediccionApis"
+import { GenerarRequisicionesApi, CargarInventarioApi, CargarClientesApi, CargarVentasApi, CargarComprasApi, GenerarRequisicionesJSONApi } from "../../api/prediccionApis"
 import { useRef, useState } from "react"
 import { ProtectedRoute } from "@/components/protectedRoute"
 import { useAuth } from "@/context/authContext"
 import MainWrap from "@/components/mainwrap"
+import { DataGrid, GridColDef } from "@mui/x-data-grid"
+import { TRequisicion } from "@/components/types/requisicion"
+import { descargarExcel } from "./descargar"
+import { Box } from "@mui/material"
+import { formatInTimeZone } from "date-fns-tz";
 
 const FormSchema = z.object({
   horizonte: z.coerce.number().int().max(12, {
@@ -29,6 +34,61 @@ const FormSchema = z.object({
     message: "La cantidad de meses historicos debe de ser mayor o igual a 12 meses",
   }),
 })
+
+const Columns: GridColDef<TRequisicion>[] = [
+    {   field: 'Codigo de producto', 
+        headerName: 'Codigo de producto',
+        renderHeader: () => <>Codigo de<br />Producto</>,
+        resizable: false,
+        
+    },
+    {   field: 'Nombre de Producto', 
+        headerName: 'Nombre de Producto',
+        renderHeader: () => <>Nombre de<br />Producto</>,
+        resizable: false,
+        flex: 1,
+    },
+    {   field: 'Cantidad Predicha', 
+        headerName: 'Cantidad Predicha',
+        renderHeader: () => <>Cantidad<br />Predicha</>,
+        resizable: false,
+    },
+    {   field: 'Stock Actual', 
+        headerName: 'Stock Actual',
+        renderHeader: () => <>Stock<br />Actual</>,
+        resizable: false,
+    },
+    {   field: 'Pedidos en Transito', 
+        headerName: 'Pedidos en Transito',
+        renderHeader: () => <>Pedidos en<br />Transito</>,
+        resizable: false,
+    },
+    {   field: 'Cantidad Recomendada', 
+        headerName: 'Cantidad Recomendada',
+        renderHeader: () => <>Cantidad<br />Recomendada</>,
+        resizable: false,
+    },
+    {   field: 'Promedio Movil', 
+        headerName: 'Promedio Movil',
+        renderHeader: () => <>Promedio<br />Movil</>,
+        resizable: false,
+        
+    },
+    {   field: 'Indices Estacionales', 
+        headerName: 'Indices Estacionales',
+        resizable: false,
+        minWidth: 250, 
+        flex: 1,
+    },
+    {   field: 'Factor Crecimiento', 
+        headerName: 'Factor Crecimiento',
+        resizable: false,
+        minWidth: 250, 
+        flex: 1,
+        
+    },
+
+  ]
 
 export default function PrediccionPage() {
   const  [mensaje,setMensaje] = useState<string>(
@@ -43,6 +103,7 @@ export default function PrediccionPage() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [tipoCarga, setTipoCarga] = useState<"inventario"|"compras"|"clientes"|"ventas">();
   const [compras, setCompras] = useState([]);
+  const [requisiciones, setRequisiciones] = useState<any>([]);
   const {ct} = useAuth();
   
   const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -81,12 +142,19 @@ export default function PrediccionPage() {
 
   async function onSubmit(data: z.infer<typeof FormSchema>) {
     const token = ct;
-    const respuesta = await GenerarRequisicionesApi(token, data.horizonte, data.pasado, compras);
+    const respuesta = await GenerarRequisicionesJSONApi(token, data.horizonte, data.pasado, compras);
 
-    if (respuesta?.success) {
+    if (respuesta?.success && respuesta?.data) {
       setMensaje(
-          `Se ha completado el procesamiento. Tu archivo se descargará en breve.`
+          `Se ha completado el procesamiento exitosamente.`
       );
+
+      const rowsWithId = respuesta.data.map((row, index) => ({
+        id: index,  // o usa otro valor único si tienes (ej: codigo_producto)
+        ...row,
+      }));
+      setRequisiciones(rowsWithId)
+      
     } else {
         setMensaje(
           "Error, prueba nuevamente mas tarde"
@@ -155,17 +223,47 @@ export default function PrediccionPage() {
             <CustomButton type = "button" variant="primary" onClick={() => handleClick("ventas")}>Cargar Ventas</CustomButton>
             <CustomButton type = "button" variant="primary" onClick={() => handleClick("compras")}>Cargar Compras</CustomButton>
           </div>
-          <div className="flex justify-center mt-6">
+          <div className="flex justify-center mt-6 gap-4">
             <CustomButton variant="primary" type="submit">Generar Prediccion</CustomButton>
+            <CustomButton 
+            variant="primary" 
+            type="button" 
+            disabled={requisiciones.length === 0} 
+            onClick={() => {
+              const now = new Date()
+              const timestamp = formatInTimeZone(now, "America/Lima", 'yyyy-MM-dd HH:mm:ss');
+              const values = form.getValues(); // Obtiene los valores actuales del formulario
+              const filename = `${timestamp}_ho-${values.horizonte}_pa-${values.pasado}.xlsx`;
+              descargarExcel(requisiciones, filename);
+              }
+              }>Descargar</CustomButton>
           </div>
           
         </form>
       </Form>
-      <div className="flex flex-wrap gap-4 mt-6">
-      </div>
+      
       <div className="p-2 mt-4 text-center font-semibold text-white" style={{ backgroundColor: mensaje.includes("completado") ? "green" : "orange" }}>
         {mensaje}
       </div>
+      <Box sx={{ width: '100%', overflowX: 'auto' }}>
+      <div className="mt-6">
+      <DataGrid
+        rows = {requisiciones? requisiciones : []}
+        columns={Columns}
+        initialState={{
+        pagination: {
+            paginationModel: {
+            pageSize: 10,
+            },
+        },
+        
+        }}
+        pageSizeOptions={[5, 10, 25]}
+        disableRowSelectionOnClick
+        disableColumnMenu
+        />
+        </div>
+      </Box>
     </div>
     </MainWrap>
     </ProtectedRoute>

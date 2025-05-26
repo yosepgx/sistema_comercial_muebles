@@ -130,6 +130,37 @@ export async function GenerarRequisicionesApi(token: string | null, horizonte: n
 }
 
 
+export async function GenerarRequisicionesJSONApi(
+  token: string | null,
+  horizonte: number,
+  pasado: number,
+  compras: any
+): Promise<{ success: boolean; data?: any[] }> {
+  try {
+    const response = await customFetch(token,
+            `predictivo/generar-requisiciones/`,
+            {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ horizonte, pasado, compras }),
+            }
+        );
+
+    if (!response.ok) {
+      console.error("Error en el response:", response.statusText);
+      return { success: false };
+    }
+
+    const data = await response.json();
+    return { success: true, data };
+  } catch (error) {
+    console.error(" Error al llamar GenerarRequisicionesJSONApi:", error);
+    return { success: false };
+  }
+}
+
 export async function GenerarRequisicionesApiBucket(token: string | null, horizonte: number, pasado: number) {
     try {
         const response = await customFetch(token, 
