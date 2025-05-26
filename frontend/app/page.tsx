@@ -28,7 +28,7 @@ const Columns: GridColDef<TOportunidad>[] = [
         flex: 1,
         renderCell: (params) => {
         const cliente = params.row?.rcliente;
-        const doc = cliente?.cod_dni || cliente?.cod_ruc || '';
+        const doc = cliente?.documento || '';
         return `${doc}`;
       }
     },

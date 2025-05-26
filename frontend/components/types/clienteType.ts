@@ -8,8 +8,8 @@ export const cliente = z.object({
     tipo_interes: z.enum(["cliente","lead"]),
     fechaConversion: z.date(),
     naturaleza: z.enum(["Natural","Empresa"]),
-    cod_dni: z.string(),
-    cod_ruc: z.string(),
+    documento: z.string(),
+    tipo_documento: z.string(),
     activo: z.boolean(),
 })
 

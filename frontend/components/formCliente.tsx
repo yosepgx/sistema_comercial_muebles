@@ -22,8 +22,8 @@ const formSchema = z.object({
   naturaleza: z.enum(["Natural","Empresa"]),
   tipo_interes: z.enum(["cliente","lead"]), //manejado por back
   fechaConversion: z.string().optional().nullable(), //se maneja en back
-  cod_dni: z.string().min(8,"El DNI debe de contener 8 digitos"),
-  cod_ruc: z.string().min(11,'El RUC debe de contener 11 digitos'),
+  documento: z.string().min(8,"El DNI debe de contener 8 digitos"),
+  tipo_documento: z.string().min(11,'El RUC debe de contener 11 digitos'),
   activo: z.string(), //manejado por back
 })
 
@@ -50,8 +50,8 @@ export default function FormCliente() {
           tipo_interes: 'cliente',
           fechaConversion: `${new Date()}`,
           naturaleza: 'Natural',
-          cod_dni: '',
-          cod_ruc: '',
+          documento: '',
+          tipo_documento: 'DNI',
           activo: "true",
         },
       });
@@ -161,7 +161,7 @@ export default function FormCliente() {
                 <div className="space-y-2">
                   <FormField
                     control = {form.control}
-                    name = "cod_dni"
+                    name = "documento"
                     render={({field}) => (
                       <FormItem className='flex flex-col'>
                         <FormLabel> Documento del cliente</FormLabel>

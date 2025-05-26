@@ -27,6 +27,14 @@ class Contacto(models.Model):
         (TIPOEMPRESA, 'Empresa'),
     ]
 
+    TIPODNI = 'DNI'
+    TIPORUC = 'RUC'
+
+    TIPO_DOCUMENTO_CHOICES = [
+        (TIPODNI, 'DNI'),
+        (TIPORUC, 'RUC'),
+    ]
+
     nombre = models.CharField(max_length=255)
     correo = models.EmailField(unique=True)
     telefono = models.CharField(max_length=20, blank=True, null=True)
@@ -34,8 +42,8 @@ class Contacto(models.Model):
     fecha_conversion = models.DateField(blank=True, null=True)  # Puede ser NULL si aún no se convierte
     naturaleza = models.CharField(max_length=10, choices=NATURALEZA_CHOICES)
     #categoria = models.ForeignKey(CategoriaCliente, on_delete=models.SET_NULL, null=True)
-    cod_dni = models.CharField(max_length=8, blank=True, null=True)
-    cod_ruc = models.CharField(max_length=11, blank=True, null=True)
+    documento = models.CharField(max_length=20, blank=True, null=True)
+    tipo_documento = models.CharField(max_length=3, choices=TIPO_DOCUMENTO_CHOICES, default=TIPODNI)
     activo = models.BooleanField(default=True)
     
     def __str__(self):

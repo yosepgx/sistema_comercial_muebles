@@ -48,13 +48,13 @@ const userColumns: GridColDef<TCliente>[] = [
         resizable: false,
         flex: 1
     },
-    {   field: 'cod_dni', 
-        headerName: 'DNI',
+    {   field: 'documento', 
+        headerName: 'DNI/RUC',
         resizable: false,
         flex: 1
     },
-    {   field: 'cod_ruc', 
-        headerName: 'RUC',
+    {   field: 'tipo_documento', 
+        headerName: 'Tipo de Documento',
         resizable: false,
         flex: 1
     },
