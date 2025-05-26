@@ -6,44 +6,68 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import {z} from 'zod'
+import { TCliente } from './types/clienteType'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { useForm } from 'react-hook-form'
+import { Form, FormControl, FormField, FormItem, FormMessage } from './ui/form'
+import { FormLabel } from '@mui/material'
+import CustomButton from './customButtom'
 
-interface ClientFormData {
-  nombres: string
-  apellidos: string
-  tipoCliente: string
-  correo: string
-  documento: string
-  telefono: string
-  tipoDocumento: 'DNI' | 'RUC'
-}
+const formSchema = z.object({
+  id: z.string().min(1, 'no se encontro id'),
+  nombre: z.string().min(1, 'Se necesita indicar un nombre'),
+  correo: z.string().min(1, 'Se necesita llenar este campo o indicar ninguno'),
+  telefono: z.string().min(1, 'Se necesita llenar este campo o indicar ninguno'),
+  naturaleza: z.enum(["Natural","Empresa"]),
+  tipo_interes: z.enum(["cliente","lead"]), //manejado por back
+  fechaConversion: z.string().optional().nullable(), //se maneja en back
+  cod_dni: z.string().min(8,"El DNI debe de contener 8 digitos"),
+  cod_ruc: z.string().min(11,'El RUC debe de contener 11 digitos'),
+  activo: z.string(), //manejado por back
+})
+
+type FormValues = z.infer<typeof formSchema>
+
+
+//1. antes de guardar se puede cambiar dni a ruc y dejar dni en blanco
+//2. talvez sea mejor solo usar documento y tipo de documento
+const formSchemaSend = formSchema.transform(data => ({
+    ...data,
+    id: parseInt(data.id, 10),
+    activo: data.activo === "true",
+  })
+)
 
 export default function FormCliente() {
-  const [formData, setFormData] = useState<ClientFormData>({
-    nombres: '',
-    apellidos: '',
-    tipoCliente: 'Natural',
-    correo: '',
-    documento: '',
-    telefono: '',
-    tipoDocumento: 'DNI'
-  })
+  const form = useForm<z.infer<typeof formSchema>>({
+      resolver: zodResolver(formSchema),
+      defaultValues: {
+          id: '0',
+          nombre: '',
+          correo: '',
+          telefono: '',
+          tipo_interes: 'cliente',
+          fechaConversion: `${new Date()}`,
+          naturaleza: 'Natural',
+          cod_dni: '',
+          cod_ruc: '',
+          activo: "true",
+        },
+      });
 
-  const handleInputChange = (field: keyof ClientFormData, value: string) => {
-    setFormData(prev => ({
-      ...prev,
-      [field]: value
-    }))
-  }
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    console.log('Datos del formulario:', formData)
-    // Aquí iría la lógica para enviar los datos
+  const onSubmit = (data: FormValues) => {
+    console.log('Datos del formulario:', data)
   }
 
   const handleBuscarCliente = () => {
     console.log('Buscar cliente')
+    // Lógica para buscar cliente
+  }
+
+  const registrarCliente = () => {
+    console.log('Registrar cliente')
     // Lógica para buscar cliente
   }
 
@@ -52,143 +76,171 @@ export default function FormCliente() {
       {/* Tabs de navegación */}
           {/* Botones de acción */}
           <div className="flex gap-3 mb-6">
-            <Button 
+            <CustomButton
+              variant='primary'
               onClick={handleBuscarCliente}
-              className="bg-blue-600 hover:bg-blue-700 text-white px-6"
             >
               Buscar Cliente
-            </Button>
-            <Button 
-              variant="outline"
-              className="border-blue-600 text-blue-600 hover:bg-blue-50 px-6"
+            </CustomButton>
+            <CustomButton 
+              variant="primary"
+              onClick={registrarCliente}
             >
               Registrar Cliente
-            </Button>
+            </CustomButton>
           </div>
 
           {/* Formulario */}
+          <Form {...form}> 
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
           <div className="p-6">
-              <form onSubmit={handleSubmit} className="space-y-6">
-                {/* Primera fila */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="space-y-2">
-                    <Label htmlFor="nombres" className="text-sm font-medium">
-                      Nombres del cliente <span className="text-red-500">*</span>
-                    </Label>
-                    <Input
-                      id="nombres"
-                      value={formData.nombres}
-                      onChange={(e) => handleInputChange('nombres', e.target.value)}
-                      className="w-full"
-                      required
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="tipoCliente" className="text-sm font-medium">
-                      Tipo de cliente <span className="text-red-500">*</span>
-                    </Label>
-                    <Select 
-                      value={formData.tipoCliente} 
-                      onValueChange={(value) => handleInputChange('tipoCliente', value)}
-                    >
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="Natural">Natural</SelectItem>
-                        <SelectItem value="Jurídico">Jurídico</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
+              {/* Primera fila */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-2">
+                  <FormField
+                    control = {form.control}
+                    name = "nombre"
+                    render={({field}) => (
+                      <FormItem className='flex flex-col'>
+                        <FormLabel> Nombres del cliente</FormLabel>
+                        <FormControl>
+                          <Input type = "text" {...field}/>
+                        </FormControl>
+                        <FormMessage className="min-h-[24px]"/>
+                      </FormItem>
+                    )}
+                  />
                 </div>
+                <div className="space-y-2">
+                  <FormField
+                    control = {form.control}
+                    name = "naturaleza"
+                    render={({field}) => (
+                      <FormItem className='flex flex-col'>
+                        <FormLabel> Tipo de cliente</FormLabel>
+                        <Select onValueChange = {field.onChange} defaultValue={field.value}> {/*aca hay un problema si quiero traer una oportunidad con cliente*/}
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Seleccionar Tipo de Cliente"/>
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem value="Natural">Natural</SelectItem>
+                            <SelectItem value="Jurídico">Jurídico</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <FormMessage className="min-h-[24px]"/>
+                      </FormItem>
+                    )}
+                  />
+                </div>
+              </div>
 
-                {/* Segunda fila */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="space-y-2">
-                    <Label htmlFor="apellidos" className="text-sm font-medium">
-                      Apellidos del cliente <span className="text-red-500">*</span>
-                    </Label>
-                    <Input
-                      id="apellidos"
-                      value={formData.apellidos}
-                      onChange={(e) => handleInputChange('apellidos', e.target.value)}
-                      className="w-full"
-                      required
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="correo" className="text-sm font-medium">
-                      Correo del cliente <span className="text-red-500">*</span>
-                    </Label>
-                    <Input
-                      id="correo"
-                      type="email"
-                      value={formData.correo}
-                      onChange={(e) => handleInputChange('correo', e.target.value)}
-                      className="w-full"
-                      required
-                    />
-                  </div>
+              {/* Segunda fila */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                
+                <div className="space-y-2">
+                  <FormField
+                    control = {form.control}
+                    name = "correo"
+                    render={({field}) => (
+                      <FormItem className='flex flex-col'>
+                        <FormLabel> Correo del cliente</FormLabel>
+                        <FormControl>
+                          <Input type = "text" {...field}/>
+                        </FormControl>
+                        <FormMessage className="min-h-[24px]"/>
+                      </FormItem>
+                    )}
+                  />
                 </div>
+              </div>
 
-                {/* Tercera fila */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="space-y-2">
-                    <Label htmlFor="documento" className="text-sm font-medium">
-                      Documento del cliente <span className="text-red-500">*</span>
-                    </Label>
-                    <Input
-                      id="documento"
-                      value={formData.documento}
-                      onChange={(e) => handleInputChange('documento', e.target.value)}
-                      className="w-full"
-                      required
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="telefono" className="text-sm font-medium">
-                      Teléfono de contacto <span className="text-red-500">*</span>
-                    </Label>
-                    <Input
-                      id="telefono"
-                      value={formData.telefono}
-                      onChange={(e) => handleInputChange('telefono', e.target.value)}
-                      className="w-full"
-                      required
-                    />
-                  </div>
+              {/* Tercera fila */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-2">
+                  <FormField
+                    control = {form.control}
+                    name = "cod_dni"
+                    render={({field}) => (
+                      <FormItem className='flex flex-col'>
+                        <FormLabel> Documento del cliente</FormLabel>
+                        <FormControl>
+                          <Input type = "text" {...field}/>
+                        </FormControl>
+                        <FormMessage className="min-h-[24px]"/>
+                      </FormItem>
+                    )}
+                  />
                 </div>
+                <div className="space-y-2">
+                  <FormField
+                    control = {form.control}
+                    name = "telefono"
+                    render={({field}) => (
+                      <FormItem className='flex flex-col'>
+                        <FormLabel> Teléfono de contacto</FormLabel>
+                        <FormControl>
+                          <Input type = "text" {...field}/>
+                        </FormControl>
+                        <FormMessage className="min-h-[24px]"/>
+                      </FormItem>
+                    )}
+                  />
+                </div>
+              </div>
 
-                {/* Tipo de documento */}
-                <div className="space-y-3">
-                  <Label className="text-sm font-medium">Tipo de documento</Label>
-                  <RadioGroup
-                    value={formData.tipoDocumento}
-                    onValueChange={(value: 'DNI' | 'RUC') => handleInputChange('tipoDocumento', value)}
-                    className="flex gap-6"
-                  >
-                    <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="DNI" id="dni" />
-                      <Label htmlFor="dni" className="text-sm">DNI</Label>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="RUC" id="ruc" />
-                      <Label htmlFor="ruc" className="text-sm">RUC</Label>
-                    </div>
-                  </RadioGroup>
-                </div>
+              {/* Tipo de documento */}
+              {/* <div className="space-y-3">
+                <FormField
+                  control = {form.control}
+                  name = ""
+                  render={({field}) => (
+                  <FormItem className='flex flex-col'>
+                    <FormLabel>Tipo de documento</FormLabel>
+                    <FormControl>
+                      <RadioGroup
+                        onValueChange={field.onChange}
+                        defaultValue={'DNI'}
+                        className="flex flex-col space-y-1"
+                      >
+                        <FormItem className="flex items-center space-x-3 space-y-0">
+                          <FormControl>
+                            <RadioGroupItem value="10" />
+                          </FormControl>
+                          <FormLabel>
+                            DNI
+                          </FormLabel>
+                        </FormItem>
+                        <FormItem className="flex items-center space-x-3 space-y-0">
+                          <FormControl>
+                            <RadioGroupItem value="20" />
+                          </FormControl>
+                          <FormLabel>
+                            RUC
+                          </FormLabel>
+                        </FormItem>
+                       
+                      </RadioGroup>
+                    </FormControl>
+                    <FormMessage className="min-h-[24px]"/>
+                  </FormItem>
+                  )}
+                />
+              </div> */}
 
-                {/* Botón de envío */}
-                <div className="flex justify-end pt-4">
-                  <Button 
-                    type="submit"
-                    className="bg-blue-600 hover:bg-blue-700 text-white px-8"
-                  >
-                    Registrar Cliente
-                  </Button>
-                </div>
-              </form>
+              {/* Botón de envío */}
+              <div className="flex justify-end pt-4">
+                <CustomButton
+                  variant='primary'
+                  type="submit"
+                >
+                  Registrar Cliente
+                </CustomButton>
+              </div>
             </div>
+          </form>
+        </Form>
     </div>
   )
 }

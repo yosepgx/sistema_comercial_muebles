@@ -4,9 +4,13 @@ import FormOportunidad from "@/components/formOportunidad"
 import FormCliente from "@/components/formCliente"
 import FormCotizaciones from "@/components/formCotizaciones"
 import FormPedido from "@/components/formPedido"
+import { ProtectedRoute } from "@/components/protectedRoute"
+import MainWrap from "@/components/mainwrap"
 
 export default function NuevaOportunidadPage() {
   return (
+  <ProtectedRoute>
+    <MainWrap>
     <div className="p-6">
       {/* Navegación de pasos */}
       <Tabs defaultValue="oportunidad" className="mb-6">
@@ -41,5 +45,7 @@ export default function NuevaOportunidadPage() {
       </Tabs>
       
     </div>
+    </MainWrap>
+    </ProtectedRoute>
   )
 }

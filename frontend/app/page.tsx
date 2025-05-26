@@ -13,6 +13,7 @@ import { Label } from "@/components/ui/label";
 import { TOportunidad } from "@/components/types/oportunidad";
 import { GetOportunidadListApi } from "@/api/oportunidadApis";
 import CustomButton from "@/components/customButtom";
+import { useRouter } from "next/navigation";
 
 
 const Columns: GridColDef<TOportunidad>[] = [
@@ -84,7 +85,7 @@ export default function HomePage() {
   const [data, setData] = useState<TOportunidad[]>([])
   const [loading, setLoading] = useState(true)
   const {ct} = useAuth();
-
+  const router = useRouter()
   const [busquedaGeneral, setBusquedaGeneral] = useState("");
 
   const [fechaInicio, setFechaInicio] = useState<Date | null>(null);
@@ -171,7 +172,7 @@ export default function HomePage() {
               value={fechaFin}
               onChange={(newValue) => setFechaFin(newValue)}
             />
-            <CustomButton>Nueva</CustomButton>
+            <CustomButton onClick={()=>{router.push('/nuevo')}}>Nueva</CustomButton>
             </div>
             <DataGrid
             rows = {filteredData? filteredData : []}

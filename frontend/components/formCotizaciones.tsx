@@ -142,42 +142,6 @@ export default function FormCotizaciones() {
 
   return (
     <div className="container mx-auto px-4 py-6">
-      {/* Tabs de navegación */}
-      <Tabs defaultValue="cotizaciones" className="w-full mb-6">
-        <TabsList className="grid w-full grid-cols-5 bg-transparent">
-          <TabsTrigger 
-            value="oportunidad" 
-            className="text-gray-600 data-[state=active]:bg-transparent data-[state=active]:text-gray-900 data-[state=active]:border-b-2 data-[state=active]:border-blue-500"
-          >
-            Oportunidad
-          </TabsTrigger>
-          <TabsTrigger 
-            value="cliente"
-            className="text-gray-600 data-[state=active]:bg-transparent data-[state=active]:text-gray-900 data-[state=active]:border-b-2 data-[state=active]:border-blue-500"
-          >
-            Cliente
-          </TabsTrigger>
-          <TabsTrigger 
-            value="cotizaciones"
-            className="text-gray-900 bg-transparent border-b-2 border-blue-500"
-          >
-            Cotizaciones
-          </TabsTrigger>
-          <TabsTrigger 
-            value="pedido"
-            className="text-gray-600 data-[state=active]:bg-transparent data-[state=active]:text-gray-900 data-[state=active]:border-b-2 data-[state=active]:border-blue-500"
-          >
-            Pedido
-          </TabsTrigger>
-          <TabsTrigger 
-            value="despacho"
-            className="text-gray-600 data-[state=active]:bg-transparent data-[state=active]:text-gray-900 data-[state=active]:border-b-2 data-[state=active]:border-blue-500"
-          >
-            Despacho
-          </TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="cotizaciones" className="mt-6">
           {/* Breadcrumb */}
           <div className="flex items-center gap-2 mb-6 text-sm text-gray-600">
             <ChevronRight size={16} />
@@ -250,9 +214,7 @@ export default function FormCotizaciones() {
               autoHeight
             />
           </div>
-        </TabsContent>
-      </Tabs>
-
+          
       <style jsx global>{`
         .MuiDataGrid-root {
           font-family: inherit;
