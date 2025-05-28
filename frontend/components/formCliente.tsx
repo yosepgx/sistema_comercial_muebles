@@ -22,16 +22,39 @@ const formSchema = z.object({
   naturaleza: z.enum(["Natural","Empresa"]),
   tipo_interes: z.enum(["cliente","lead"]), //manejado por back
   fechaConversion: z.string().optional().nullable(), //se maneja en back
-  documento: z.string().min(8,"El DNI debe de contener 8 digitos"),
-  tipo_documento: z.string().min(11,'El RUC debe de contener 11 digitos'),
+  documento: z.string(),
+  tipo_documento: z.string(),
   activo: z.string(), //manejado por back
-})
+}).superRefine((data, ctx) => {
+    if (data.tipo_documento === 'DNI' && data.documento.length !== 8) {
+      ctx.addIssue({
+        path: ['documento'],
+        code: z.ZodIssueCode.custom,
+        message: 'El DNI debe tener exactamente 8 dígitos',
+      })
+    }
+
+    if (data.tipo_documento === 'RUC' && data.documento.length !== 11) {
+      ctx.addIssue({
+        path: ['documento'],
+        code: z.ZodIssueCode.custom,
+        message: 'El RUC debe tener exactamente 11 dígitos',
+      })
+    }
+
+    if (!/^\d+$/.test(data.documento)) {
+      ctx.addIssue({
+        path: ['documento'],
+        code: z.ZodIssueCode.custom,
+        message: 'El documento debe contener solo números',
+      })
+    }
+  })
+
 
 type FormValues = z.infer<typeof formSchema>
 
 
-//1. antes de guardar se puede cambiar dni a ruc y dejar dni en blanco
-//2. talvez sea mejor solo usar documento y tipo de documento
 const formSchemaSend = formSchema.transform(data => ({
     ...data,
     id: parseInt(data.id, 10),
@@ -40,6 +63,7 @@ const formSchemaSend = formSchema.transform(data => ({
 )
 
 export default function FormCliente() {
+  const [registrarActivo, setRegistrarActivo] = useState(false);
   const form = useForm<z.infer<typeof formSchema>>({
       resolver: zodResolver(formSchema),
       defaultValues: {
@@ -47,7 +71,7 @@ export default function FormCliente() {
           nombre: '',
           correo: '',
           telefono: '',
-          tipo_interes: 'cliente',
+          tipo_interes: 'lead',
           fechaConversion: `${new Date()}`,
           naturaleza: 'Natural',
           documento: '',
@@ -66,10 +90,6 @@ export default function FormCliente() {
     // Lógica para buscar cliente
   }
 
-  const registrarCliente = () => {
-    console.log('Registrar cliente')
-    // Lógica para buscar cliente
-  }
 
   return (
     <div className="container mx-auto px-4 py-6">
@@ -84,9 +104,9 @@ export default function FormCliente() {
             </CustomButton>
             <CustomButton 
               variant="primary"
-              onClick={registrarCliente}
+              onClick={()=>setRegistrarActivo(true)}
             >
-              Registrar Cliente
+              Nuevo Cliente
             </CustomButton>
           </div>
 
@@ -191,10 +211,10 @@ export default function FormCliente() {
               </div>
 
               {/* Tipo de documento */}
-              {/* <div className="space-y-3">
+              <div className="space-y-3">
                 <FormField
                   control = {form.control}
-                  name = ""
+                  name = "tipo_documento"
                   render={({field}) => (
                   <FormItem className='flex flex-col'>
                     <FormLabel>Tipo de documento</FormLabel>
@@ -206,7 +226,7 @@ export default function FormCliente() {
                       >
                         <FormItem className="flex items-center space-x-3 space-y-0">
                           <FormControl>
-                            <RadioGroupItem value="10" />
+                            <RadioGroupItem value="DNI" />
                           </FormControl>
                           <FormLabel>
                             DNI
@@ -214,7 +234,7 @@ export default function FormCliente() {
                         </FormItem>
                         <FormItem className="flex items-center space-x-3 space-y-0">
                           <FormControl>
-                            <RadioGroupItem value="20" />
+                            <RadioGroupItem value="RUC" />
                           </FormControl>
                           <FormLabel>
                             RUC
@@ -227,13 +247,14 @@ export default function FormCliente() {
                   </FormItem>
                   )}
                 />
-              </div> */}
+              </div>
 
               {/* Botón de envío */}
               <div className="flex justify-end pt-4">
                 <CustomButton
                   variant='primary'
                   type="submit"
+                  disabled = {!registrarActivo}
                 >
                   Registrar Cliente
                 </CustomButton>

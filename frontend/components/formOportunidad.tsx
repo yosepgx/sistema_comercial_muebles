@@ -4,8 +4,50 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
+import { useState } from "react"
+import { useForm } from "react-hook-form"
+import {z} from "zod"
+import { zodResolver } from "@hookform/resolvers/zod"
+import { Form, FormControl, FormField, FormItem, FormMessage } from './ui/form'
+import { FormLabel } from "@mui/material"
+import { format } from "date-fns-tz"
+
+const formSchema = z.object({
+  id: z.string(),
+  contacto: z.string(), //TODO cambiar nombre a cliente
+  sede_id: z.string(),
+  fecha_contacto: z.string().optional(), //manejado por back
+  vendedor_asignado: z.string(), //TODO quitar 
+  estado_oportunidad: z.enum(["ganado","perdido","en negociacion"]),
+  activo: z.string(),
+  rcliente: z.string().optional().nullable(),
+})
+
+const formSchemaSend = formSchema.transform(data => ({
+  ...data,
+  id: parseInt(data.id,10),
+  contacto: parseInt(data.id,10),
+  sede_id: parseInt(data.id,10),
+  fecha_contacto: parseInt(data.id,10),
+  activo: data.activo === 'true',
+  })
+)
 
 export default function FormOportunidad() {
+  const form = useForm<z.infer<typeof formSchema>>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      id: '0',
+      contacto: '', //cambiar nombre a cliente
+      sede_id: '',
+      fecha_contacto: '',
+      vendedor_asignado: '', //quitar 
+      estado_oportunidad: 'en negociacion',
+      activo: 'true',
+      rcliente: null,
+    }
+  })
+
     return (
       <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
       {/* Card de formulario */}
@@ -17,27 +59,38 @@ export default function FormOportunidad() {
 
       {/* Sede */}
       <div>
-        <Label htmlFor="sede">Sede <span className="text-red-500">*</span></Label>
-        <Select defaultValue="tienda-a">
-          <SelectTrigger id="sede">
-            <SelectValue placeholder="Seleccione una sede" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="tienda-a">Tienda A</SelectItem>
-            <SelectItem value="tienda-b">Tienda B</SelectItem>
-          </SelectContent>
-        </Select>
+        <FormField
+          control = {form.control}
+          name = "sede_id"
+          render={({field}) => (
+            <FormItem className='flex flex-col'>
+              <FormLabel> Sede</FormLabel>
+              <Select onValueChange = {field.onChange} defaultValue={field.value}>
+                <FormControl>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Seleccionar sede"/>
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  <SelectItem value="1">Tienda A</SelectItem>
+                  <SelectItem value="2">Tienda B</SelectItem>
+                </SelectContent>
+              </Select>
+              <FormMessage className="min-h-[24px]"/>
+            </FormItem>
+          )}
+        />
       </div>
 
       {/* Fecha de contacto */}
       <div>
         <Label htmlFor="contacto">Inicio de contacto</Label>
-        <Input id="contacto" type="date" defaultValue="2025-01-18" />
+        <Input id="contacto" type="date" defaultValue= {format(new Date(), 'yyyy-MM-dd')} disabled={true}/>
       </div>
 
       {/* Vendedor responsable */}
       <div>
-        <Label htmlFor="vendedor">Vendedor Responsable <span className="text-red-500">*</span></Label>
+        <Label htmlFor="vendedor">Vendedor Responsable </Label>
         <Select defaultValue="maria-benitez">
           <SelectTrigger id="vendedor">
             <SelectValue placeholder="Seleccione un vendedor" />

@@ -6,134 +6,118 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { Label } from '@/components/ui/label'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { DataGrid, GridColDef, GridActionsCellItem } from '@mui/x-data-grid'
-import { Eye, Edit, Trash2, ChevronRight } from 'lucide-react'
+import { Eye, Edit, Trash2, ChevronRight, Printer } from 'lucide-react'
+import { TCotizacion } from './types/cotizacion'
+import {z} from 'zod'
+import CustomButton from './customButtom'
+import { useRouter } from 'next/navigation'
 
-interface CotizacionData {
-  id: number
-  codigo: string
-  fechaCreacion: string
-  estado: string
-  oportunidad: number
-  direccion: string
-  total: number
-  validez: number
-  vendedor: string
-}
+/*const formSchema = z.object({
+  id: z.string(),
+  validez: z.string(),
+  monto_sin_impuesto: z.string(),
+  monto_igv: z.string(),
+  monto_total: z.string(),
+  descuento_adicional: z.string(),
+  activo: z.string(),
+  fecha: z.string(), //creacion manejada por back
+  estado_cotizacion: z.enum(["propuesta","aceptada","rechazada"]),
+  observaciones: z.string(),
+  direccion_entrega: z.string(),
+  //falta oportunidad
+  //cliente_id: z.number(),
+  //sede_id: z.number(),
+  //vendedor_asignado: z.number(),
+})
 
-const cotizacionesData: CotizacionData[] = [
-  {
-    id: 1,
-    codigo: '00001',
-    fechaCreacion: '01/01/2025',
-    estado: 'Propuesta',
-    oportunidad: 1,
-    direccion: 'Jr. Mártires 24 de Julio',
-    total: 1000.00,
-    validez: 14,
-    vendedor: 'Maria'
-  },
-  {
-    id: 2,
-    codigo: '00002',
-    fechaCreacion: '10/01/2025',
-    estado: 'Propuesta',
-    oportunidad: 1,
-    direccion: 'Jr. Mártires 24 de Julio',
-    total: 1000.00,
-    validez: 14,
-    vendedor: 'Maria'
-  },
-  {
-    id: 3,
-    codigo: '00003',
-    fechaCreacion: '12/01/2025',
-    estado: 'Aceptada',
-    oportunidad: 1,
-    direccion: 'Jr. Mártires 24 de Julio',
-    total: 1083.30,
-    validez: 14,
-    vendedor: 'Maria'
-  }
-]
+type FormValues = z.infer<typeof formSchema>
+
+const formSchemaSend = formSchema.transform(data => ({
+    ...data,
+    id: parseInt(data.id, 10),
+    validez: parseInt(data.validez, 10),
+    monto_sin_impuesto: parseInt(data.monto_sin_impuesto),
+    monto_igv: parseInt(data.monto_igv),
+    monto_total: parseInt(data.monto_total),
+    descuento_adicional: parseInt(data.descuento_adicional),
+    activo: data.activo === "true",
+  })
+)*/
+
+
 
 export default function FormCotizaciones() {
-  const [direccionEntrega, setDireccionEntrega] = useState<'tienda' | 'otro'>('tienda')
-
-  const columns: GridColDef[] = [
+  const [tipoDireccion, setTipoDireccion] = useState<'tienda' | 'otro'>('tienda')
+  const [direccion, setDireccion] = useState("")
+  const [data, setData] =useState<TCotizacion[]>([])
+  const router = useRouter();
+  const columns: GridColDef<TCotizacion>[] = [
     {
-      field: 'codigo',
+      field: 'id',
       headerName: 'CODIGO',
-      width: 100,
-      headerClassName: 'data-grid-header'
+      resizable: false,
+      flex: 1
     },
     {
-      field: 'fechaCreacion',
+      field: 'fecha',
       headerName: 'FECHA DE CREACION',
-      width: 180,
-      headerClassName: 'data-grid-header'
+      resizable: false,
+      flex: 1
     },
     {
-      field: 'estado',
+      field: 'estado_cotizacion',
       headerName: 'ESTADO',
-      width: 130,
-      headerClassName: 'data-grid-header',
-      renderCell: (params) => (
-        <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-          params.value === 'Aceptada' 
-            ? 'bg-green-100 text-green-800' 
-            : 'bg-yellow-100 text-yellow-800'
-        }`}>
-          {params.value}
-        </span>
-      )
+      resizable: false,
+      flex: 1
     },
+    // {
+    //   field: 'oportunidad',
+    //   headerName: 'OPORTUNIDAD',
+    //   resizable: false,
+    //   flex: 1
+    // },
     {
-      field: 'oportunidad',
-      headerName: 'OPORTUNIDAD',
-      width: 120,
-      headerClassName: 'data-grid-header'
-    },
-    {
-      field: 'direccion',
+      field: 'direccion_entrega',
       headerName: 'DIRECCION',
-      width: 200,
-      headerClassName: 'data-grid-header'
+      resizable: false,
+      flex: 1
     },
     {
-      field: 'total',
+      field: 'monto_total',
       headerName: 'TOTAL',
-      width: 100,
-      headerClassName: 'data-grid-header',
-      renderCell: (params) => `${params.value.toFixed(2)}`
+      resizable: false,
+      flex: 1
     },
     {
       field: 'validez',
       headerName: 'VALIDEZ',
-      width: 100,
-      headerClassName: 'data-grid-header'
+      resizable: false,
+      flex: 1
     },
-    {
-      field: 'vendedor',
-      headerName: 'VENDEDOR',
-      width: 120,
-      headerClassName: 'data-grid-header'
-    },
+    // {
+    //   field: 'vendedor',
+    //   headerName: 'VENDEDOR',
+    //   resizable: false,
+    //   flex: 1
+    // },
     {
       field: 'acciones',
-      headerName: 'ACCIONES',
-      width: 120,
-      headerClassName: 'data-grid-header',
+      headerName: 'Acciones',
+      resizable: false,
       sortable: false,
+      filterable: false,
+      disableColumnMenu: true,
+      width: 120,
       renderCell: (params) => (
         <div className="flex gap-1">
-          <button className="p-1 rounded hover:bg-gray-100">
-            <Eye size={16} className="text-blue-600" />
+          <button className="p-1 rounded hover:bg-gray-100" onClick={()=>router.push(`/${params.row.id}`)}>
+            <Eye />
           </button>
           <button className="p-1 rounded hover:bg-gray-100">
-            <Edit size={16} className="text-green-600" />
+            <Trash2 />
           </button>
           <button className="p-1 rounded hover:bg-gray-100">
-            <Trash2 size={16} className="text-red-600" />
+            <Printer />
           </button>
         </div>
       )
@@ -152,8 +136,8 @@ export default function FormCotizaciones() {
           <div className="mb-6">
             <h3 className="text-sm font-medium mb-4">Dirección de entrega</h3>
             <RadioGroup
-              value={direccionEntrega}
-              onValueChange={(value: 'tienda' | 'otro') => setDireccionEntrega(value)}
+              value={tipoDireccion}
+              onValueChange={(value: 'tienda' | 'otro') => setTipoDireccion(value)}
               className="flex gap-6"
             >
               <div className="flex items-center space-x-2">
@@ -169,15 +153,15 @@ export default function FormCotizaciones() {
 
           {/* Botón Nueva Cotización */}
           <div className="flex justify-end mb-4">
-            <Button className="bg-blue-600 hover:bg-blue-700 text-white px-6">
+            <CustomButton variant='primary' onClick={()=>{router.push('/nuevo')}}>
               Nueva Cotización
-            </Button>
+            </CustomButton>
           </div>
 
           {/* Tabla de cotizaciones */}
           <div className="bg-white rounded-lg border">
             <DataGrid
-              rows={cotizacionesData}
+              rows={data}
               columns={columns}
               initialState={{
                 pagination: {
@@ -186,32 +170,6 @@ export default function FormCotizaciones() {
               }}
               pageSizeOptions={[5, 10, 25]}
               disableRowSelectionOnClick
-              sx={{
-                border: 'none',
-                '& .MuiDataGrid-columnHeaders': {
-                  backgroundColor: '#f8f9fa',
-                  borderBottom: '1px solid #e9ecef',
-                  fontSize: '0.75rem',
-                  fontWeight: 600,
-                  color: '#6c757d'
-                },
-                '& .data-grid-header': {
-                  fontSize: '0.75rem',
-                  fontWeight: 600,
-                  color: '#6c757d'
-                },
-                '& .MuiDataGrid-cell': {
-                  borderBottom: '1px solid #f1f3f4',
-                  fontSize: '0.875rem'
-                },
-                '& .MuiDataGrid-row:hover': {
-                  backgroundColor: '#f8f9fa'
-                },
-                '& .MuiDataGrid-footerContainer': {
-                  borderTop: '1px solid #e9ecef'
-                }
-              }}
-              autoHeight
             />
           </div>
           
