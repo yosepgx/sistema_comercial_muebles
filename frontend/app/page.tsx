@@ -42,11 +42,7 @@ const Columns: GridColDef<TOportunidad>[] = [
         resizable: false,
         flex: 1
     },
-    {   field: 'vendedor_asignado', 
-        headerName: 'Vendedor',
-        resizable: false,
-        flex: 1
-    },
+    
     {   field: 'estado_oportunidad', 
         headerName: 'Estado',
         resizable: false,

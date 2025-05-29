@@ -1,6 +1,6 @@
 from django.test import TestCase
 from clientes_app.services import ServiceCargarDataClientes
-from clientes_app.models import Contacto
+from clientes_app.models import Cliente
 
 class CargarDataTest(TestCase):
     archivo_excel = "datacargable/DataClientes.xlsx"
@@ -8,9 +8,9 @@ class CargarDataTest(TestCase):
     def setUp(self):
         
 
-        ServiceCargarDataClientes.Contactos(self.archivo_excel)
-        if(Contacto.objects.count()<=0):
-            self.fail("No se cargo ningun contacto")
+        ServiceCargarDataClientes.Clientes(self.archivo_excel)
+        if(Cliente.objects.count()<=0):
+            self.fail("No se cargo ningun cliente")
 
 
     #def test_cargar_data_documentos(self):

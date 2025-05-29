@@ -26,11 +26,7 @@ const userColumns: GridColDef<TCotizacion>[] = [
         resizable: false,
         flex: 1
     },
-    {   field: 'validez', 
-        headerName: 'Validez',
-        resizable: false,
-        flex: 1
-    },
+    
     // {   field: 'monto_sin_impuesto', 
     //     headerName: 'Monto Sin Impuesto',
     //     resizable: false,

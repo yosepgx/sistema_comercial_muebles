@@ -18,7 +18,7 @@ const cotizacion = z.object({
     //cliente_id: z.number(),
     //sede_id: z.number(),
     //vendedor_asignado: z.number(),
-    validez: z.number(),
+    
     monto_sin_impuesto: z.number(),
     monto_igv: z.number(),
     monto_total: z.number(),

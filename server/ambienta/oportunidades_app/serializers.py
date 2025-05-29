@@ -1,9 +1,9 @@
 from rest_framework import serializers
 from .models import Oportunidad, Cotizacion, CotizacionDetalle
-from clientes_app.serializers import ContactoSerializer
+from clientes_app.serializers import ClienteSerializer
 #oportunidad -> cotizacion -> cotizacionDetalle
 class OportunidadSerializer(serializers.ModelSerializer):
-    rcliente = ContactoSerializer(source='contacto', read_only = True)
+    rcliente = ClienteSerializer(source='cliente', read_only = True)
     class Meta:
         model = Oportunidad
         fields = '__all__'

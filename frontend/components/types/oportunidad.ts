@@ -2,10 +2,9 @@ import {z} from "zod"
 import { cliente } from "./clienteType"
 const oportunidad = z.object({
     id: z.number(),
-    contacto: z.number(),
+    cliente: z.number(),
     sede_id: z.number(),
     fecha_contacto: z.date(),
-    vendedor_asignado: z.number(),
     estado_oportunidad: z.enum(["ganado","perdido","en negociacion"]),
     rcliente: cliente,
     activo: z.boolean()

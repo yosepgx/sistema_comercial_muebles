@@ -1,5 +1,5 @@
 import pandas as pd
-from clientes_app.models import Contacto
+from clientes_app.models import Cliente
 from oportunidades_app.models import Oportunidad, Cotizacion,CotizacionDetalle
 from inventario_app.models import Producto
 #TODO: carga de vendedor asignado
@@ -7,22 +7,21 @@ from inventario_app.models import Producto
 class ServiceCargarDatosOportunidades:
     def Oportunidades(archivo):
         try:
-            campos = {'contacto': int,'valor_neto': float ,'fecha_contacto': str,
-                      'vendedor_asignado': int,'estado_oportunidad': str ,
+            campos = {'cliente': int,'fecha_contacto': str,
+                      'estado_oportunidad': str ,
                       'activo': bool}
             df = pd.read_excel(archivo, sheet_name='Oportunidad', 
                                usecols=campos.keys(),
                                parse_dates=['fecha_contacto'],
                                )
             objetos = []
-            df['vendedor_asignado'] = None
 
             for _, row in df.iterrows():
                 datos = row.to_dict()
-                id_contacto = datos.pop('contacto')
-                cont = Contacto.objects.get(id=id_contacto)
+                id_cliente = datos.pop('cliente')
+                cont = Cliente.objects.get(id=id_cliente)
                 
-                obj = Oportunidad(contacto=cont, **datos)
+                obj = Oportunidad(cliente=cont, **datos)
                 objetos.append(obj)
             
             Oportunidad.objects.bulk_create(objetos)
@@ -31,7 +30,7 @@ class ServiceCargarDatosOportunidades:
 
     def Cotizacion(archivo):
         try:
-            campos = {'fecha': str ,'estado_cotizacion': str ,'oportunidad': str ,'validez': int,
+            campos = {'fecha': str ,'estado_cotizacion': str ,'oportunidad': str ,
                       'monto_sin_impuesto': float,'monto_total': float,'monto_igv': float, 'descuento_adicional': float,
                       'observaciones': str,'direccion_entrega':str ,'activo': bool}
             df = pd.read_excel(archivo, sheet_name='Cotizacion', 
@@ -58,7 +57,7 @@ class ServiceCargarDatosOportunidades:
     def CotizacionDetalle(archivo):
         try:
             campos = {'producto': int, 'cotizacion': int, 
-                      'cantidad': int,'descuento':float ,
+                      'cantidad': int, 'precio_unitario': float,'descuento':float ,
                       'subtotal': float,'nrolinea': int ,'activo': bool}
             
             df = pd.read_excel(archivo, sheet_name='CotizacionDetalle', 

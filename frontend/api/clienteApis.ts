@@ -3,7 +3,7 @@ import { TCliente } from "@/components/types/clienteType";
 
 export async function GetClienteListApi(token:string | null) {
     try {
-        const response = await customFetch(token, `clientes/contacto`, {
+        const response = await customFetch(token, `clientes/cliente`, {
             
             method: "get",
             headers:{
@@ -31,7 +31,7 @@ export async function GetClienteListApi(token:string | null) {
 
 export async function GetClienteDetailApi(token:string | null, id: number){
     try {
-        const response = await customFetch(token,`clientes/contacto/${id}`, {
+        const response = await customFetch(token,`clientes/cliente/${id}`, {
             
             method: "get",
             headers:{
@@ -54,7 +54,7 @@ export async function GetClienteDetailApi(token:string | null, id: number){
 }
 export async function PostClienteAPI(token:string | null, data: TCliente){
     try {
-        const response = await customFetch(token,`clientes/contacto/`, {
+        const response = await customFetch(token,`clientes/cliente/`, {
             
             method: "POST",
             headers:{
@@ -79,7 +79,7 @@ export async function PostClienteAPI(token:string | null, data: TCliente){
 
 export async function DeleteClienteAPI(token:string | null, id: number){
     try {
-        const response = await customFetch(token, `clientes/contacto/${id}/`, {
+        const response = await customFetch(token, `clientes/cliente/${id}/`, {
             
             method: "DELETE",
             headers:{
@@ -102,7 +102,7 @@ export async function DeleteClienteAPI(token:string | null, id: number){
 
 export async function UpdateClienteAPI(token:string | null, id: number, data: TCliente) {
     try {
-      const response = await customFetch(token, `clientes/contacto/${id}/`, {
+      const response = await customFetch(token, `clientes/cliente/${id}/`, {
         method: "PUT",
         headers: {
           'Content-Type': 'application/json',

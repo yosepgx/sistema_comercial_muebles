@@ -88,12 +88,6 @@ export default function FormCotizaciones() {
       resizable: false,
       flex: 1
     },
-    {
-      field: 'validez',
-      headerName: 'VALIDEZ',
-      resizable: false,
-      flex: 1
-    },
     // {
     //   field: 'vendedor',
     //   headerName: 'VENDEDOR',

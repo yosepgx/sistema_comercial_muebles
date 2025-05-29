@@ -6,7 +6,6 @@ const formSchema = z.object({
   //cliente_id: z.number(),
   //sede_id: z.number(),
   //vendedor_asignado: z.number(),
-  validez: z.string(),
   monto_sin_impuesto: z.string(),
   monto_igv: z.string(),
   monto_total: z.string(),
@@ -19,7 +18,7 @@ const formSchema = z.object({
 const formSchemaSend = formSchema.transform(data => ({
     ...data,
     id: parseInt(data.id, 10),
-    validez: parseInt(data.validez, 10),
+    
     monto_sin_impuesto: parseInt(data.monto_sin_impuesto),
     monto_igv: parseInt(data.monto_igv),
     monto_total: parseInt(data.monto_total),

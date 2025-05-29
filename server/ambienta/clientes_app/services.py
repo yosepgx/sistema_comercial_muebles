@@ -1,5 +1,5 @@
 import pandas as pd
-from clientes_app.models import Contacto
+from clientes_app.models import Cliente
 
 # contactos -> documentos
 class ServiceCargarDataClientes:
@@ -20,12 +20,12 @@ class ServiceCargarDataClientes:
     #     except Exception as e:
     #         print(e)
 
-    def Contactos(archivo):
+    def Clientes(archivo):
         try:
             campos = {'nombre': str,'correo': str,'telefono': str, 
                       'tipo_interes': str, 'fecha_conversion': str, 
                       'naturaleza': str, 'documento' : str, 'tipo_documento': str, 'activo': bool}
-            df = pd.read_excel(archivo, sheet_name="Contacto", 
+            df = pd.read_excel(archivo, sheet_name="Cliente", 
                                usecols=campos.keys(),
                                dtype=campos,
                                )
@@ -38,7 +38,7 @@ class ServiceCargarDataClientes:
 
             for _, row in df.iterrows():
                 #cat = CategoriaCliente.objects.get(id=row['categoria'])
-                cont = Contacto(
+                cont = Cliente(
                     nombre = row['nombre'],
                     correo = row['correo'],
                     telefono = row['telefono'],
@@ -52,7 +52,7 @@ class ServiceCargarDataClientes:
                 )
                 objetos.append(cont)
             
-            Contacto.objects.bulk_create(objetos)
+            Cliente.objects.bulk_create(objetos)
         except Exception as e:
             print(e)
         

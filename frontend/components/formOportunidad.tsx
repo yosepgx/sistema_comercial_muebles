@@ -14,10 +14,9 @@ import { format } from "date-fns-tz"
 
 const formSchema = z.object({
   id: z.string(),
-  contacto: z.string(), //TODO cambiar nombre a cliente
+  cliente: z.string(), //TODO cambiar nombre a cliente
   sede_id: z.string(),
   fecha_contacto: z.string().optional(), //manejado por back
-  vendedor_asignado: z.string(), //TODO quitar 
   estado_oportunidad: z.enum(["ganado","perdido","en negociacion"]),
   activo: z.string(),
   rcliente: z.string().optional().nullable(),
@@ -26,7 +25,7 @@ const formSchema = z.object({
 const formSchemaSend = formSchema.transform(data => ({
   ...data,
   id: parseInt(data.id,10),
-  contacto: parseInt(data.id,10),
+  cliente: parseInt(data.id,10),
   sede_id: parseInt(data.id,10),
   fecha_contacto: parseInt(data.id,10),
   activo: data.activo === 'true',
@@ -38,10 +37,9 @@ export default function FormOportunidad() {
     resolver: zodResolver(formSchema),
     defaultValues: {
       id: '0',
-      contacto: '', //cambiar nombre a cliente
+      cliente: '', //cambiar nombre a cliente
       sede_id: '',
       fecha_contacto: '',
-      vendedor_asignado: '', //quitar 
       estado_oportunidad: 'en negociacion',
       activo: 'true',
       rcliente: null,
@@ -84,8 +82,8 @@ export default function FormOportunidad() {
 
       {/* Fecha de contacto */}
       <div>
-        <Label htmlFor="contacto">Inicio de contacto</Label>
-        <Input id="contacto" type="date" defaultValue= {format(new Date(), 'yyyy-MM-dd')} disabled={true}/>
+        <Label htmlFor="fecha_contacto">Inicio de contacto</Label>
+        <Input id="fecha_contacto" type="date" defaultValue= {format(new Date(), 'yyyy-MM-dd')} disabled={true}/>
       </div>
 
       {/* Vendedor responsable */}

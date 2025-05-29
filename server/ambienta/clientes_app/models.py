@@ -10,7 +10,7 @@ from django.core.validators import MinLengthValidator, MaxLengthValidator, Regex
 #     def __str__(self):
 #         return self.descripcion
     
-class Contacto(models.Model):
+class Cliente(models.Model):
     TIPOCLIENTE = 'cliente'
     TIPOLEAD = 'lead'
 
