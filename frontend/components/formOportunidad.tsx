@@ -86,19 +86,7 @@ export default function FormOportunidad() {
         <Input id="fecha_contacto" type="date" defaultValue= {format(new Date(), 'yyyy-MM-dd')} disabled={true}/>
       </div>
 
-      {/* Vendedor responsable */}
-      <div>
-        <Label htmlFor="vendedor">Vendedor Responsable </Label>
-        <Select defaultValue="maria-benitez">
-          <SelectTrigger id="vendedor">
-            <SelectValue placeholder="Seleccione un vendedor" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="maria-benitez">Maria Benitez</SelectItem>
-            <SelectItem value="juan-perez">Juan Perez</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
+      
 
       {/* Observaciones */}
       <div className="col-span-1 md:col-span-2">
