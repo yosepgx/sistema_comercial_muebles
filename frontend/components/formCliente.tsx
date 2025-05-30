@@ -1,18 +1,24 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import {z} from 'zod'
-import { TCliente } from './types/clienteType'
+import { cliente, TCliente } from './types/clienteType'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm } from 'react-hook-form'
 import { Form, FormControl, FormField, FormItem, FormMessage } from './ui/form'
 import { FormLabel } from '@mui/material'
 import CustomButton from './customButtom'
+import ClientSearchPopup from './popupcliente'
+import { GetClienteDetailApi, PostClienteAPI } from '@/api/clienteApis'
+import {format} from 'date-fns'
+import { UpdateOportunidadAPI } from '@/api/oportunidadApis'
+import { Verified } from 'lucide-react'
+import { useOportunidadContext } from '@/context/oportunidadContext'
 
 const formSchema = z.object({
   id: z.string().min(1, 'no se encontro id'),
@@ -21,7 +27,7 @@ const formSchema = z.object({
   telefono: z.string().min(1, 'Se necesita llenar este campo o indicar ninguno'),
   naturaleza: z.enum(["Natural","Empresa"]),
   tipo_interes: z.enum(["cliente","lead"]), //manejado por back
-  fechaConversion: z.string().optional().nullable(), //se maneja en back
+  fecha_conversion: z.string(), //se maneja en back
   documento: z.string(),
   tipo_documento: z.string(),
   activo: z.string(), //manejado por back
@@ -58,12 +64,24 @@ type FormValues = z.infer<typeof formSchema>
 const formSchemaSend = formSchema.transform(data => ({
     ...data,
     id: parseInt(data.id, 10),
+    fecha_conversion: format(data.fecha_conversion, 'yyyy-MM-dd'),
     activo: data.activo === "true",
   })
 )
 
 export default function FormCliente() {
   const [registrarActivo, setRegistrarActivo] = useState(false);
+  const [tipoRegistrar, setTipoRegistrar] = useState<"nuevo" | "buscado">("nuevo");
+  const [isSearchPopupOpen, setIsSearchPopupOpen] = useState(false);
+  const [cliente, setCliente] = useState(null);
+  const {crrOportunidad, setCrrOportunidad, setCrrTab} = useOportunidadContext()
+
+  useEffect(()=>{
+    if(crrOportunidad){
+      GetClienteDetailApi('',crrOportunidad.cliente)
+    }
+  },[])
+
   const form = useForm<z.infer<typeof formSchema>>({
       resolver: zodResolver(formSchema),
       defaultValues: {
@@ -72,7 +90,7 @@ export default function FormCliente() {
           correo: '',
           telefono: '',
           tipo_interes: 'lead',
-          fechaConversion: `${new Date()}`,
+          fecha_conversion: `${format(new Date(), 'yyyy-MM-dd')}`,
           naturaleza: 'Natural',
           documento: '',
           tipo_documento: 'DNI',
@@ -81,19 +99,70 @@ export default function FormCliente() {
       });
 
 
-  const onSubmit = (data: FormValues) => {
+  const onSubmit = async (data: FormValues) => {
     console.log('Datos del formulario:', data)
+    //TODO ver que solo haga post una sola vez 
+    //TODO hacer POST solo si es nuevo cliente
+    if(!crrOportunidad)
+      return;
+
+    let clienteId: number | null = null
+
+    const verified = formSchemaSend.parse(data)
+    if (tipoRegistrar === "nuevo") {
+      const nuevoCliente = await PostClienteAPI('', verified)
+      if (nuevoCliente) clienteId = nuevoCliente.id
+    } else {
+      clienteId = verified.id
+    }
+
+    if (clienteId) {
+      const nuevaOportunidad = { ...crrOportunidad, cliente: clienteId }
+
+      await UpdateOportunidadAPI('', crrOportunidad.id, nuevaOportunidad)
+      setCrrOportunidad(nuevaOportunidad) // Esto sí actualiza el estado
+      setCrrTab('pedido') // Cambiar de tab
   }
+}
 
   const handleBuscarCliente = () => {
-    console.log('Buscar cliente')
-    // Lógica para buscar cliente
+    setTipoRegistrar("buscado")
+    setIsSearchPopupOpen(true)
+  }
+
+  const handleSelectCliente = (cliente: TCliente) =>{
+    try {
+    form.setValue('id', cliente.id.toString(10));
+    form.setValue('nombre', cliente.nombre);
+    form.setValue('correo', cliente.correo);
+    form.setValue('telefono', cliente.telefono);
+    form.setValue('naturaleza', cliente.naturaleza);
+    form.setValue('tipo_interes', cliente.tipo_interes); 
+    form.setValue('fecha_conversion', cliente.fecha_conversion.toString()); 
+    form.setValue('documento', cliente.documento);
+    form.setValue('tipo_documento', cliente.tipo_documento);
+    form.setValue('activo', cliente.activo.toString());
+
+    // Lógica para mapear tipo de cliente y documento
+    console.log(cliente)
+    setRegistrarActivo(true);//Todo diferencia el boton de actualizar y guardar. 
+    setIsSearchPopupOpen(false);
+
+    } catch (error) {
+      console.error('Error al seleccionar cliente', error)
+    }
+
   }
 
 
   return (
     <div className="container mx-auto px-4 py-6">
       {/* Tabs de navegación */}
+      <ClientSearchPopup
+        open={isSearchPopupOpen}
+        onClose={() => setIsSearchPopupOpen(false)}
+        onSelectClient={handleSelectCliente}
+      />
           {/* Botones de acción */}
           <div className="flex gap-3 mb-6">
             <CustomButton
@@ -104,7 +173,10 @@ export default function FormCliente() {
             </CustomButton>
             <CustomButton 
               variant="primary"
-              onClick={()=>setRegistrarActivo(true)}
+              onClick={()=>{
+                setRegistrarActivo(true)
+                setTipoRegistrar("nuevo")
+              }}
             >
               Nuevo Cliente
             </CustomButton>
@@ -256,7 +328,7 @@ export default function FormCliente() {
                   type="submit"
                   disabled = {!registrarActivo}
                 >
-                  Registrar Cliente
+                  {tipoRegistrar === "nuevo"? "Registrar Nuevo Cliente" : "Guardar y Continuar"}
                 </CustomButton>
               </div>
             </div>

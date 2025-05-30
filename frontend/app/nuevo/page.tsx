@@ -6,14 +6,16 @@ import FormCotizaciones from "@/components/formCotizaciones"
 import FormPedido from "@/components/formPedido"
 import { ProtectedRoute } from "@/components/protectedRoute"
 import MainWrap from "@/components/mainwrap"
+import { useOportunidadContext } from "@/context/oportunidadContext"
 
 export default function NuevaOportunidadPage() {
+  const {crrTab, setCrrTab} = useOportunidadContext()
   return (
   <ProtectedRoute>
     <MainWrap>
     <div className="p-6">
       {/* Navegación de pasos */}
-      <Tabs defaultValue="oportunidad" className="mb-6">
+      <Tabs value={crrTab} onValueChange={setCrrTab}className="mb-6">
         <TabsList>
           <TabsTrigger value="oportunidad">Oportunidad</TabsTrigger>
           <TabsTrigger value="cliente">Cliente</TabsTrigger>
@@ -24,7 +26,7 @@ export default function NuevaOportunidadPage() {
 
         <TabsContent value = "oportunidad">
           <h2 className="text-xl font-bold">oportunidad</h2>
-          <FormOportunidad/>
+          <FormOportunidad crrOportunidad = {null}/>
         </TabsContent>
 
         <TabsContent value = "cliente">
@@ -39,6 +41,11 @@ export default function NuevaOportunidadPage() {
 
         <TabsContent value = "pedido">
           <h2 className="text-xl font-bold">Pedido</h2>
+          <FormPedido/>
+        </TabsContent>
+
+        <TabsContent value = "despacho">
+          <h2 className="text-xl font-bold">Despacho</h2>
           <FormPedido/>
         </TabsContent>
 

@@ -36,10 +36,12 @@ class Oportunidad(models.Model):
 class Cotizacion(models.Model):
     PROPUESTA = 'propuesta'
     ACEPTADA = 'aceptada'
+    RECHAZADA = 'rechazada'
 
     ESTADO_COTIZACION_CHOICES = [
         (PROPUESTA, 'Propuesta'),
         (ACEPTADA, 'Aceptada'),
+        (RECHAZADA, 'Rechazada'),
     ]
 
     fecha = models.DateField(auto_now_add=True)
