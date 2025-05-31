@@ -168,7 +168,7 @@ export default function HomePage() {
               value={fechaFin}
               onChange={(newValue) => setFechaFin(newValue)}
             />
-            <CustomButton onClick={()=>{router.push('/nuevo')}}>Nueva</CustomButton>
+            <CustomButton onClick={()=>{router.push('/nuevo'); localStorage.removeItem('nueva-oportunidad');}}>Nueva</CustomButton>
             </div>
             <DataGrid
             rows = {filteredData? filteredData : []}

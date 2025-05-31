@@ -4,14 +4,24 @@ import FormOportunidad from "@/components/formOportunidad"
 import FormCliente from "@/components/formCliente"
 import FormCotizaciones from "@/components/formCotizaciones"
 import FormPedido from "@/components/formPedido"
-import { ProtectedRoute } from "@/components/protectedRoute"
-import MainWrap from "@/components/mainwrap"
-import { OportunidadProvider, useOportunidadContext } from "@/context/oportunidadContext"
+import { useOportunidadContext } from "@/context/oportunidadContext"
+import { useEffect } from "react"
+import { GetOportunidadDetailApi } from "@/api/oportunidadApis"
 
 export default function InnerPageOportunidad() {
-  const {crrTab, setCrrTab, setTipoEdicion} = useOportunidadContext()
+  const {crrTab, setCrrTab, setTipoEdicion, tipoEdicion, setCrrOportunidad, crrOportunidad} = useOportunidadContext()
   
-  
+  useEffect(()=>{
+    if(tipoEdicion === 'nuevo'){
+      const id= localStorage.getItem('nueva-oportunidad')
+      if(id){
+        GetOportunidadDetailApi('token', parseInt(id,10))
+        .then(data => setCrrOportunidad(data))
+      }
+    }
+    //se quita  nueva-cotizacion  del storage al salir de la vista de oportunidad nueva o al terminar la creacion
+  },[])
+
   return (
     <div className="p-6">
       {/* Navegación de pasos */}
@@ -24,29 +34,30 @@ export default function InnerPageOportunidad() {
           <TabsTrigger value="despacho">Despacho</TabsTrigger>
         </TabsList>
 
-        <TabsContent value = "oportunidad">
-          <h2 className="text-xl font-bold">oportunidad</h2>
-          <FormOportunidad crrOportunidad = {null}/>
+        <TabsContent value="oportunidad">
+          <h2 className="text-xl font-bold">Oportunidad</h2>
+          <FormOportunidad key={crrOportunidad?.id || 'nuevo'} />
         </TabsContent>
 
-        <TabsContent value = "cotizaciones">
+        <TabsContent value="cotizaciones">
           <h2 className="text-xl font-bold">Cotizaciones</h2>
-          <FormCotizaciones/>
+          <FormCotizaciones key={`cotizaciones-${crrOportunidad?.id || 'nuevo'}`} />
         </TabsContent>
 
-        <TabsContent value = "cliente">
+        <TabsContent value="cliente">
           <h2 className="text-xl font-bold">Cliente</h2>
-          <FormCliente/>
+          {/* Usar key para forzar re-renderizado cuando cambia la oportunidad o el cliente */}
+          <FormCliente key={`cliente-${crrOportunidad?.id || 'nuevo'}-${crrOportunidad?.cliente || 'sin-cliente'}`} />
         </TabsContent>
 
-        <TabsContent value = "pedido">
+        <TabsContent value="pedido">
           <h2 className="text-xl font-bold">Pedido</h2>
-          <FormPedido/>
+          <FormPedido key={`pedido-${crrOportunidad?.id || 'nuevo'}`} />
         </TabsContent>
 
-        <TabsContent value = "despacho">
+        <TabsContent value="despacho">
           <h2 className="text-xl font-bold">Despacho</h2>
-          <FormPedido/>
+          <FormPedido key={`despacho-${crrOportunidad?.id || 'nuevo'}`} />
         </TabsContent>
 
       </Tabs>

@@ -1,13 +1,11 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import {z} from 'zod'
-import { cliente, TCliente } from './types/clienteType'
+import { TCliente } from './types/clienteType'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm } from 'react-hook-form'
 import { Form, FormControl, FormField, FormItem, FormMessage } from './ui/form'
@@ -17,8 +15,8 @@ import ClientSearchPopup from './popupcliente'
 import { GetClienteDetailApi, PostClienteAPI } from '@/api/clienteApis'
 import {format} from 'date-fns'
 import { UpdateOportunidadAPI } from '@/api/oportunidadApis'
-import { Verified } from 'lucide-react'
 import { useOportunidadContext } from '@/context/oportunidadContext'
+import { useRouter } from 'next/navigation'
 
 const formSchema = z.object({
   id: z.string().min(1, 'no se encontro id'),
@@ -73,16 +71,37 @@ export default function FormCliente() {
   const [registrarActivo, setRegistrarActivo] = useState(false);
   const [tipoRegistrar, setTipoRegistrar] = useState<"nuevo" | "buscado">("nuevo");
   const [isSearchPopupOpen, setIsSearchPopupOpen] = useState(false);
-  const [cliente, setCliente] = useState<TCliente | null>(null);
-  const {crrOportunidad, setCrrOportunidad, setCrrTab, tipoEdicion} = useOportunidadContext()
+  const {crrOportunidad, setCrrOportunidad, setCrrTab, tipoEdicion,crrTab, cliente, setCliente} = useOportunidadContext()
+  const router = useRouter()
+
+  const cargarCliente = (cliente: TCliente | null) => {
+    if(!cliente)return;
+    form.setValue('id', cliente.id.toString(10));
+    form.setValue('nombre', cliente.nombre);
+    form.setValue('correo', cliente.correo);
+    form.setValue('telefono', cliente.telefono);
+    form.setValue('naturaleza', cliente.naturaleza);
+    form.setValue('tipo_interes', cliente.tipo_interes); 
+    form.setValue('fecha_conversion', cliente.fecha_conversion.toString()); 
+    form.setValue('documento', cliente.documento);
+    form.setValue('tipo_documento', cliente.tipo_documento);
+    form.setValue('activo', cliente.activo.toString());
+  }
 
   useEffect(()=>{
-    if(crrOportunidad && tipoEdicion !== 'nuevo'){
-      if(crrOportunidad.cliente)GetClienteDetailApi('',crrOportunidad.cliente)
-      .then(data => setCliente(data))
-    }
-  },[])
+      if(crrOportunidad && crrTab === 'cliente'){
+        if(crrOportunidad.cliente){
+          GetClienteDetailApi('',crrOportunidad.cliente)
+        .then(data => {
+          setCliente(data)
+          cargarCliente(data)
+        })
 
+      }
+    }
+  },[crrTab])
+
+  
   const form = useForm<z.infer<typeof formSchema>>({
       resolver: zodResolver(formSchema),
       defaultValues: {
@@ -133,17 +152,8 @@ export default function FormCliente() {
 
   const handleSelectCliente = (cliente: TCliente) =>{
     try {
-    form.setValue('id', cliente.id.toString(10));
-    form.setValue('nombre', cliente.nombre);
-    form.setValue('correo', cliente.correo);
-    form.setValue('telefono', cliente.telefono);
-    form.setValue('naturaleza', cliente.naturaleza);
-    form.setValue('tipo_interes', cliente.tipo_interes); 
-    form.setValue('fecha_conversion', cliente.fecha_conversion.toString()); 
-    form.setValue('documento', cliente.documento);
-    form.setValue('tipo_documento', cliente.tipo_documento);
-    form.setValue('activo', cliente.activo.toString());
-
+    
+    cargarCliente(cliente)
     // Lógica para mapear tipo de cliente y documento
     console.log(cliente)
     setRegistrarActivo(true);//Todo diferencia el boton de actualizar y guardar. 
@@ -324,6 +334,10 @@ export default function FormCliente() {
 
               {/* Botón de envío */}
               <div className="flex justify-end pt-4">
+                <CustomButton variant="orange" type="button" 
+                  onClick={()=>{router.push('/'); localStorage.removeItem('nueva-oportunidad')}}>
+                  Salir
+                </CustomButton>
                 <CustomButton
                   variant='primary'
                   type="submit"

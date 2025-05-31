@@ -4,7 +4,7 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { useForm } from "react-hook-form"
 import {z} from "zod"
 import { zodResolver } from "@hookform/resolvers/zod"
@@ -14,8 +14,9 @@ import { format } from "date-fns-tz"
 import { TOportunidad } from "./types/oportunidad"
 import CustomButton from "./customButtom"
 import { useOportunidadContext } from "@/context/oportunidadContext"
-import { PostOportunidadAPI } from "@/api/oportunidadApis"
+import { GetOportunidadDetailApi, PostOportunidadAPI } from "@/api/oportunidadApis"
 import { cliente } from "./types/clienteType"
+import { useRouter } from "next/navigation"
 const formSchema = z.object({
   id: z.string(),
   cliente: z.string().nullable(), 
@@ -37,33 +38,48 @@ const formSchemaSend = formSchema.transform(data => ({
 )
 type FormValues = z.infer<typeof formSchema>
 
-interface FormOportunidadProps {
-  crrOportunidad?: TOportunidad | null; 
-}
 
-export default function FormOportunidad({crrOportunidad}: FormOportunidadProps) {
-  
+export default function FormOportunidad() {
+  const {tipoEdicion, setCrrTab, setCrrOportunidad, crrOportunidad} = useOportunidadContext()
+
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      id: '0',
-      cliente: null, 
-      sede_id: '',
-      fecha_contacto: `${format(new Date(), 'yyyy-MM-dd')}`,
-      estado_oportunidad: 'negociacion',
-      activo: 'true',
+      id: crrOportunidad?`${crrOportunidad.id}`: '0',
+      cliente: crrOportunidad?`${crrOportunidad.cliente}`:null, 
+      sede_id: crrOportunidad?`${crrOportunidad.sede_id}`:'',
+      fecha_contacto: crrOportunidad?`${format(crrOportunidad.fecha_contacto, 'yyyy-MM-dd')}`:`${format(new Date(), 'yyyy-MM-dd')}`,
+      estado_oportunidad: crrOportunidad?`${crrOportunidad.estado_oportunidad}`:'negociacion',
+      activo: crrOportunidad?`${crrOportunidad.activo}`:'true',
       rcliente: null,
     }
   })
-  const {tipoEdicion, setCrrTab, setCrrOportunidad} = useOportunidadContext()
+  const router = useRouter()
+  
+  useEffect(() => {
+  if (crrOportunidad) {
+    form.reset({
+      id: `${crrOportunidad.id}`,
+      cliente: `${crrOportunidad.cliente}`,
+      sede_id: `${crrOportunidad.sede_id}`,
+      fecha_contacto: format(crrOportunidad.fecha_contacto, 'yyyy-MM-dd'),
+      estado_oportunidad: `${crrOportunidad.estado_oportunidad}`,
+      activo: `${crrOportunidad.activo}`,
+      rcliente: null,
+    });
+  }
+}, [crrOportunidad]);
+
 
    const onSubmit = async (rawdata: FormValues) => {
     console.log('Datos del formulario:', rawdata)
     const data = formSchemaSend.parse(rawdata)
     if(tipoEdicion === 'nuevo'){
       const nuevaOportunidad = await PostOportunidadAPI('',data)
+      console.log('nueva oportunidad', nuevaOportunidad)
       setCrrOportunidad(nuevaOportunidad)
       setCrrTab('cotizaciones')
+      if(nuevaOportunidad)localStorage.setItem('nueva-oportunidad', `${nuevaOportunidad.id}`)
     }
   }
 
@@ -182,10 +198,13 @@ export default function FormOportunidad({crrOportunidad}: FormOportunidadProps) 
           )}
         /> 
         */}
-
+        <CustomButton variant="orange" type="button" 
+        onClick={()=>{router.push('/'); localStorage.removeItem('nueva-oportunidad')}}>
+          Salir
+        </CustomButton>
         <CustomButton variant="primary" type="submit">Guardar Oportunidad</CustomButton>
           </form>
           </Form>
-        </div>
+      </div>
     );
 }

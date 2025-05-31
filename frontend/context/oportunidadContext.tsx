@@ -4,6 +4,7 @@ import { createContext, Dispatch, ReactNode, SetStateAction, useContext, useEffe
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/authContext";
 import { TOportunidad } from "@/components/types/oportunidad";
+import { TCliente } from "@/components/types/clienteType";
 
 
 interface OportunidadContextType{
@@ -13,6 +14,8 @@ interface OportunidadContextType{
     setTipoEdicion: Dispatch<SetStateAction<"nuevo" | "edicion" | "vista">>;
     crrTab: string;
     setCrrTab: Dispatch<SetStateAction<string>>;
+    cliente: TCliente | null;
+    setCliente: Dispatch<SetStateAction<TCliente | null>>;
 }
 
 //Para todas las pestañas se necesita:
@@ -25,12 +28,21 @@ const OportunidadContext = createContext<OportunidadContextType | undefined>(und
 export const OportunidadProvider = ({children}: {children: ReactNode}) => {
     const [tipoEdicion, setTipoEdicion] = useState<"nuevo"| "edicion" | "vista">("nuevo")
     const [crrOportunidad, setCrrOportunidad] = useState<TOportunidad | null>(null)
+    const [cliente, setCliente] = useState<TCliente | null>(null);
     const router = useRouter();
     const {ct} = useAuth()
     const [crrTab, setCrrTab] = useState("oportunidad")
 
     return(
-       <OportunidadContext.Provider value = {{tipoEdicion, crrOportunidad, setCrrOportunidad, setTipoEdicion, crrTab, setCrrTab}}>
+       <OportunidadContext.Provider value = {{
+        tipoEdicion, 
+        crrOportunidad, 
+        setCrrOportunidad, 
+        setTipoEdicion, 
+        crrTab, 
+        setCrrTab,
+        cliente,
+        setCliente}}>
             {children}
        </OportunidadContext.Provider> 
     )

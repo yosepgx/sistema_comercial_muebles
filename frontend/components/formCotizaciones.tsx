@@ -167,6 +167,11 @@ export default function FormCotizaciones() {
             />
           </div>
           
+        <CustomButton variant="orange" type="button" 
+          onClick={()=>{router.push('/'); localStorage.removeItem('nueva-oportunidad')}}>
+          Salir
+        </CustomButton>
+          
       <style jsx global>{`
         .MuiDataGrid-root {
           font-family: inherit;

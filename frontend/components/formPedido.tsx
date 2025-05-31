@@ -7,6 +7,8 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { DataGrid, GridColDef } from '@mui/x-data-grid'
+import CustomButton from './customButtom'
+import { useRouter } from 'next/navigation'
 
 interface ProductoData {
   id: number
@@ -86,7 +88,7 @@ export default function FormPedido() {
     estado: 'Por validar',
     observaciones: ''
   })
-
+  const router = useRouter()
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({
       ...prev,
@@ -344,6 +346,10 @@ export default function FormPedido() {
           font-family: inherit;
         }
       `}</style>
+      <CustomButton variant="orange" type="button" 
+        onClick={()=>{router.push('/'); localStorage.removeItem('nueva-oportunidad')}}>
+        Salir
+      </CustomButton>
     </div>
   )
 }
