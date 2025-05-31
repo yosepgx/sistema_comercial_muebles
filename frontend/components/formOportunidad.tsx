@@ -13,23 +13,25 @@ import { FormLabel } from "@mui/material"
 import { format } from "date-fns-tz"
 import { TOportunidad } from "./types/oportunidad"
 import CustomButton from "./customButtom"
-
+import { useOportunidadContext } from "@/context/oportunidadContext"
+import { PostOportunidadAPI } from "@/api/oportunidadApis"
+import { cliente } from "./types/clienteType"
 const formSchema = z.object({
   id: z.string(),
-  cliente: z.string(), 
+  cliente: z.string().nullable(), 
   sede_id: z.string(),
-  fecha_contacto: z.string().optional(), //manejado por back
-  estado_oportunidad: z.enum(["ganado","perdido","en negociacion"]),
+  fecha_contacto: z.string(), //manejado por back
+  estado_oportunidad: z.enum(["ganado","perdido","negociacion"]),
   activo: z.string(),
-  rcliente: z.string().optional().nullable(),
+  rcliente: cliente.optional().nullable(),
 })
 
 const formSchemaSend = formSchema.transform(data => ({
   ...data,
   id: parseInt(data.id,10),
-  cliente: parseInt(data.id,10),
-  sede_id: parseInt(data.id,10),
-  fecha_contacto: parseInt(data.id,10),
+  cliente: data.cliente?parseInt(data.cliente,10):null,
+  sede_id: parseInt(data.sede_id,10),
+  fecha_contacto: format(data.fecha_contacto, 'yyyy-MM-dd'),
   activo: data.activo === 'true',
   })
 )
@@ -45,17 +47,24 @@ export default function FormOportunidad({crrOportunidad}: FormOportunidadProps) 
     resolver: zodResolver(formSchema),
     defaultValues: {
       id: '0',
-      cliente: '', 
+      cliente: null, 
       sede_id: '',
-      fecha_contacto: '',
-      estado_oportunidad: 'en negociacion',
+      fecha_contacto: `${format(new Date(), 'yyyy-MM-dd')}`,
+      estado_oportunidad: 'negociacion',
       activo: 'true',
       rcliente: null,
     }
   })
+  const {tipoEdicion, setCrrTab, setCrrOportunidad} = useOportunidadContext()
 
-   const onSubmit = (data: FormValues) => {
-    console.log('Datos del formulario:', data)
+   const onSubmit = async (rawdata: FormValues) => {
+    console.log('Datos del formulario:', rawdata)
+    const data = formSchemaSend.parse(rawdata)
+    if(tipoEdicion === 'nuevo'){
+      const nuevaOportunidad = await PostOportunidadAPI('',data)
+      setCrrOportunidad(nuevaOportunidad)
+      setCrrTab('cotizaciones')
+    }
   }
 
     return (
@@ -112,24 +121,25 @@ export default function FormOportunidad({crrOportunidad}: FormOportunidadProps) 
           />
       </div>
       {/* Resultado */}
-      <div>
+      <div >
          <FormField
             control = {form.control}
             name = "estado_oportunidad"
             render={({field}) => (
-            <FormItem className='flex flex-row'>
+            <FormItem >
               <FormLabel>Resultado</FormLabel>
               <FormControl>
                 <RadioGroup
                   onValueChange={field.onChange}
                   defaultValue={'negociacion'}
+                  className='flex flex-row'
                 >
                   <FormItem >
                     <FormControl>
                       <RadioGroupItem value="negociacion" />
                     </FormControl>
                     <FormLabel>
-                      En negociacion
+                      Negociacion
                     </FormLabel>
                   </FormItem>
                   <FormItem >

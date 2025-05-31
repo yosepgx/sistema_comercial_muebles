@@ -16,7 +16,7 @@ class Oportunidad(models.Model):
         (PERDIDO, 'Perdido'),
     ]
 
-    cliente = models.ForeignKey(Cliente, on_delete=models.CASCADE)
+    cliente = models.ForeignKey(Cliente, on_delete=models.CASCADE,null=True)
     #sede = models.ForeignKey(Sede, on_delete=models.CASCADE) #TODO: agregar model Sedez
     fecha_contacto = models.DateField(auto_now_add=True)
     

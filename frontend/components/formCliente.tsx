@@ -73,28 +73,29 @@ export default function FormCliente() {
   const [registrarActivo, setRegistrarActivo] = useState(false);
   const [tipoRegistrar, setTipoRegistrar] = useState<"nuevo" | "buscado">("nuevo");
   const [isSearchPopupOpen, setIsSearchPopupOpen] = useState(false);
-  const [cliente, setCliente] = useState(null);
-  const {crrOportunidad, setCrrOportunidad, setCrrTab} = useOportunidadContext()
+  const [cliente, setCliente] = useState<TCliente | null>(null);
+  const {crrOportunidad, setCrrOportunidad, setCrrTab, tipoEdicion} = useOportunidadContext()
 
   useEffect(()=>{
-    if(crrOportunidad){
-      GetClienteDetailApi('',crrOportunidad.cliente)
+    if(crrOportunidad && tipoEdicion !== 'nuevo'){
+      if(crrOportunidad.cliente)GetClienteDetailApi('',crrOportunidad.cliente)
+      .then(data => setCliente(data))
     }
   },[])
 
   const form = useForm<z.infer<typeof formSchema>>({
       resolver: zodResolver(formSchema),
       defaultValues: {
-          id: '0',
-          nombre: '',
-          correo: '',
-          telefono: '',
-          tipo_interes: 'lead',
-          fecha_conversion: `${format(new Date(), 'yyyy-MM-dd')}`,
-          naturaleza: 'Natural',
-          documento: '',
-          tipo_documento: 'DNI',
-          activo: "true",
+          id: cliente?cliente.id.toString():'0',
+          nombre: cliente?cliente.nombre: '',
+          correo: cliente?cliente.correo: '',
+          telefono: cliente?cliente.telefono:'',
+          tipo_interes: cliente?cliente.tipo_interes:'lead',
+          fecha_conversion: cliente?cliente.fecha_conversion:`${format(new Date(), 'yyyy-MM-dd')}`,
+          naturaleza: cliente?cliente.naturaleza:'Natural',
+          documento: cliente?cliente.documento:'',
+          tipo_documento: cliente?cliente.tipo_documento:'DNI',
+          activo: cliente?cliente.activo.toString():"true",
         },
       });
 
