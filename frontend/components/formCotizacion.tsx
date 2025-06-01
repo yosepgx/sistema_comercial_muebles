@@ -8,81 +8,17 @@ import { Textarea } from '@/components/ui/textarea'
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
 import { DataGrid, GridColDef } from '@mui/x-data-grid'
 import { ChevronRight, ChevronDown, Edit, Printer, Trash2, Save } from 'lucide-react'
-import { Form, useForm } from 'react-hook-form'
+import { useForm } from 'react-hook-form'
 import {z} from 'zod';
 import { TCotizacion, TCotizacionDetalle } from './types/cotizacion'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { FormControl, FormField, FormItem, FormLabel, FormMessage } from './ui/form'
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from './ui/form'
 import CustomButton from './customButtom'
 import { useOportunidadContext } from '@/context/oportunidadContext'
 import { RadioGroup, RadioGroupItem } from './ui/radio-group'
 import { GetCotizacionLineaListApi } from '@/api/cotizacionDetalleApis'
-
-const productosData: TCotizacionDetalle[] = [
-  {
-    producto_id: 5,
-    cotizacion_id: 1,
-    cantidad: 1,
-    precio: 2000,
-    descuento: 200,
-    nrolinea: 1,
-    subtotal: 1800,
-    activo: true,
-    //rum: 'Unidades',
-    //rproducto: 'Comedor de 8 sillas',
-  },
-  {
-    producto_id: 6,
-    cotizacion_id: 2,
-    cantidad: 1,
-    precio: 1800,
-    descuento: 180,
-    nrolinea: 2,
-    subtotal: 1620,
-    activo: true,
-    //rum: 'Unidades',
-    //rproducto: 'Comedor de 8 sillas',
-  },
-  {
-    producto_id: 6,
-    cotizacion_id: 3,
-    cantidad: 1,
-    precio: 2000,
-    descuento: 200,
-    nrolinea: 3,
-    subtotal: 1800,
-    activo: true,
-    //rum: 'Unidades',
-    //rproducto: 'Comedor de 8 sillas',
-  },
-]
-
-/*
-const formSchema = z.object({
-  producto_id: z.string(),
-  cotizacion_id: z.string(),
-  cantidad: z.string(),
-  precio: z.string(),
-  descuento: z.string(),
-  subtotal: z.string(),
-  nrolinea: z.string(),
-  activo: z.string(),
-})*/
-
-
-
-/*const formSchemaSend = formSchema.transform(data => ({
-    ...data,
-    producto_id: parseInt(data.producto_id,10),
-    cotizacion_id: parseInt(data.cotizacion_id,10),
-    cantidad: parseInt(data.cantidad,10),
-    precio: parseInt(data.precio,10),
-    descuento: parseInt(data.descuento,10),
-    subtotal: parseInt(data.subtotal,10),
-    nrolinea: parseInt(data.nrolinea,10), //TODO: asignar en orden
-    activo: data.activo === "true",
-  })
-)*/
+import { TProducto } from '@/app/inventario/producto/types/productoTypes'
+import ProductSearchPopup from './popsearchproducto'
 
 
 const formSchema = z. object({
@@ -114,12 +50,11 @@ const formSchemaSend = formSchema.transform ( data => ({
 type FormValues = z.infer<typeof formSchema>
 
 export default function FormCotizacionDetalle() {
-  const [descuentoAuxiliar, setDescuentoAuxiliar] = useState('400.00')
-  const [maximoPermisible, setMaximoPermisible] = useState('382.5')
-  const [observaciones, setObservaciones] = useState('')
+  const [maximoPermisible, setMaximoPermisible] = useState('0.00')
   const [tipoDireccion, setTipoDireccion] = useState<'tienda' | 'otro'>('tienda')
   const [isDescuentoOpen, setIsDescuentoOpen] = useState(true)
-  const {crrCotizacion, crrTab, SetModoCotizacion} = useOportunidadContext()
+  const [isSearchPopupOpen, setIsSearchPopupOpen] = useState(false);
+  const {crrCotizacion, crrTab, SetModoCotizacion, tipoEdicion} = useOportunidadContext()
   const [listaDetalles, setListaDetalles] = useState<TCotizacionDetalle[]>([])
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -139,8 +74,9 @@ export default function FormCotizacionDetalle() {
 
   useEffect(()=>{
     if(crrCotizacion && crrTab === 'cotizaciones'){
-      GetCotizacionLineaListApi(null, crrCotizacion.id)
-      setListaDetalles(productosData)
+      GetCotizacionLineaListApi(null, crrCotizacion.id).then(
+        data => setListaDetalles(data)
+      )
     }
   },[crrTab])
 
@@ -214,12 +150,59 @@ export default function FormCotizacionDetalle() {
     }
   ]
 
+  useEffect(() => {
+  // Sumar subtotales
+  const totalConIGV = listaDetalles.reduce((acc, item) => acc + (item.subtotal || 0), 0);
+  const totalSinIGV = totalConIGV / 1.18; // Asumiendo 18% IGV
+  const IGV = totalSinIGV * 0.18; // Asumiendo 18% IGV
+  
+
+  form.setValue('monto_sin_impuesto', totalSinIGV.toFixed(2));
+  form.setValue('monto_igv', IGV.toFixed(2));
+  form.setValue('monto_total', totalConIGV.toFixed(2));
+}, [listaDetalles]);
+
   const onSubmit = (data: FormValues) => {
     console.log('Datos del formulario:', data)
+    console.log('Datos del listado:', listaDetalles)
   }
+
+
+const handleSelectProducto = (producto: TProducto) => {
+  try {
+    if(!crrCotizacion && tipoEdicion === 'nuevo')
+    console.log("producto seleccionado", producto)
+    setListaDetalles((old) => {
+      const yaExiste = old.some(item => item.producto_id === producto.id);
+      if (yaExiste) return old;
+
+      const detalle: TCotizacionDetalle = {
+        producto_id: producto.id,
+        cotizacion_id: 0, //al crear asignar a todas estas la cotizacion
+        cantidad: 1,
+        precio: producto.rprecio_actual?producto.rprecio_actual:0 ,
+        descuento: 0,
+        subtotal: producto.rprecio_actual?producto.rprecio_actual * 1: 0,
+        nrolinea: old.length + 1,
+        activo: true
+      };
+
+      return [...old, detalle];
+    });
+
+    setIsSearchPopupOpen(false);
+  } catch (error) {
+    console.error('Error al seleccionar producto', error);
+  }
+};
 
   return (
     <div className="container mx-auto px-4 py-6">
+      <ProductSearchPopup
+              open={isSearchPopupOpen}
+              onClose={() => setIsSearchPopupOpen(false)}
+              onSelectProducto={handleSelectProducto}
+      />
       {/* Breadcrumb */}
       <div className="flex items-center gap-2 mb-6 text-sm text-gray-600">
         <ChevronRight size={16} />
@@ -229,7 +212,7 @@ export default function FormCotizacionDetalle() {
           </span>
         <span> Cotización{' '}
         {crrCotizacion ? `${crrCotizacion.id} (${crrCotizacion.estado_cotizacion})` : '0 (Propuesta)'} </span>
-        <CustomButton>Guardar Cotizacion</CustomButton>
+        <CustomButton type='submit'>Guardar Cotizacion</CustomButton>
       </div>
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
@@ -240,14 +223,14 @@ export default function FormCotizacionDetalle() {
           <span className="font-medium">Datos generales</span>
         </CollapsibleTrigger>
         <CollapsibleContent className="border border-t-0 rounded-b-lg p-6 bg-white">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+          <div className="grid grid-cols-2 ">
             {/* Descuento auxiliar */}
             <div>
-              <div className='flex flex-row'> 
+              <div className='flex flex-row gap-8' > 
               <RadioGroup
                 value={tipoDireccion}
                 onValueChange={(value: 'tienda' | 'otro') => setTipoDireccion(value)}
-                className="flex gap-6"
+                className="flex flex-col "
               >
                 <div className="flex items-center space-x-2">
                   <RadioGroupItem value="tienda" id="tienda" />
@@ -266,43 +249,38 @@ export default function FormCotizacionDetalle() {
                   <FormItem className='flex flex-col'>
                     <FormLabel> Direccion de Entrega</FormLabel>
                     <FormControl>
-                      <Input type = "number" {...field}/>
+                      <Input type = "text" {...field}/>
                     </FormControl>
                     <FormMessage className="min-h-[24px]"/>
                   </FormItem>
                 )}
               />
               </div>
-
-              <FormField
-                control = {form.control}
-                name = "descuento_adicional"
-                render={({field}) => (
-                  <FormItem className='flex flex-col'>
-                    <FormLabel> Monto de Descuento Auxiliar</FormLabel>
-                    <FormControl>
-                      <Input type = "number" {...field}/>
-                    </FormControl>
-                    <FormMessage className="min-h-[24px]"/>
-                  </FormItem>
-                )}
-              />
+              <div className='flex flex-row'>
+                <FormField
+                  control = {form.control}
+                  name = "descuento_adicional"
+                  render={({field}) => (
+                    <FormItem className='flex flex-col'>
+                      <FormLabel> Monto de Descuento Auxiliar</FormLabel>
+                      <FormControl>
+                        <Input type = "number" {...field} className='flex'/>
+                      </FormControl>
+                      <FormMessage className="min-h-[24px]"/>
+                    </FormItem>
+                  )}
+                />
+                <div className="space-y-2">
+                <Label>
+                  Máximo permisible
+                </Label>
+                <Input
+                  id="maximoPermisible"
+                  value={maximoPermisible}
+                  disabled = {true}
+                />
+              </div>
             </div>
-            {/* Máximo permisible */}
-            <div className="space-y-2">
-              <Label>
-                Máximo permisible
-              </Label>
-              <Input
-                id="maximoPermisible"
-                value={maximoPermisible}
-                disabled = {true}
-              />
-            </div>
-
-            {/* Direccion de entrega */}
-            
-
             {/* Observación/Razón de rechazo */}
             <div>
             <FormField
@@ -319,6 +297,14 @@ export default function FormCotizacionDetalle() {
               )}
             />
             </div>
+            </div>
+            {/* Máximo permisible */}
+            
+
+            {/* Direccion de entrega */}
+            
+
+            
             <div>
               <div className="space-y-2">
               <Label>
@@ -358,14 +344,16 @@ export default function FormCotizacionDetalle() {
 
         </CollapsibleContent>
       </Collapsible>
-
+      </form>
+    </Form> 
       {/* Sección de Listado */}
       <div className="mt-6">
         <h3 className="text-lg font-medium mb-4">Listado</h3>
         
         {/* Botones de acción */}
         <div className="flex justify-between items-center mb-4">
-          <CustomButton variant='primary'>
+          <CustomButton variant='primary'
+          onClick={()=>setIsSearchPopupOpen(true)}>
             Agregar Línea
           </CustomButton>
           <div className="flex gap-8">
@@ -377,12 +365,13 @@ export default function FormCotizacionDetalle() {
             </CustomButton>
           </div>
         </div>
-
-        {/* Tabla de productos */}
+      
+        {/* Tabla de detalles */}
         <div className="bg-white rounded-lg border">
           <DataGrid
             rows={listaDetalles}
             columns={columns}
+            getRowId={(row) => `${row.producto_id}-${row.cotizacion_id}`}
             initialState={{
               pagination: {
                 paginationModel: { pageSize: 10 }
@@ -394,8 +383,7 @@ export default function FormCotizacionDetalle() {
           />
         </div>
       </div>
-      </form>
-    </Form>    
+         
     </div>
   )
 }

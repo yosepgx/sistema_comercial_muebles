@@ -1,0 +1,191 @@
+'use client'
+
+import React, { useMemo, useState } from 'react'
+import {
+  useReactTable,
+  getCoreRowModel,
+  flexRender,
+  ColumnDef,
+} from '@tanstack/react-table'
+import { Edit, Save, Trash2 } from 'lucide-react'
+
+type TCotizacionDetalle = {
+  producto_id: string
+  cotizacion_id: string
+  precio: number
+  cantidad: number
+  descuento: number
+  subtotal: number
+}
+
+export const CotizacionTable = (listaDetalles: TCotizacionDetalle[]) => {
+  const [data, setData] = useState<TCotizacionDetalle[]>(listaDetalles)
+  const [editRowId, setEditRowId] = useState<string | null>(null)
+  const [errors, setErrors] = useState<Record<string, string>>({})
+
+  const handleCantidadChange = (id: string, value: number) => {
+    setData((prev) =>
+      prev.map((row) => {
+        if (`${row.producto_id}-${row.cotizacion_id}` === id) {
+          const isValid = value > 0
+          const newSubtotal = isValid ? (value * row.precio - row.descuento) : row.subtotal
+          if (!isValid) {
+            setErrors((e) => ({ ...e, [id]: 'Cantidad debe ser mayor a 0' }))
+          } else {
+            setErrors((e) => {
+              const newErrors = { ...e }
+              delete newErrors[id]
+              return newErrors
+            })
+          }
+
+          return {
+            ...row,
+            cantidad: value,
+            subtotal: parseFloat(newSubtotal.toFixed(2)),
+          }
+        }
+        return row
+      })
+    )
+  }
+
+  const handleSave = (id: string) => {
+    if (errors[id]) return
+    // Aquí podrías llamar a una función del contexto o API para guardar
+    setEditRowId(null)
+  }
+
+  const handleDelete = (id: string) => {
+    setData((prev) =>
+      prev.filter((row) => `${row.producto_id}-${row.cotizacion_id}` !== id)
+    )
+    setErrors((prev) => {
+      const newErrors = { ...prev }
+      delete newErrors[id]
+      return newErrors
+    })
+  }
+
+  const columns = useMemo<ColumnDef<TCotizacionDetalle>[]>(() => [
+    {
+      header: 'CODIGO',
+      accessorKey: 'producto_id',
+    },
+    {
+      header: 'VALOR UNITARIO',
+      accessorKey: 'precio',
+      cell: info => Number(info.getValue()).toFixed(2),
+    },
+    {
+      header: 'CANTIDAD',
+      accessorKey: 'cantidad',
+      cell: info => {
+        const row = info.row.original
+        const id = `${row.producto_id}-${row.cotizacion_id}`
+        const isEditing = editRowId === id
+
+        return (
+          <div>
+            {isEditing ? (
+              <>
+                <input
+                  type="number"
+                  className="border rounded px-2 py-1 w-24"
+                  value={row.cantidad}
+                  onChange={(e) => handleCantidadChange(id, Number(e.target.value))}
+                  min={1}
+                />
+                {errors[id] && (
+                  <div className="text-xs text-red-500">{errors[id]}</div>
+                )}
+              </>
+            ) : (
+              row.cantidad
+            )}
+          </div>
+        )
+      }
+    },
+    {
+      header: 'DESCUENTO',
+      accessorKey: 'descuento',
+      cell: info => Number(info.getValue()).toFixed(2),
+    },
+    {
+      header: 'TOTAL',
+      accessorKey: 'subtotal',
+      cell: info => Number(info.getValue()).toFixed(2),
+    },
+    {
+      header: 'Acciones',
+      id: 'acciones',
+      cell: ({ row }) => {
+        const id = `${row.original.producto_id}-${row.original.cotizacion_id}`
+        const isEditing = editRowId === id
+
+        return (
+          <div className="flex gap-2">
+            {isEditing ? (
+              <button
+                onClick={() => handleSave(id)}
+                className="p-1 hover:bg-gray-100 rounded disabled:opacity-50"
+                disabled={!!errors[id]}
+              >
+                <Save size={16} />
+              </button>
+            ) : (
+              <button
+                onClick={() => setEditRowId(id)}
+                className="p-1 hover:bg-gray-100 rounded"
+              >
+                <Edit size={16} />
+              </button>
+            )}
+            <button
+              onClick={() => handleDelete(id)}
+              className="p-1 hover:bg-gray-100 rounded"
+            >
+              <Trash2 size={16} />
+            </button>
+          </div>
+        )
+      }
+    }
+  ], [editRowId, errors])
+
+  const table = useReactTable({
+    data,
+    columns,
+    getCoreRowModel: getCoreRowModel()
+  })
+
+  return (
+    <div className="overflow-x-auto">
+      <table className="min-w-full border">
+        <thead className="bg-gray-100">
+          {table.getHeaderGroups().map(headerGroup => (
+            <tr key={headerGroup.id}>
+              {headerGroup.headers.map(header => (
+                <th key={header.id} className="px-3 py-2 text-left border">
+                  {flexRender(header.column.columnDef.header, header.getContext())}
+                </th>
+              ))}
+            </tr>
+          ))}
+        </thead>
+        <tbody>
+          {table.getRowModel().rows.map(row => (
+            <tr key={row.id} className="border-b">
+              {row.getVisibleCells().map(cell => (
+                <td key={cell.id} className="px-3 py-2 border">
+                  {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                </td>
+              ))}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  )
+}
