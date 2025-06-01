@@ -1,24 +1,23 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Textarea } from '@/components/ui/textarea'
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
-import { DataGrid, GridColDef } from '@mui/x-data-grid'
-import { ChevronRight, ChevronDown, Edit, Printer, Trash2, Save } from 'lucide-react'
+import { ChevronRight, ChevronDown } from 'lucide-react'
 import { useForm } from 'react-hook-form'
-import {z} from 'zod';
-import { TCotizacion, TCotizacionDetalle } from './types/cotizacion'
+import { z } from 'zod'
+import { TCotizacionDetalle } from './types/cotizacion'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from './ui/form'
 import CustomButton from './customButtom'
 import { useOportunidadContext } from '@/context/oportunidadContext'
 import { RadioGroup, RadioGroupItem } from './ui/radio-group'
-import { GetCotizacionLineaListApi } from '@/api/cotizacionDetalleApis'
+import { GetCotizacionLineaListApi, PostCotizacionLineaAPI } from '@/api/cotizacionDetalleApis'
 import { TProducto } from '@/app/inventario/producto/types/productoTypes'
 import ProductSearchPopup from './popsearchproducto'
+import { CotizacionTable } from './tablecotizacion'
+import { PostCotizacionAPI, UpdateCotizacionAPI } from '@/api/cotizacionApis'
 
 
 const formSchema = z. object({
@@ -26,6 +25,7 @@ const formSchema = z. object({
   fecha: z.string(), //manejado por back 
   estado_cotizacion: z.enum(["propuesta","aceptada","rechazada"]), // si usa el boton de aceptar o rechazar 
   //vendedor_asignado: z.number(),
+  oportunidad: z.string(),
   monto_sin_impuesto: z.string(), //suma ingresada al final
   monto_igv: z.string(),
   monto_total: z.string(),
@@ -39,6 +39,7 @@ const formSchema = z. object({
 const formSchemaSend = formSchema.transform ( data => ({
   ...data,
   id: parseInt(data.id,10),
+  oportunidad: parseInt(data.oportunidad,10),
   monto_sin_impuesto: parseInt(data.monto_sin_impuesto,10),
   monto_igv: parseInt(data.monto_sin_impuesto,10),
   monto_total: parseInt(data.monto_sin_impuesto,10),
@@ -54,7 +55,7 @@ export default function FormCotizacionDetalle() {
   const [tipoDireccion, setTipoDireccion] = useState<'tienda' | 'otro'>('tienda')
   const [isDescuentoOpen, setIsDescuentoOpen] = useState(true)
   const [isSearchPopupOpen, setIsSearchPopupOpen] = useState(false);
-  const {crrCotizacion, crrTab, SetModoCotizacion, tipoEdicion} = useOportunidadContext()
+  const {crrCotizacion, crrTab, SetModoCotizacion, tipoEdicion, crrOportunidad, setCrrTab} = useOportunidadContext()
   const [listaDetalles, setListaDetalles] = useState<TCotizacionDetalle[]>([])
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -62,6 +63,7 @@ export default function FormCotizacionDetalle() {
       id: '',
       fecha: '',
       estado_cotizacion: 'propuesta',
+      oportunidad: '',
       monto_sin_impuesto: '',
       monto_igv: '',
       monto_total: '',
@@ -80,97 +82,53 @@ export default function FormCotizacionDetalle() {
     }
   },[crrTab])
 
-  const columns: GridColDef<TCotizacionDetalle>[] = [
-    {
-      field: 'producto_id',
-      headerName: 'CODIGO',
-      resizable: false,
-      flex: 1
-    },
-    // {
-    //   field: 'rproducto',
-    //   headerName: 'PRODUCTO',
-    //   resizable: false,
-    //   flex: 1,
-    //   renderCell: (params) => (
-    //     <span>{params.row.rproducto?.nombre || ''}</span>
-    //   ), // Maneja nulos o undefined
-    // },
-    {
-      field: 'precio',
-      headerName: 'VALOR UNITARIO',
-      resizable: false,
-      flex: 1
-    },
-    // {
-    //   field: 'rum',
-    //   headerName: 'UM',
-    //   resizable: false,
-    //   flex: 1
-    // },
-    {
-      field: 'cantidad',
-      headerName: 'CANTIDAD',
-      resizable: false,
-      flex: 1
-    },
-    {
-      field: 'descuento',
-      headerName: 'DESCUENTO',
-      resizable: false,
-      flex: 1
-    },
-    {
-      field: 'subtotal',
-      headerName: 'TOTAL',
-      resizable: false,
-      flex: 1
-    },
-    {
-      field: 'acciones',
-      headerName: 'Acciones',
-      resizable: false,
-      sortable: false,
-      filterable: false,
-      disableColumnMenu: true,
-      width: 120,
-      renderCell: (params) => (
-        <div className="flex gap-1">
-          <button className="p-1 rounded hover:bg-gray-100">
-            <Edit/>
-          </button>
-          <button className="p-1 rounded hover:bg-gray-100">
-            <Save/>
-          </button>
-          <button className="p-1 rounded hover:bg-gray-100">
-            <Trash2/>
-          </button>
-        </div>
-      )
-    }
-  ]
-
   useEffect(() => {
   // Sumar subtotales
   const totalConIGV = listaDetalles.reduce((acc, item) => acc + (item.subtotal || 0), 0);
   const totalSinIGV = totalConIGV / 1.18; // Asumiendo 18% IGV
   const IGV = totalSinIGV * 0.18; // Asumiendo 18% IGV
   
-
   form.setValue('monto_sin_impuesto', totalSinIGV.toFixed(2));
   form.setValue('monto_igv', IGV.toFixed(2));
   form.setValue('monto_total', totalConIGV.toFixed(2));
 }, [listaDetalles]);
 
-  const onSubmit = (data: FormValues) => {
-    console.log('Datos del formulario:', data)
-    console.log('Datos del listado:', listaDetalles)
+const onSubmit = async (rawdata: FormValues) => {
+  console.log('Datos del formulario:', rawdata)
+  console.log('Datos del listado:', listaDetalles)
+  try {
+    rawdata.oportunidad = `${crrOportunidad?.id}`
+    if(tipoDireccion === 'tienda')rawdata.direccion_entrega = 'tienda';
+    const data = formSchemaSend.parse(rawdata)
+    if(!crrCotizacion && tipoEdicion === 'nuevo'){
+      //creacion de cotizacion
+      const nuevaCotizacion = await PostCotizacionAPI(null, data)
+      //creacion de detalles asociados
+      if(nuevaCotizacion){
+        const detallesConReferencia = listaDetalles.map(detalle => ({
+          ...detalle,
+          cotizacion: nuevaCotizacion.id,
+        }))
+        // Ejecutar todas las creaciones en paralelo 
+        await Promise.all(
+        detallesConReferencia.map(det => PostCotizacionLineaAPI(null, det))
+        )
+      console.log("Cotización y detalles guardados correctamente")
+    } else {
+      // no hay edicion solo creacion de nuevas
+      console.log("no hay edicion de cotizacion")
+    }
+      
+    }
+  } catch (error) {
+    console.error("error al guardar cotizacion: ", error)
   }
+}
 
 
 const handleSelectProducto = (producto: TProducto) => {
   try {
-    if(!crrCotizacion && tipoEdicion === 'nuevo')
+    if(!crrCotizacion && tipoEdicion === 'nuevo')//si es creacion (nuevo) no existe aun la cotizacion
     console.log("producto seleccionado", producto)
     setListaDetalles((old) => {
       const yaExiste = old.some(item => item.producto_id === producto.id);
@@ -212,7 +170,38 @@ const handleSelectProducto = (producto: TProducto) => {
           </span>
         <span> Cotización{' '}
         {crrCotizacion ? `${crrCotizacion.id} (${crrCotizacion.estado_cotizacion})` : '0 (Propuesta)'} </span>
-        <CustomButton type='submit'>Guardar Cotizacion</CustomButton>
+        {tipoEdicion === 'nuevo'&& <CustomButton type='submit'>Guardar Cotizacion</CustomButton>}
+        {crrCotizacion && tipoEdicion === "vista" && <div className="flex gap-8">
+              <CustomButton
+                variant='red'
+                onClick={async () => {
+                  const confirmacion = window.confirm('¿Estás seguro de que deseas rechazar esta cotización?')
+                  if (confirmacion) {
+                    const nueva = { ...crrCotizacion, estado_cotizacion: 'rechazada' as 'rechazada'}
+                    await UpdateCotizacionAPI(null, crrCotizacion.id, nueva)
+                  }
+                }}
+              >
+              Rechazar Cotización
+            </CustomButton>
+            <CustomButton
+              variant='green'
+              onClick={async () => {
+                const confirmacion = window.confirm('¿Deseas generar un pedido a partir de esta cotización?')
+                if (confirmacion) {
+                  const nueva = { ...crrCotizacion, estado_cotizacion: 'aceptada' as 'aceptada'}
+                  const respuesta = await UpdateCotizacionAPI(null, crrCotizacion.id, nueva)
+                  if(!respuesta){//no le permitio porque ya hay otra
+                    window.alert("ya existe cotizacion aceptada para esta oportunidad");
+                    return
+                  }
+                  setCrrTab('pedido')
+                }
+              }}
+            >
+              Generar Pedido
+            </CustomButton>
+        </div>}
       </div>
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
@@ -241,7 +230,7 @@ const handleSelectProducto = (producto: TProducto) => {
                   <Label htmlFor="otro" className="text-sm">Otro</Label>
                 </div>
               </RadioGroup>
-
+              {/* Direccion de entrega */}
               <FormField
                 control = {form.control}
                 name = "direccion_entrega"
@@ -249,7 +238,7 @@ const handleSelectProducto = (producto: TProducto) => {
                   <FormItem className='flex flex-col'>
                     <FormLabel> Direccion de Entrega</FormLabel>
                     <FormControl>
-                      <Input type = "text" {...field}/>
+                      <Input type = "text" {...field} disabled={tipoDireccion==="tienda"}/>
                     </FormControl>
                     <FormMessage className="min-h-[24px]"/>
                   </FormItem>
@@ -270,6 +259,8 @@ const handleSelectProducto = (producto: TProducto) => {
                     </FormItem>
                   )}
                 />
+                {/* Máximo permisible */}
+
                 <div className="space-y-2">
                 <Label>
                   Máximo permisible
@@ -298,12 +289,6 @@ const handleSelectProducto = (producto: TProducto) => {
             />
             </div>
             </div>
-            {/* Máximo permisible */}
-            
-
-            {/* Direccion de entrega */}
-            
-
             
             <div>
               <div className="space-y-2">
@@ -356,31 +341,12 @@ const handleSelectProducto = (producto: TProducto) => {
           onClick={()=>setIsSearchPopupOpen(true)}>
             Agregar Línea
           </CustomButton>
-          <div className="flex gap-8">
-            <CustomButton variant='red'>
-              Rechazar Cotización
-            </CustomButton>
-            <CustomButton variant='green'>
-              Generar Pedido
-            </CustomButton>
-          </div>
+          
         </div>
       
         {/* Tabla de detalles */}
         <div className="bg-white rounded-lg border">
-          <DataGrid
-            rows={listaDetalles}
-            columns={columns}
-            getRowId={(row) => `${row.producto_id}-${row.cotizacion_id}`}
-            initialState={{
-              pagination: {
-                paginationModel: { pageSize: 10 }
-              }
-            }}
-            pageSizeOptions={[5, 10, 25]}
-            disableRowSelectionOnClick
-            
-          />
+          <CotizacionTable listaDetalles = {listaDetalles}/>
         </div>
       </div>
          

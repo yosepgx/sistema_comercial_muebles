@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useMemo, useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import {
   useReactTable,
   getCoreRowModel,
@@ -8,20 +8,20 @@ import {
   ColumnDef,
 } from '@tanstack/react-table'
 import { Edit, Save, Trash2 } from 'lucide-react'
+import { TCotizacionDetalle } from './types/cotizacion';
 
-type TCotizacionDetalle = {
-  producto_id: string
-  cotizacion_id: string
-  precio: number
-  cantidad: number
-  descuento: number
-  subtotal: number
+interface CotizacionTableProps {
+  listaDetalles: TCotizacionDetalle[];
 }
 
-export const CotizacionTable = (listaDetalles: TCotizacionDetalle[]) => {
+export const CotizacionTable : React.FC<CotizacionTableProps>  = ({listaDetalles}) => {
   const [data, setData] = useState<TCotizacionDetalle[]>(listaDetalles)
   const [editRowId, setEditRowId] = useState<string | null>(null)
   const [errors, setErrors] = useState<Record<string, string>>({})
+
+  useEffect(() => {
+  setData(listaDetalles)
+  }, [listaDetalles])
 
   const handleCantidadChange = (id: string, value: number) => {
     setData((prev) =>
@@ -72,8 +72,10 @@ export const CotizacionTable = (listaDetalles: TCotizacionDetalle[]) => {
       header: 'CODIGO',
       accessorKey: 'producto_id',
     },
+    //TODO rproducto
+    //TODO rum
     {
-      header: 'VALOR UNITARIO',
+      header: 'PRECIO UNITARIO',
       accessorKey: 'precio',
       cell: info => Number(info.getValue()).toFixed(2),
     },
@@ -92,13 +94,21 @@ export const CotizacionTable = (listaDetalles: TCotizacionDetalle[]) => {
                 <input
                   type="number"
                   className="border rounded px-2 py-1 w-24"
+                  style={{
+                    fontFamily: 'monospace',
+                    whiteSpace: 'nowrap',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                  }}
                   value={row.cantidad}
                   onChange={(e) => handleCantidadChange(id, Number(e.target.value))}
                   min={1}
                 />
-                {errors[id] && (
-                  <div className="text-xs text-red-500">{errors[id]}</div>
-                )}
+                <div className="text-xs h-4 mt-1">
+                  <span className={errors[id] ? "text-red-500 visible" : "invisible"}>
+                    {errors[id] ?? 'placeholder'}
+                  </span>
+                </div>
               </>
             ) : (
               row.cantidad

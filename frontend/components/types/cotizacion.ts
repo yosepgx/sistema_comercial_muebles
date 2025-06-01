@@ -13,7 +13,7 @@ const cotizacionDetalle = z.object({
 
 const cotizacion = z.object({
     id: z.number(),
-    fecha: z.date(),
+    fecha: z.string(),
     estado_cotizacion: z.enum(["propuesta","aceptada","rechazada"]),
     //cliente_id: z.number(),
     //sede_id: z.number(),
