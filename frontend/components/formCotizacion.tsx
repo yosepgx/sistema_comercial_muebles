@@ -14,6 +14,9 @@ import { TCotizacion, TCotizacionDetalle } from './types/cotizacion'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { FormControl, FormField, FormItem, FormLabel, FormMessage } from './ui/form'
 import CustomButton from './customButtom'
+import { useOportunidadContext } from '@/context/oportunidadContext'
+import { RadioGroup, RadioGroupItem } from './ui/radio-group'
+import { GetCotizacionLineaListApi } from '@/api/cotizacionDetalleApis'
 
 const productosData: TCotizacionDetalle[] = [
   {
@@ -54,7 +57,7 @@ const productosData: TCotizacionDetalle[] = [
   },
 ]
 
-
+/*
 const formSchema = z.object({
   producto_id: z.string(),
   cotizacion_id: z.string(),
@@ -64,11 +67,11 @@ const formSchema = z.object({
   subtotal: z.string(),
   nrolinea: z.string(),
   activo: z.string(),
-})
+})*/
 
-type FormValues = z.infer<typeof formSchema>
 
-const formSchemaSend = formSchema.transform(data => ({
+
+/*const formSchemaSend = formSchema.transform(data => ({
     ...data,
     producto_id: parseInt(data.producto_id,10),
     cotizacion_id: parseInt(data.cotizacion_id,10),
@@ -79,34 +82,69 @@ const formSchemaSend = formSchema.transform(data => ({
     nrolinea: parseInt(data.nrolinea,10), //TODO: asignar en orden
     activo: data.activo === "true",
   })
-)
+)*/
+
+
+const formSchema = z. object({
+  id: z.string(),     //manejado por back
+  fecha: z.string(), //manejado por back 
+  estado_cotizacion: z.enum(["propuesta","aceptada","rechazada"]), // si usa el boton de aceptar o rechazar 
+  //vendedor_asignado: z.number(),
+  monto_sin_impuesto: z.string(), //suma ingresada al final
+  monto_igv: z.string(),
+  monto_total: z.string(),
+  descuento_adicional: z.string(),
+  observaciones: z.string(),
+  direccion_entrega: z.string(),
+  activo: z.string(),
+
+})
+
+const formSchemaSend = formSchema.transform ( data => ({
+  ...data,
+  id: parseInt(data.id,10),
+  monto_sin_impuesto: parseInt(data.monto_sin_impuesto,10),
+  monto_igv: parseInt(data.monto_sin_impuesto,10),
+  monto_total: parseInt(data.monto_sin_impuesto,10),
+  descuento_adicional: parseInt(data.monto_sin_impuesto,10),
+  activo: data.activo==='true',
+  //vendedor_asignado = 1, //TODO: funcionalidades de asignar vendedor
+  
+}))
+type FormValues = z.infer<typeof formSchema>
 
 export default function FormCotizacionDetalle() {
   const [descuentoAuxiliar, setDescuentoAuxiliar] = useState('400.00')
   const [maximoPermisible, setMaximoPermisible] = useState('382.5')
   const [observaciones, setObservaciones] = useState('')
+  const [tipoDireccion, setTipoDireccion] = useState<'tienda' | 'otro'>('tienda')
   const [isDescuentoOpen, setIsDescuentoOpen] = useState(true)
-  const [data, setData] = useState<TCotizacionDetalle[]>([])
+  const {crrCotizacion, crrTab, SetModoCotizacion} = useOportunidadContext()
+  const [listaDetalles, setListaDetalles] = useState<TCotizacionDetalle[]>([])
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues:{
-      producto_id: '0',
-      cotizacion_id: '0',
-      cantidad: '0',
-      precio: '0',
-      descuento: '0',
-      subtotal: '0',
-      nrolinea: '1',
-      activo: 'true',
+      id: '',
+      fecha: '',
+      estado_cotizacion: 'propuesta',
+      monto_sin_impuesto: '',
+      monto_igv: '',
+      monto_total: '',
+      descuento_adicional: '',
+      observaciones: '',
+      direccion_entrega: '',
+      activo: '',
     }
   })
 
   useEffect(()=>{
-    //llamada a api
-    setData(productosData)
-  },[])
+    if(crrCotizacion && crrTab === 'cotizaciones'){
+      GetCotizacionLineaListApi(null, crrCotizacion.id)
+      setListaDetalles(productosData)
+    }
+  },[crrTab])
 
-  const columns: GridColDef[] = [
+  const columns: GridColDef<TCotizacionDetalle>[] = [
     {
       field: 'producto_id',
       headerName: 'CODIGO',
@@ -117,7 +155,10 @@ export default function FormCotizacionDetalle() {
     //   field: 'rproducto',
     //   headerName: 'PRODUCTO',
     //   resizable: false,
-    //   flex: 1
+    //   flex: 1,
+    //   renderCell: (params) => (
+    //     <span>{params.row.rproducto?.nombre || ''}</span>
+    //   ), // Maneja nulos o undefined
     // },
     {
       field: 'precio',
@@ -182,7 +223,13 @@ export default function FormCotizacionDetalle() {
       {/* Breadcrumb */}
       <div className="flex items-center gap-2 mb-6 text-sm text-gray-600">
         <ChevronRight size={16} />
-        <span>lista cotizaciones/ cotizacion 1 (Propuesta)</span>
+        <span onClick={()=>SetModoCotizacion('muchas')} 
+        className="text-blue-600 hover:underline cursor-pointer">
+          Lista cotizaciones /
+          </span>
+        <span> Cotización{' '}
+        {crrCotizacion ? `${crrCotizacion.id} (${crrCotizacion.estado_cotizacion})` : '0 (Propuesta)'} </span>
+        <CustomButton>Guardar Cotizacion</CustomButton>
       </div>
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
@@ -190,28 +237,60 @@ export default function FormCotizacionDetalle() {
       <Collapsible open={isDescuentoOpen} onOpenChange={setIsDescuentoOpen}>
         <CollapsibleTrigger className="flex items-center gap-2 w-full p-3 bg-gray-50 rounded-t-lg border hover:bg-gray-100">
           {isDescuentoOpen ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
-          <span className="font-medium">Descuento y observaciones</span>
+          <span className="font-medium">Datos generales</span>
         </CollapsibleTrigger>
         <CollapsibleContent className="border border-t-0 rounded-b-lg p-6 bg-white">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
             {/* Descuento auxiliar */}
-            <FormField
-              control = {form.control}
-              name = "descuento"
-              render={({field}) => (
-                <FormItem className='flex flex-col'>
-                  <FormLabel> Descuento auxiliar</FormLabel>
-                  <FormControl>
-                    <Input type = "number" {...field}/>
-                  </FormControl>
-                  <FormMessage className="min-h-[24px]"/>
-                </FormItem>
-              )}
-            />
+            <div>
+              <div className='flex flex-row'> 
+              <RadioGroup
+                value={tipoDireccion}
+                onValueChange={(value: 'tienda' | 'otro') => setTipoDireccion(value)}
+                className="flex gap-6"
+              >
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="tienda" id="tienda" />
+                  <Label htmlFor="tienda" className="text-sm">Tienda</Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="otro" id="otro" />
+                  <Label htmlFor="otro" className="text-sm">Otro</Label>
+                </div>
+              </RadioGroup>
 
+              <FormField
+                control = {form.control}
+                name = "direccion_entrega"
+                render={({field}) => (
+                  <FormItem className='flex flex-col'>
+                    <FormLabel> Direccion de Entrega</FormLabel>
+                    <FormControl>
+                      <Input type = "number" {...field}/>
+                    </FormControl>
+                    <FormMessage className="min-h-[24px]"/>
+                  </FormItem>
+                )}
+              />
+              </div>
+
+              <FormField
+                control = {form.control}
+                name = "descuento_adicional"
+                render={({field}) => (
+                  <FormItem className='flex flex-col'>
+                    <FormLabel> Monto de Descuento Auxiliar</FormLabel>
+                    <FormControl>
+                      <Input type = "number" {...field}/>
+                    </FormControl>
+                    <FormMessage className="min-h-[24px]"/>
+                  </FormItem>
+                )}
+              />
+            </div>
             {/* Máximo permisible */}
             <div className="space-y-2">
-              <Label htmlFor="maximoPermisible" className="text-sm font-medium">
+              <Label>
                 Máximo permisible
               </Label>
               <Input
@@ -221,8 +300,12 @@ export default function FormCotizacionDetalle() {
               />
             </div>
 
+            {/* Direccion de entrega */}
+            
+
             {/* Observación/Razón de rechazo */}
-            {/* <FormField
+            <div>
+            <FormField
               control = {form.control}
               name = "observaciones"
               render={({field}) => (
@@ -234,8 +317,45 @@ export default function FormCotizacionDetalle() {
                   <FormMessage className="min-h-[24px]"/>
                 </FormItem>
               )}
-            /> */}
+            />
+            </div>
+            <div>
+              <div className="space-y-2">
+              <Label>
+                Valor Total
+              </Label>
+              <Input
+                id="valorTotal"
+                value={maximoPermisible}
+                disabled = {true}
+              />
+              </div>
+
+              <div className="space-y-2">
+              <Label>
+                Monto Gravado
+              </Label>
+              <Input
+                id="montoGravado"
+                value={maximoPermisible}
+                disabled = {true}
+              />
+              </div>
+
+              <div className="space-y-2">
+              <Label>
+                IGV
+              </Label>
+              <Input
+                id="igv"
+                value={maximoPermisible}
+                disabled = {true}
+              />
+              </div>
+
+            </div>
           </div>
+
         </CollapsibleContent>
       </Collapsible>
 
@@ -248,7 +368,7 @@ export default function FormCotizacionDetalle() {
           <CustomButton variant='primary'>
             Agregar Línea
           </CustomButton>
-          <div className="flex gap-3">
+          <div className="flex gap-8">
             <CustomButton variant='red'>
               Rechazar Cotización
             </CustomButton>
@@ -261,7 +381,7 @@ export default function FormCotizacionDetalle() {
         {/* Tabla de productos */}
         <div className="bg-white rounded-lg border">
           <DataGrid
-            rows={data}
+            rows={listaDetalles}
             columns={columns}
             initialState={{
               pagination: {

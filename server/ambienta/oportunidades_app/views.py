@@ -96,8 +96,13 @@ class CotizacionViewSet(viewsets.ModelViewSet):
         return Response({"pedido": pedido}, status=status.HTTP_200_OK)
 
 class CotizacionDetalleViewSet(viewsets.ModelViewSet):
-    queryset = CotizacionDetalle.objects.all()
+    queryset = CotizacionDetalle.objects.all() 
     serializer_class = CotizacionDetalleSerializer
 
+    def get_queryset(self):
+        cotizacion_id = self.request.query_params.get('cotizacion_id')
+        if cotizacion_id:
+            return CotizacionDetalle.objects.filter(cotizacion_id=cotizacion_id)
+        return super().get_queryset()
 
 

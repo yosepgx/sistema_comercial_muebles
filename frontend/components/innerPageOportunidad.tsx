@@ -7,6 +7,7 @@ import FormPedido from "@/components/formPedido"
 import { useOportunidadContext } from "@/context/oportunidadContext"
 import { useEffect } from "react"
 import { GetOportunidadDetailApi } from "@/api/oportunidadApis"
+import FormPadreCotizaciones from "./formPadreCotizaciones"
 
 export default function InnerPageOportunidad() {
   const {crrTab, setCrrTab, setTipoEdicion, tipoEdicion, setCrrOportunidad, crrOportunidad} = useOportunidadContext()
@@ -40,8 +41,7 @@ export default function InnerPageOportunidad() {
         </TabsContent>
 
         <TabsContent value="cotizaciones">
-          <h2 className="text-xl font-bold">Cotizaciones</h2>
-          <FormCotizaciones key={`cotizaciones-${crrOportunidad?.id || 'nuevo'}`} />
+          <FormPadreCotizaciones/>
         </TabsContent>
 
         <TabsContent value="cliente">

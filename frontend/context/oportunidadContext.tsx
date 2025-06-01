@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/authContext";
 import { TOportunidad } from "@/components/types/oportunidad";
 import { TCliente } from "@/components/types/clienteType";
+import { TCotizacion } from "@/components/types/cotizacion";
 
 
 interface OportunidadContextType{
@@ -16,6 +17,10 @@ interface OportunidadContextType{
     setCrrTab: Dispatch<SetStateAction<string>>;
     cliente: TCliente | null;
     setCliente: Dispatch<SetStateAction<TCliente | null>>;
+    modoCotizacion: "muchas"| "una";
+    SetModoCotizacion: Dispatch<SetStateAction<"muchas" | "una">>;
+    crrCotizacion: TCotizacion | null;
+    setCrrCotizacion: Dispatch<SetStateAction<TCotizacion | null>>;
 }
 
 //Para todas las pestañas se necesita:
@@ -29,6 +34,8 @@ export const OportunidadProvider = ({children}: {children: ReactNode}) => {
     const [tipoEdicion, setTipoEdicion] = useState<"nuevo"| "edicion" | "vista">("nuevo")
     const [crrOportunidad, setCrrOportunidad] = useState<TOportunidad | null>(null)
     const [cliente, setCliente] = useState<TCliente | null>(null);
+    const [modoCotizacion, SetModoCotizacion] = useState<"muchas" | "una">("muchas")
+    const [crrCotizacion, setCrrCotizacion] = useState<TCotizacion | null>(null)
     const router = useRouter();
     const {ct} = useAuth()
     const [crrTab, setCrrTab] = useState("oportunidad")
@@ -42,7 +49,11 @@ export const OportunidadProvider = ({children}: {children: ReactNode}) => {
         crrTab, 
         setCrrTab,
         cliente,
-        setCliente}}>
+        setCliente,
+        modoCotizacion,
+        SetModoCotizacion,
+        crrCotizacion,
+        setCrrCotizacion}}>
             {children}
        </OportunidadContext.Provider> 
     )
