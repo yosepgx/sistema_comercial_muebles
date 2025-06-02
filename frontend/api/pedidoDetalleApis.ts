@@ -3,7 +3,7 @@ import { TPedidoDetalle } from "@/components/types/pedido";
 
 export async function GetPedidoLineaListApi(token:string | null, idpedido: number) {
     try {
-        const response = await customFetch(token, `ventas/pedido-detalle/?pedido=${idpedido}`, {
+        const response = await customFetch(token, `ventas/pedido-detalle/?pedido_id=${idpedido}`, {
             
             method: "get",
             headers:{

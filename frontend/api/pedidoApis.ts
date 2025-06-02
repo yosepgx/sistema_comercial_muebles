@@ -3,7 +3,7 @@ import { TPedido } from "@/components/types/pedido";
 
 export const GetXMLFile = async (token: string | null, idpedido: number) => {
   try {
-    const response = await customFetch(token, `ventas/pedido/generar-xml/${idpedido}/`, {
+    const response = await customFetch(token, `ventas/generar-xml/${idpedido}/`, {
       method: 'GET',
     });
 
@@ -48,9 +48,9 @@ export async function GetPedidoListApi(token:string | null) {
     }
 }
 
-export async function GetPedidoDetailApi(token:string | null, id?: number, idcotizacion?: number){
+export async function GetPedidoDetailApi(token:string | null, id: number | null, idcotizacion?: number){
     try {
-        const response = await customFetch(token,idcotizacion?`ventas/pedido/?cotizacion=${idcotizacion}`:`ventas/pedido/${id}` , {
+        const response = await customFetch(token,id?`ventas/pedido/${id}`: `ventas/pedido/?cotizacion_id=${idcotizacion}` , {
             
             method: "get",
             headers:{
@@ -64,7 +64,7 @@ export async function GetPedidoDetailApi(token:string | null, id?: number, idcot
         }
 
         const data = await response.json();
-        return data as TPedido;
+        return data[0] as TPedido;
         
     } catch (error) {
         console.error("Error al obtener datos de detalle de pedido:", error);

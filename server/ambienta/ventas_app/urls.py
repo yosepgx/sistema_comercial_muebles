@@ -9,7 +9,7 @@ router.register(r'pedido-detalle', PedidoDetalleViewSet)
 urlpatterns = [
     path('', include(router.urls)),
     path('cargar-data-pedidos/', CargarDataPedidosView.as_view(), name='cargar-data-pedidos'),
-    path('api/generar-xml-ubl/<int:pedido_id>/', GenerarXMLUBLView.as_view(), name='generar-xml'),
+    path('generar-xml/<int:pedido_id>/', GenerarXMLUBLView.as_view(), name='generar-xml'),
 
 ]
 

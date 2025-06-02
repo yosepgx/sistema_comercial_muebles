@@ -21,7 +21,7 @@ const pedido = z.object({
     serie: z.string().optional(), //read-only
     correlativo: z.string().optional(), //read-only
     tipo_comprobante: z.enum(["boleta","factura"]),
-    direccion_entrega: z.string(),
+    direccion: z.string(),
     cotizacion: z.number(),
     moneda: z.enum(["PEN"]),
     estado_pedido: z.enum(["pendiente", "pagado", "despachado", "anulado"]),

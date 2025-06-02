@@ -83,6 +83,7 @@ class CotizacionViewSet(viewsets.ModelViewSet):
             #fecha = now_add
             fechaentrega = None,
             fecha_pago = None,
+            #TODO: agregar serie, correlativo, tipo_comprobante(boleta, factura)
             estado_pedido='por_validar',
             codigo_tipo_tributo = "1000",
             cotizacion=cotizacion,
@@ -134,7 +135,7 @@ class GenerarPDFCotizacionView(APIView):
         html_string = render_to_string("cotizaciones/pdf_cotizacion.html", {
             "cotizacion": cotizacion,
             # "cliente": cotizacion.oportunidad.cliente,
-            "detalles": cotizacion.detalles.all()
+            "detalles": cotizacion.detalles.filter(activo=True)
         })
 
         pdf_bytes = HTML(string=html_string).write_pdf()

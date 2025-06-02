@@ -19,7 +19,8 @@ import {z} from 'zod'
 import { Form, FormControl, FormField, FormItem, FormMessage, FormLabel } from './ui/form'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-
+import {format} from  'date-fns'
+import { UNIDADES_MEDIDA_BUSCA } from '@/constants/unidadesMedidaConstants'
 const formSchema = z. object({
   id: z.string(),     //manejado por back
   fecha: z.string(), //manejado por back
@@ -27,8 +28,8 @@ const formSchema = z. object({
   fecha_pago: z.string(),
   serie: z.string().optional(), //debe de ser manejado por back
   correlativo: z.string().optional(), //debe de ser manejado por back
-  tipo_comprobante: z.string(),
-  direccion_entrega: z.string(),
+  tipo_comprobante: z.enum(["boleta","factura"]),
+  direccion: z.string(),
   cotizacion: z.string(),
   moneda: z.enum(['PEN']),
   estado_pedido: z.enum(["pendiente","pagado","despachado", "anulado"]), 
@@ -67,17 +68,17 @@ export default function FormPedido() {
       fecha_pago: '',
       serie: '', 
       correlativo: '', 
-      tipo_comprobante: '',
-      direccion_entrega: '',
+      tipo_comprobante: 'boleta',
+      direccion: '',
       cotizacion: '',
       moneda: 'PEN',
       estado_pedido: 'pendiente', 
-      monto_sin_impuesto: '',
-      monto_igv: '',
-      monto_total: '',
-      descuento_adicional: '',
+      monto_sin_impuesto: '0.00',
+      monto_igv: '0.00',
+      monto_total: '0.00',
+      descuento_adicional: '0.00',
       observaciones: '',
-      codigo_tipo_tributo: '',
+      codigo_tipo_tributo: '1000',
       activo: ''
     }
   })
@@ -87,10 +88,10 @@ export default function FormPedido() {
     const filtradas = data.filter(item => item.oportunidad === crrOportunidad.id 
       && item.estado_cotizacion === 'aceptada' 
       && item.activo===true);
-    const ultima = filtradas[-1]
-    const pedidoFetch = await GetPedidoDetailApi(null, undefined, ultima.id)
-    
-    if(pedidoFetch && pedidoFetch.estado_pedido !== 'anulado'){
+    const ultima = filtradas[filtradas.length - 1]
+    const pedidoFetch = await GetPedidoDetailApi(null, null, ultima.id)
+    console.log("el pedido obtenido es: ", pedidoFetch)
+    if(pedidoFetch && pedidoFetch.estado_pedido !== 'anulado' && pedidoFetch.id){
       setPedido(pedidoFetch);
       const listado = await GetPedidoLineaListApi(null, pedidoFetch.id)
       setListaDetalles(listado)
@@ -100,13 +101,13 @@ export default function FormPedido() {
 
   const cargarPedido = (pedido: TPedido) =>{
     form.setValue('id',`${pedido.id}`);
-    form.setValue('fecha',pedido.fecha);
-    form.setValue('fechaentrega',pedido.fechaentrega);
-    form.setValue('fecha_pago',pedido.fecha_pago);
+    form.setValue('fecha',format(pedido.fecha, 'yyyy-MM-dd'));
+    form.setValue('fechaentrega',format(pedido.fechaentrega, 'yyyy-MM-dd'));
+    form.setValue('fecha_pago',format(pedido.fecha_pago, 'yyyy-MM-dd'));
     form.setValue('serie',pedido.serie);
     form.setValue('correlativo',pedido.correlativo); 
     form.setValue('tipo_comprobante',pedido.tipo_comprobante); 
-    form.setValue('direccion_entrega',pedido.direccion_entrega);
+    form.setValue('direccion',pedido.direccion);
     form.setValue('cotizacion',`${pedido.cotizacion}`);
     form.setValue('moneda',pedido.moneda);
     form.setValue('estado_pedido',pedido.estado_pedido);
@@ -146,6 +147,7 @@ export default function FormPedido() {
       headerName: 'PRODUCTO',
       resizable: false,
       flex: 1,
+      
     },
     {
       field: 'precio_unitario',
@@ -157,7 +159,8 @@ export default function FormPedido() {
       field: 'rum',
       headerName: 'UM',
       resizable: false,
-      flex: 1
+      flex: 1,
+      valueFormatter: (value) => UNIDADES_MEDIDA_BUSCA[value]?? 'Sin unidad',
     },
     {
       field: 'cantidad',
@@ -196,7 +199,7 @@ export default function FormPedido() {
               <FormItem className='flex flex-col'>
                 <FormLabel> Código de Pedido</FormLabel>
                 <FormControl>
-                  <Input type = "text" {...field}/>
+                  <Input type = "number" {...field} disabled={true}/>
                 </FormControl>
                 <FormMessage className="min-h-[24px]"/>
               </FormItem>
@@ -219,7 +222,7 @@ export default function FormPedido() {
               <FormItem className='flex flex-col'>
                 <FormLabel> Descuento auxiliar</FormLabel>
                 <FormControl>
-                  <Input type = "text" {...field}/>
+                  <Input type = "number" {...field} disabled={true}/>
                 </FormControl>
                 <FormMessage className="min-h-[24px]"/>
               </FormItem>
@@ -233,7 +236,7 @@ export default function FormPedido() {
               <FormItem className='flex flex-col'>
                 <FormLabel> Estado del Pedido</FormLabel>
                 <FormControl>
-                  <Input type = "text" {...field}/>
+                  <Input type = "text" {...field} disabled={true}/>
                 </FormControl>
                 <FormMessage className="min-h-[24px]"/>
               </FormItem>
@@ -260,12 +263,12 @@ export default function FormPedido() {
         {/* Segunda columna */}
         <FormField
           control = {form.control}
-          name = "direccion_entrega"
+          name = "direccion"
           render={({field}) => (
             <FormItem className='flex flex-col'>
               <FormLabel> Dirección de entrega</FormLabel>
               <FormControl>
-                <Input type = "text" {...field}/>
+                <Input type = "text" {...field} disabled={true}/>
               </FormControl>
               <FormMessage className="min-h-[24px]"/>
             </FormItem>
@@ -278,7 +281,7 @@ export default function FormPedido() {
             <FormItem className='flex flex-col'>
               <FormLabel> Fecha del pedido</FormLabel>
               <FormControl>
-                <Input type = "text" {...field}/>
+                <Input type = "date" {...field} disabled={true}/>
               </FormControl>
               <FormMessage className="min-h-[24px]"/>
             </FormItem>
@@ -287,12 +290,26 @@ export default function FormPedido() {
 
         <FormField
           control = {form.control}
-          name = "fecha"
+          name = "fecha_pago"
           render={({field}) => (
             <FormItem className='flex flex-col'>
-              <FormLabel> Fecha del pedido</FormLabel>
+              <FormLabel> Fecha de pago</FormLabel>
               <FormControl>
-                <Input type = "date" {...field}/>
+                <Input type = "date" {...field} disabled={true}/>
+              </FormControl>
+              <FormMessage className="min-h-[24px]"/>
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control = {form.control}
+          name = "fechaentrega"
+          render={({field}) => (
+            <FormItem className='flex flex-col'>
+              <FormLabel> Fecha de entrega</FormLabel>
+              <FormControl>
+                <Input type = "date" {...field} disabled={true}/>
               </FormControl>
               <FormMessage className="min-h-[24px]"/>
             </FormItem>
@@ -312,19 +329,7 @@ export default function FormPedido() {
             </div>
           </div> */}
 
-        <FormField
-          control = {form.control}
-          name = "observaciones"
-          render={({field}) => (
-            <FormItem className='flex flex-col'>
-              <FormLabel> Observaciones</FormLabel>
-              <FormControl>
-                <Input type = "date" {...field}/>
-              </FormControl>
-              <FormMessage className="min-h-[24px]"/>
-            </FormItem>
-          )}
-        />  
+        
           
         </div>
 
@@ -337,8 +342,10 @@ export default function FormPedido() {
               <FormItem className='flex flex-col'>
                 <FormLabel> Monto Gravado</FormLabel>
                 <FormControl>
+                  <div className="relative">
                   <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">S/.</span>
-                  <Input type = "date" {...field}/>
+                  <Input type = "number" {...field} className='pl-10' disabled={true}/>
+                  </div>
                 </FormControl>
                 <FormMessage className="min-h-[24px]"/>
               </FormItem>
@@ -352,8 +359,10 @@ export default function FormPedido() {
               <FormItem className='flex flex-col'>
                 <FormLabel> Monto IGV</FormLabel>
                 <FormControl>
+                  <div className="relative">
                   <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">S/.</span>
-                  <Input type = "date" {...field}/>
+                  <Input type = "number" {...field} className='pl-10' disabled={true}/>
+                  </div>
                 </FormControl>
                 <FormMessage className="min-h-[24px]"/>
               </FormItem>
@@ -367,13 +376,28 @@ export default function FormPedido() {
               <FormItem className='flex flex-col'>
                 <FormLabel> Monto Total</FormLabel>
                 <FormControl>
+                  <div className="relative">
                   <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">S/.</span>
-                  <Input type = "date" {...field}/>
+                  <Input type = "number" {...field} className='pl-10'disabled={true}/>
+                  </div>
                 </FormControl>
                 <FormMessage className="min-h-[24px]"/>
               </FormItem>
             )}
           />
+          <FormField
+          control = {form.control}
+          name = "observaciones"
+          render={({field}) => (
+            <FormItem className='flex flex-col'>
+              <FormLabel> Observaciones</FormLabel>
+              <FormControl>
+                <Input type = "text" {...field} />
+              </FormControl>
+              <FormMessage className="min-h-[24px]"/>
+            </FormItem>
+          )}
+        />  
 
           {/* Botones de acción */}
           <div className="flex flex-row gap-8">
@@ -445,6 +469,7 @@ export default function FormPedido() {
           <DataGrid
             rows={listaDetalles}
             columns={columns}
+            getRowId={(row) => `${row.pedido}-${row.producto}`}
             initialState={{
               pagination: {
                 paginationModel: { pageSize: 10 }
