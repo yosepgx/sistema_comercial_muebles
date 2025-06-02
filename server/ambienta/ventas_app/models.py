@@ -2,6 +2,14 @@ from django.db import models
 from oportunidades_app.models import Cotizacion
 from inventario_app.models import Producto
 class Pedido(models.Model):
+
+    TIPOFACTURA = 'factura'
+    TIPOBOLETA = 'boleta'
+    TIPO_COMPROBANTE_CHOICES = [
+        (TIPOFACTURA, 'factura'),
+        (TIPOBOLETA, 'boleta'),
+    ]
+
     PENDIENTE = 'pendiente'
     PAGADO = 'pagado'
     DESPACHADO ='despachado'
@@ -17,8 +25,11 @@ class Pedido(models.Model):
     fecha = models.DateTimeField(auto_now_add=True) #siempre sera la fecha de creacion
     fechaentrega = models.DateField(null=True, blank=True)
     fecha_pago = models.DateField(null=True, blank=True)
+    serie = models.CharField(max_length=15, null=False, blank=False)
+    correlativo = models.CharField(max_length=15, null=False, blank=False)
+    tipo_comprobante = models.CharField(max_length=50, choices=TIPO_COMPROBANTE_CHOICES)
     estado_pedido = models.CharField(max_length=15, choices=ESTADOS_PEDIDO, default=PENDIENTE)
-    codigo_tributo = models.CharField(max_length=10, default="1000")    
+    codigo_tipo_tributo = models.CharField(max_length=10, default="1000")    
     cotizacion = models.OneToOneField(Cotizacion, on_delete=models.PROTECT)
     moneda = models.CharField(max_length=5, default="PEN")  # Sol peruano
 
@@ -43,6 +54,7 @@ class PedidoDetalle(models.Model):
     pedido = models.ForeignKey(Pedido, on_delete=models.CASCADE, related_name="detalles")
     producto = models.ForeignKey(Producto, on_delete=models.CASCADE, related_name="pedidos_detalle", blank=False)
     cantidad = models.PositiveIntegerField(default=1, blank=False)
+    precio_unitario = models.DecimalField(max_digits=8, decimal_places=2, default=0.00, blank=False)
     descuento = models.DecimalField(max_digits=8, decimal_places=2, default=0.00, blank=False)
     subtotal = models.DecimalField(max_digits=10, decimal_places=2, blank=False)
     nrolinea = models.PositiveBigIntegerField(blank=False)

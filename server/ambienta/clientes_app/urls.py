@@ -5,7 +5,7 @@ from clientes_app import views
 router = DefaultRouter()
 #router.register(r'categoria', views.CategoriaProductoViewSet)
 #router.register(r'documento', views.DocumentoIDViewSet)
-router.register(r'contacto', views.ContactoViewSet)
+router.register(r'cliente', views.ClienteViewSet)
 
 urlpatterns = [
     path('', include(router.urls)),

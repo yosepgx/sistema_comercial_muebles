@@ -6,10 +6,10 @@ export const cliente = z.object({
     correo: z.string(),
     telefono: z.string(),
     tipo_interes: z.enum(["cliente","lead"]),
-    fechaConversion: z.date(),
+    fecha_conversion: z.string(),
     naturaleza: z.enum(["Natural","Empresa"]),
-    cod_dni: z.string(),
-    cod_ruc: z.string(),
+    documento: z.string(),
+    tipo_documento: z.string(),
     activo: z.boolean(),
 })
 

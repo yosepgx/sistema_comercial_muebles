@@ -16,8 +16,8 @@ const userColumns: GridColDef<TOportunidad>[] = [
         resizable: false,
         flex: 1
     },
-    {   field: 'contacto', 
-        headerName: 'Contacto',
+    {   field: 'cliente', 
+        headerName: 'Cliente',
         resizable: false,
         flex: 1
     },
@@ -31,11 +31,7 @@ const userColumns: GridColDef<TOportunidad>[] = [
         resizable: false,
         flex: 1
     },
-    {   field: 'vendedor_asignado', 
-        headerName: 'Vendedor Asignado',
-        resizable: false,
-        flex: 1
-    },
+    
     {   field: 'cliente_id', 
         headerName: 'Documento de cliente',
         resizable: false,

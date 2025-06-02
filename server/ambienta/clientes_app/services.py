@@ -1,5 +1,5 @@
 import pandas as pd
-from clientes_app.models import Contacto
+from clientes_app.models import Cliente
 
 # contactos -> documentos
 class ServiceCargarDataClientes:
@@ -20,12 +20,12 @@ class ServiceCargarDataClientes:
     #     except Exception as e:
     #         print(e)
 
-    def Contactos(archivo):
+    def Clientes(archivo):
         try:
             campos = {'nombre': str,'correo': str,'telefono': str, 
                       'tipo_interes': str, 'fecha_conversion': str, 
-                      'naturaleza': str, 'cod_dni' : str, 'cod_ruc': str, 'activo': bool}
-            df = pd.read_excel(archivo, sheet_name="Contacto", 
+                      'naturaleza': str, 'documento' : str, 'tipo_documento': str, 'activo': bool}
+            df = pd.read_excel(archivo, sheet_name="Cliente", 
                                usecols=campos.keys(),
                                dtype=campos,
                                )
@@ -38,27 +38,27 @@ class ServiceCargarDataClientes:
 
             for _, row in df.iterrows():
                 #cat = CategoriaCliente.objects.get(id=row['categoria'])
-                cont = Contacto(
+                cont = Cliente(
                     nombre = row['nombre'],
                     correo = row['correo'],
                     telefono = row['telefono'],
                     tipo_interes= row['tipo_interes'],
                     fecha_conversion = row['fecha_conversion'].date() if pd.notna(row['fecha_conversion']) else None,
                     naturaleza = row['naturaleza'],
-                    cod_dni = None if pd.isna(row['cod_dni']) else row['cod_dni'],
-                    cod_ruc = None if pd.isna(row['cod_ruc']) else row['cod_ruc'],
+                    documento = None if pd.isna(row['documento']) else row['documento'],
+                    tipo_documento = None if pd.isna(row['tipo_documento']) else row['tipo_documento'],
                     #categoria = cat,
                     activo= row['activo'],
                 )
                 objetos.append(cont)
             
-            Contacto.objects.bulk_create(objetos)
+            Cliente.objects.bulk_create(objetos)
         except Exception as e:
             print(e)
         
     # def Documentos(archivo):
     #     try:
-    #         campos = {'tipo': str,'cod_dni': str,'cod_ruc': str,'cod_ce': str,'contacto': str,'activo': bool}
+    #         campos = {'tipo': str,'documento': str,'tipo_documento': str,'cod_ce': str,'contacto': str,'activo': bool}
             
     #         df = pd.read_excel(archivo, sheet_name="DocumentoID", 
     #                            usecols=campos.keys(),
@@ -71,8 +71,8 @@ class ServiceCargarDataClientes:
     #             cont = Contacto.objects.get(id=row['contacto'])
     #             doc = DocumentoID(
     #                 tipo = row['tipo'],
-    #                 cod_dni = None if pd.isna(row['cod_dni']) else row['cod_dni'],
-    #                 cod_ruc = None if pd.isna(row['cod_ruc']) else row['cod_ruc'],
+    #                 documento = None if pd.isna(row['documento']) else row['documento'],
+    #                 tipo_documento = None if pd.isna(row['tipo_documento']) else row['tipo_documento'],
     #                 cod_ce = None if pd.isna(row['cod_ce']) else row['cod_ce'] ,
     #                 contacto= cont,
     #                 activo= row['activo'],

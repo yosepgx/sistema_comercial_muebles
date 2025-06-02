@@ -1,6 +1,26 @@
 import { customFetch } from "@/components/customFetch";
 import { TCotizacion } from "@/components/types/cotizacion"; 
 
+
+export const handleDownload = async (token:string | null,cotizacionId: number) => {
+  try {
+    const res = await customFetch(token, `oportunidades/cotizacion/${cotizacionId}/pdf/`, {
+      method: 'GET',
+    });
+
+    if (!res.ok) {
+      throw new Error("Error al descargar PDF");
+    }
+
+    const blob = await res.blob();
+    const url = window.URL.createObjectURL(blob);
+    window.open(url, '_blank'); // O puedes usar un <a download> si prefieres
+
+  } catch (error) {
+    console.error("Fallo al descargar el PDF:", error);
+  }
+};
+
 export async function GetCotizacionListApi(token:string | null) {
     try {
         const response = await customFetch(token, `oportunidades/cotizacion`, {
@@ -110,15 +130,19 @@ export async function UpdateCotizacionAPI(token:string | null, id: number, data:
         body: JSON.stringify(data),
       });
   
+      const responseData = await response.json();
+
       if (!response.ok) {
-        throw new Error(`Error del servidor: ${response.status} - ${response.statusText}`);
+        const mensaje = responseData?.detalle || `Error del servidor: ${response.status}`;
+        throw new Error(mensaje);
       }
   
-      const responseData = await response.json();
       return responseData as TCotizacion;
   
     } catch (error) {
       console.error("Error al actualizar cotizacion:", error);
-      return null;
+      const mensaje = error instanceof Error? error.message : "Ocurrió un error inesperado.";
+    alert(mensaje);
+    return null;
     }
   }

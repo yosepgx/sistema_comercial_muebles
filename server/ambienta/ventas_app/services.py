@@ -1,5 +1,5 @@
 import pandas as pd
-from clientes_app.models import Contacto
+from clientes_app.models import Cliente
 from ventas_app.models import PedidoDetalle, Pedido
 from oportunidades_app.models import Cotizacion
 from inventario_app.models import Producto
@@ -11,9 +11,9 @@ class ServiceCargarDataVenta:
             campos = {'fecha':str,'fechaentrega': str,'direccion': str,
                       'cotizacion': int,'moneda': str,'monto_sin_impuesto': float ,
                       'estado_pedido': str ,'fecha_pago': str,
-                      'monto_total': float ,'monto_igv': float ,'codigo_tributo': int,
+                      'monto_total': float ,'monto_igv': float ,'codigo_tipo_tributo': int,
                       'observaciones': str ,
-                      'descuento_adicional': float, 'activo':bool}
+                      'descuento_adicional': float, 'activo':bool, 'serie': str, 'correlativo': str, 'tipo_comprobante':str, }
             df = pd.read_excel(archivo, sheet_name='Pedido', 
                                usecols=campos.keys(),
                                parse_dates=['fecha', 'fechaentrega','fecha_pago'],
@@ -37,7 +37,7 @@ class ServiceCargarDataVenta:
 
     def PedidoDetalle(archivo):
         try:
-            campos = {'pedido':int , 'producto':int, 'cantidad': int,'descuento':float ,
+            campos = {'pedido':int , 'producto':int, 'cantidad': int, 'precio_unitario':float, 'descuento':float ,
                       'subtotal': float,'nrolinea': int ,'activo': bool}
             
             df = pd.read_excel(archivo, sheet_name='PedidoDetalle', 

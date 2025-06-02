@@ -1,0 +1,52 @@
+<!-- templates/cotizaciones/pdf_cotizacion.html -->
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <style>
+        body { font-family: sans-serif; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
+        th { background-color: #f0f0f0; }
+    </style>
+</head>
+<body>
+    <h2>Cotización #{{ cotizacion.id }}</h2>
+    {% comment %} <p><strong>Cliente:</strong> {{ cliente.nombre }}</p> {% endcomment %}
+    <p><strong>Fecha:</strong> {{ cotizacion.fecha }}</p>
+    <p><strong>Dirección de Entrega:</strong> {{ cotizacion.direccion_entrega }}</p>
+    <p><strong>Observaciones:</strong> {{ cotizacion.observaciones|default:"-" }}</p>
+
+    <h3>Detalle de Productos</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>N°</th>
+                <th>Producto</th>
+                <th>Cantidad</th>
+                <th>Precio Unitario</th>
+                <th>Descuento</th>
+                <th>Subtotal</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for detalle in detalles %}
+            <tr>
+                <td>{{ forloop.counter }}</td>
+                <td>{{ detalle.producto.nombre }}</td>
+                <td>{{ detalle.cantidad }}</td>
+                <td>S/ {{ detalle.precio_unitario }}</td>
+                <td>S/ {{ detalle.descuento }}</td>
+                <td>S/ {{ detalle.subtotal }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <h3>Totales</h3>
+    <p><strong>Operaciones Gravadas:</strong> S/ {{ cotizacion.monto_sin_impuesto }}</p>
+    <p><strong>IGV:</strong> S/ {{ cotizacion.monto_igv }}</p>
+    <p><strong>Descuento adicional:</strong> S/ {{ cotizacion.descuento_adicional }}</p>
+    <p><strong>Total:</strong> S/ {{ cotizacion.monto_total }}</p>
+</body>
+</html>

@@ -165,7 +165,7 @@ export default function PedidosPage(){
     const camposFiltrables = [
       item.id?.toString().toLowerCase(),
       item.estado_pedido?.toLowerCase(),
-      item.direccion_entrega?.toLowerCase()
+      item.direccion?.toLowerCase()
     ];
     return camposFiltrables.some(campo => campo?.includes(texto));
   });

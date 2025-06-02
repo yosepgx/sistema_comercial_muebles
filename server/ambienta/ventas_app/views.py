@@ -13,6 +13,8 @@ from oportunidades_app.models import Oportunidad
 from django.db import transaction
 from django.utils import timezone
 from rest_framework.exceptions import ValidationError
+import xml.etree.ElementTree as ET
+import datetime
 
 #cuando un pedido se anula si estaba:
 
@@ -23,6 +25,12 @@ class PedidoViewSet(viewsets.ModelViewSet):
     queryset = Pedido.objects.all()
     serializer_class = PedidoSerializer
 
+    def get_queryset(self):
+        cotizacion_id = self.request.query_params.get('cotizacion_id')
+        if cotizacion_id:
+            return Pedido.objects.filter(cotizacion_id=cotizacion_id)
+        return super().get_queryset()
+    
     def update(self, request, *args, **kwargs):
         """
         sobreescribe update para casos de pasar a pagado y por validar
@@ -103,11 +111,15 @@ class PedidoViewSet(viewsets.ModelViewSet):
 
         return Response(serializer.data, status=status.HTTP_200_OK)
 
-
 class PedidoDetalleViewSet(viewsets.ModelViewSet):
-    queryset = PedidoDetalle.objects.all()
+    queryset = PedidoDetalle.objects.all() 
     serializer_class = PedidoDetalleSerializer
 
+    def get_queryset(self):
+        pedido_id = self.request.query_params.get('pedido_id')
+        if pedido_id:
+            return PedidoDetalle.objects.filter(pedido_id=pedido_id)
+        return super().get_queryset()
 
 class CargarDataPedidosView(APIView):
     parser_classes = (MultiPartParser, FormParser)  
@@ -139,3 +151,66 @@ class CargarDataPedidosView(APIView):
         
         except Exception as e:
             return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        
+
+
+
+
+ET.register_namespace("cbc", "urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2")
+ET.register_namespace("cac", "urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2")
+
+NSMAP = {
+    'cbc': "urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2",
+    'cac': "urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2"
+}
+
+class GenerarXMLUBLView(APIView):
+    def get(self, request, pedido_id):
+        try:
+            pedido = Pedido.objects.get(id=pedido_id)
+        except Pedido.DoesNotExist:
+            return Response({'error': 'Pedido no encontrado'}, status=status.HTTP_404_NOT_FOUND)
+
+        # Raíz
+        factura = ET.Element("Invoice", attrib={
+            "xmlns": "urn:oasis:names:specification:ubl:schema:xsd:Invoice-2",
+            "xmlns:cac": NSMAP["cac"],
+            "xmlns:cbc": NSMAP["cbc"]
+        })
+
+        # ID de factura y fecha
+        ET.SubElement(factura, "cbc:ID").text = f"F001-{pedido.id:08d}"
+        ET.SubElement(factura, "cbc:IssueDate").text = pedido.fecha.strftime("%Y-%m-%d")
+
+        # Datos del proveedor (emisor)
+        supplier_party = ET.SubElement(factura, "cac:AccountingSupplierParty")
+        supplier = ET.SubElement(supplier_party, "cac:Party")
+        ET.SubElement(supplier, "cbc:Name").text = "MI EMPRESA SAC"
+
+        # Datos del cliente
+        customer_party = ET.SubElement(factura, "cac:AccountingCustomerParty")
+        customer = ET.SubElement(customer_party, "cac:Party")
+        ET.SubElement(customer, "cbc:Name").text = pedido.cotizacion.oportunidad.cliente.nombre
+
+        # Líneas de productos
+        for i, item in enumerate(pedido.detalles.all(), start=1):
+            line = ET.SubElement(factura, "cac:InvoiceLine")
+            ET.SubElement(line, "cbc:ID").text = str(i)
+            ET.SubElement(line, "cbc:InvoicedQuantity", unitCode=item.producto.umedida_sunat).text = str(item.cantidad)
+            ET.SubElement(line, "cbc:LineExtensionAmount", currencyID="PEN").text = f"{item.precio_unitario * item.cantidad:.2f}"
+
+            item_elem = ET.SubElement(line, "cac:Item")
+            ET.SubElement(item_elem, "cbc:Description").text = item.producto.nombre
+
+            price_elem = ET.SubElement(line, "cac:Price")
+            ET.SubElement(price_elem, "cbc:PriceAmount", currencyID="PEN").text = f"{item.precio_unitario:.2f}"
+
+        # Total
+        total = ET.SubElement(factura, "cac:LegalMonetaryTotal")
+        ET.SubElement(total, "cbc:PayableAmount", currencyID="PEN").text = f"{pedido.monto_total:.2f}"
+
+        xml_bytes = ET.tostring(factura, encoding='utf-8', xml_declaration=True)
+
+        response = HttpResponse(xml_bytes, content_type='application/xml')
+        response['Content-Disposition'] = f'attachment; filename=Factura_{pedido.id}.xml'
+        return response

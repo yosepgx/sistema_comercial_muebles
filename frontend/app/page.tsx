@@ -13,9 +13,21 @@ import { Label } from "@/components/ui/label";
 import { TOportunidad } from "@/components/types/oportunidad";
 import { GetOportunidadListApi } from "@/api/oportunidadApis";
 import CustomButton from "@/components/customButtom";
+import { useRouter } from "next/navigation";
 
 
-const Columns: GridColDef<TOportunidad>[] = [
+
+
+export default function HomePage() {
+  const [data, setData] = useState<TOportunidad[]>([])
+  const [loading, setLoading] = useState(true)
+  const {ct} = useAuth();
+  const router = useRouter()
+  const [busquedaGeneral, setBusquedaGeneral] = useState("");
+  const [fechaInicio, setFechaInicio] = useState<Date | null>(null);
+  const [fechaFin, setFechaFin] = useState<Date | null>(null);
+
+  const Columns: GridColDef<TOportunidad>[] = [
     {   field: 'id', 
         headerName: 'Id',
         resizable: false,
@@ -27,7 +39,7 @@ const Columns: GridColDef<TOportunidad>[] = [
         flex: 1,
         renderCell: (params) => {
         const cliente = params.row?.rcliente;
-        const doc = cliente?.cod_dni || cliente?.cod_ruc || '';
+        const doc = cliente?.documento || '';
         return `${doc}`;
       }
     },
@@ -41,11 +53,7 @@ const Columns: GridColDef<TOportunidad>[] = [
         resizable: false,
         flex: 1
     },
-    {   field: 'vendedor_asignado', 
-        headerName: 'Vendedor',
-        resizable: false,
-        flex: 1
-    },
+    
     {   field: 'estado_oportunidad', 
         headerName: 'Estado',
         resizable: false,
@@ -69,7 +77,8 @@ const Columns: GridColDef<TOportunidad>[] = [
     width: 120,
     renderCell: (params) => (
        <div>
-        <IconButton onClick={() => console.log("Ver rol:", params.row)}>
+        <IconButton onClick={() => {router.push(`/${params.row.id}`); 
+        localStorage.removeItem('nueva-oportunidad');}}>
           <EyeIcon />
         </IconButton>
         <IconButton onClick={() => console.log("edit rol:", params.row)}>
@@ -79,16 +88,6 @@ const Columns: GridColDef<TOportunidad>[] = [
     ),
   }
 ];
-
-export default function HomePage() {
-  const [data, setData] = useState<TOportunidad[]>([])
-  const [loading, setLoading] = useState(true)
-  const {ct} = useAuth();
-
-  const [busquedaGeneral, setBusquedaGeneral] = useState("");
-
-  const [fechaInicio, setFechaInicio] = useState<Date | null>(null);
-  const [fechaFin, setFechaFin] = useState<Date | null>(null);
 
   const cargarDatos = async () => {
         try {
@@ -171,7 +170,10 @@ export default function HomePage() {
               value={fechaFin}
               onChange={(newValue) => setFechaFin(newValue)}
             />
-            <CustomButton>Nueva</CustomButton>
+            <CustomButton type="button"
+            onClick={()=>{router.push('/nuevo'); 
+              localStorage.removeItem('nueva-oportunidad');
+              }}>Nueva</CustomButton>
             </div>
             <DataGrid
             rows = {filteredData? filteredData : []}

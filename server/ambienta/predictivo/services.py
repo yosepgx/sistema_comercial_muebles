@@ -93,6 +93,9 @@ class ServicePrediccion:
                 product_data['Mes'].dt.strftime('%m') == mes
             ]['cantidad'].mean()
             
+            #alisamiento para indices estacionales
+            beta = 5
+
             # Si no hay datos para ese mes, usar el índice global
             if pd.isna(mes_producto_mean) or mes_producto_mean == 0:
                 # Usar el promedio de los meses con ese número para todos los productos
@@ -100,10 +103,10 @@ class ServicePrediccion:
                     monthly_product_quantities['Mes'].dt.strftime('%m') == mes
                 ]['cantidad'].mean()
                 
-                return mes_global_mean / monthly_product_quantities.groupby('Mes')['cantidad'].sum().mean()
+                return (mes_global_mean + beta)/ (monthly_product_quantities.groupby('Mes')['cantidad'].sum().mean() + beta)
             
             # Calcular índice estacional
-            return mes_producto_mean / total_mean
+            return (mes_producto_mean + beta) / (total_mean + beta)
         
         # Calcular índices para cada producto y mes del horizonte
         indices_estacionales = {

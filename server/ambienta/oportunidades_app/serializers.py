@@ -1,9 +1,9 @@
 from rest_framework import serializers
 from .models import Oportunidad, Cotizacion, CotizacionDetalle
-from clientes_app.serializers import ContactoSerializer
+from clientes_app.serializers import ClienteSerializer
 #oportunidad -> cotizacion -> cotizacionDetalle
 class OportunidadSerializer(serializers.ModelSerializer):
-    rcliente = ContactoSerializer(source='contacto', read_only = True)
+    rcliente = ClienteSerializer(source='cliente', read_only = True)
     class Meta:
         model = Oportunidad
         fields = '__all__'
@@ -15,6 +15,10 @@ class CotizacionSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 class CotizacionDetalleSerializer(serializers.ModelSerializer):
+    rnombre = serializers.CharField(source = 'producto.nombre', read_only=True)
+    rum = serializers.CharField(source = 'producto.umedida_sunat', read_only=True)
     class Meta:
         model = CotizacionDetalle
-        fields = '__all__'
+        fields = ['producto', 'cotizacion', 'cantidad' ,'precio_unitario' ,
+                  'descuento', 'subtotal' ,'nrolinea' ,'activo',
+                  'rnombre', 'rum']

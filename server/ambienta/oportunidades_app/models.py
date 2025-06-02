@@ -1,6 +1,6 @@
 from django.db import models
 from inventario_app.models import Producto
-from clientes_app.models import Contacto
+from clientes_app.models import Cliente
 
 #modelos: oportunidad, cotizacion, cotizacionDetalle
 
@@ -16,11 +16,10 @@ class Oportunidad(models.Model):
         (PERDIDO, 'Perdido'),
     ]
 
-    contacto = models.ForeignKey(Contacto, on_delete=models.CASCADE)
-    #sede = models.ForeignKey(Sede, on_delete=models.CASCADE) #TODO: agregar model Sede
-    valor_neto = models.DecimalField(max_digits=12, decimal_places=2)
+    cliente = models.ForeignKey(Cliente, on_delete=models.CASCADE,null=True)
+    #sede = models.ForeignKey(Sede, on_delete=models.CASCADE) #TODO: agregar model Sedez
     fecha_contacto = models.DateField(auto_now_add=True)
-    vendedor_asignado = models.IntegerField(null=True, blank=True)  # TODO: Debería ser ForeignKey a un modelo Usuario si existe
+    
     estado_oportunidad = models.CharField(
         max_length=20, choices=ESTADO_OPORTUNIDAD_CHOICES, default=EN_NEGOCIACION
     )
@@ -37,10 +36,12 @@ class Oportunidad(models.Model):
 class Cotizacion(models.Model):
     PROPUESTA = 'propuesta'
     ACEPTADA = 'aceptada'
+    RECHAZADA = 'rechazada'
 
     ESTADO_COTIZACION_CHOICES = [
         (PROPUESTA, 'Propuesta'),
         (ACEPTADA, 'Aceptada'),
+        (RECHAZADA, 'Rechazada'),
     ]
 
     fecha = models.DateField(auto_now_add=True)
@@ -49,9 +50,6 @@ class Cotizacion(models.Model):
     )
     
     oportunidad = models.ForeignKey(Oportunidad, on_delete=models.CASCADE, related_name="cotizaciones")
-    #TODO quitar validez y ponerlo en oportunidad
-    validez = models.IntegerField()  # Número de días de validez
-
     monto_sin_impuesto = models.DecimalField(max_digits=12, decimal_places=2)
     monto_total = models.DecimalField(max_digits=12, decimal_places=2)
     monto_igv = models.DecimalField(max_digits=12, decimal_places=2)  # En valor no porcentaje
@@ -72,6 +70,7 @@ class CotizacionDetalle(models.Model):
     cotizacion = models.ForeignKey(Cotizacion, on_delete=models.CASCADE, related_name="detalles")
 
     cantidad = models.PositiveIntegerField(default=1, blank=False)
+    precio_unitario = models.DecimalField(max_digits=8, decimal_places=2, default=0.00, blank=False)
     descuento = models.DecimalField(max_digits=8, decimal_places=2, default=0.00, blank=False)
     subtotal = models.DecimalField(max_digits=10, decimal_places=2, blank=False)
     nrolinea = models.PositiveBigIntegerField(blank=False)

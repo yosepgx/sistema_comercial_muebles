@@ -13,7 +13,6 @@ from rest_framework.decorators import action
 from django.utils import timezone
 from dateutil.relativedelta import relativedelta
 
-#TODO: FALTA AGREGAR PERMISOS PARA ESTOS VIEW
 
 class AlmacenViewSet(viewsets.ModelViewSet):
     queryset = Almacen.objects.all()

@@ -1,7 +1,7 @@
 import {z} from "zod"
 
 const regla = z.object({
-    producto_id: z.number(),
+    producto: z.number(),
     grupo_id: z.number(),
     fecha_inicio: z.date(),
     fecha_fin: z.date(),

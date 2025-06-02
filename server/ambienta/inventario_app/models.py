@@ -3,6 +3,7 @@ from django.utils import timezone
 from datetime import datetime, timedelta
 from django.db.models import Q
 from rest_framework import serializers
+from django.db.models import Sum
 
 #categoria -> producto -> precio -> almacen -> inventario
 class CategoriaProducto(models.Model):
@@ -118,6 +119,13 @@ class Producto(models.Model):
         if precio_activo:
             return precio_activo.valor
         return None
+    
+    @property
+    def stock(self):
+        total = self.registros_inventario.filter(activo=True).aggregate(
+            total_disponible=Sum('cantidad_disponible')
+        )
+        return total['total_disponible'] or 0
 
 class Precio (models.Model):
     producto = models.ForeignKey(Producto, on_delete=models.CASCADE, related_name="precios")

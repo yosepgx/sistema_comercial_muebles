@@ -5,7 +5,7 @@ from ventas_app.services import ServiceCargarDataVenta
 from ventas_app.models import Pedido,PedidoDetalle
 from django.db import transaction
 from clientes_app.services import ServiceCargarDataClientes
-from clientes_app.models import Contacto
+from clientes_app.models import Cliente
 from inventario_app.services import ServiceCargarDataInventario
 from inventario_app.models import CategoriaProducto, Producto
 from predictivo.services import ServicePrediccion, ServiceCargarCompras
@@ -29,7 +29,7 @@ class TestPrediccion(TestCase):
         ServiceCargarDataInventario.DataInventario(self.archivo_producto)
         
         #carga de dataCliente
-        ServiceCargarDataClientes.Contactos(self.archivo_clientes)
+        ServiceCargarDataClientes.Clientes(self.archivo_clientes)
         #ServiceCargarDataClientes.Documentos(self.archivo_clientes)
 
         #carga de DataOportunidad (Ventas)

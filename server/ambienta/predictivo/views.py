@@ -25,15 +25,17 @@ class GenerarRequisicionesView(APIView):
             # Generar requisiciones
             requisicion = ServicePrediccion.GenerarRequisicion(prediccion, compras_lista, horizonte, pasado, )
 
-            response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
-            response['Content-Disposition'] = 'attachment; filename="requisiciones.xlsx"'
+            #response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+            #response['Content-Disposition'] = 'attachment; filename="requisiciones.xlsx"'
 
             # Guardar directamente en el response sin usar ExcelWriter
-            requisicion.to_excel(response, index=False, sheet_name='Requisiciones', engine='openpyxl')
+            #requisicion.to_excel(response, index=False, sheet_name='Requisiciones', engine='openpyxl')
 
-            return response
+            #return response
+            requisicion_json = requisicion.to_dict(orient = 'records')
+            return Response(requisicion_json, status=status.HTTP_200_OK)
         except Exception as e:
-            print("❌ Error en GenerarRequisicionesView:", str(e))  # Mensaje simple
+            print("❌ Error en GenerarRequisicionesView:", str(e)) 
             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 class CargarComprasView(APIView):

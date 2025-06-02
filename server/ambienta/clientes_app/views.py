@@ -4,8 +4,8 @@ from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework import status
 from rest_framework import viewsets
 from .services import ServiceCargarDataClientes  
-from .models import Contacto
-from .serializers import ContactoSerializer
+from .models import Cliente
+from .serializers import ClienteSerializer
 import openpyxl
 
 #DocumentoID -> Contacto
@@ -14,9 +14,9 @@ import openpyxl
 #     serializer_class = DocumentoIDSerializer
 
 #cuando haya un pedido despachado se revisa si el contacto asociado es un lead, si lo es entonces se lo pasa a cliente
-class ContactoViewSet(viewsets.ModelViewSet):
-    queryset = Contacto.objects.all()
-    serializer_class = ContactoSerializer
+class ClienteViewSet(viewsets.ModelViewSet):
+    queryset = Cliente.objects.all()
+    serializer_class = ClienteSerializer
 
 class CargarDataClienteView(APIView):
     parser_classes = (MultiPartParser, FormParser)  
@@ -29,7 +29,7 @@ class CargarDataClienteView(APIView):
         try:
             # Verificar que el archivo sea un Excel válido
             excel = openpyxl.load_workbook(archivo, read_only=True)
-            hojas_requeridas = {'Contacto'}
+            hojas_requeridas = {'Cliente'}
             hojas_disponibles = set(excel.sheetnames)
 
             # Verificar que todas las hojas requeridas estén en el archivo
@@ -38,7 +38,7 @@ class CargarDataClienteView(APIView):
                 return Response({'error': f'Faltan las siguientes hojas: {", ".join(faltantes)}'},
                                 status=status.HTTP_400_BAD_REQUEST)
 
-            ServiceCargarDataClientes.Contactos(archivo)
+            ServiceCargarDataClientes.Clientes(archivo)
             #ServiceCargarDataClientes.Documentos(archivo)
 
             return Response({'mensaje': 'Carga de datos de clientes exitosa'}, status=status.HTTP_201_CREATED)

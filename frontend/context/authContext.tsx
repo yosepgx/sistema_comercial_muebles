@@ -107,6 +107,7 @@ export const AuthProvider = ({children}: {children: ReactNode}) => {
         else{
             setIsLoading(false);
         }
+        
     },[currentPath])
 
     const fetchLogin = async (loginData: UserLogin) =>{
