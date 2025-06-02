@@ -236,7 +236,7 @@ export default function FormCliente() {
                           </FormControl>
                           <SelectContent>
                             <SelectItem value="Natural">Natural</SelectItem>
-                            <SelectItem value="Jurídico">Jurídico</SelectItem>
+                            <SelectItem value="Empresa">Empresa</SelectItem>
                           </SelectContent>
                         </Select>
                         <FormMessage className="min-h-[24px]"/>

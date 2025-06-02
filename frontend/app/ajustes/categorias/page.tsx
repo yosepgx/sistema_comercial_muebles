@@ -10,50 +10,16 @@ import { Trol } from "@/components/types/rolType";
 import { useAuth } from "@/context/authContext";
 import { IconButton } from "@mui/material";
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
-import { Edit, EyeIcon } from "lucide-react";
+import { Edit, EyeIcon, Trash2 } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
-const userColumns: GridColDef<TCategoria>[] = [
-    {   field: 'id', 
-        headerName: 'Id',
-        resizable: false,
-        flex: 1
-    },
-    {   field: 'descripcion', 
-        headerName: 'Descripcion', 
-        resizable: false,
-        flex: 1
-    },
-    {   field: 'activo', 
-        headerName: 'Estado', 
-        resizable: false,
-        flex: 1,
-        valueFormatter: (value) => (value? "Activo":"Inactivo"),
-    },
-    {
-    field: 'acciones',
-    headerName: 'Acciones',
-    resizable: false,
-    sortable: false,
-    filterable: false,
-    disableColumnMenu: true,
-    width: 120,
-    renderCell: (params) => (
-       <div>
-        <IconButton onClick={() => console.log("Ver rol:", params.row)}>
-          <EyeIcon />
-        </IconButton>
-        <IconButton onClick={() => console.log("edit rol:", params.row)}>
-          <Edit />
-        </IconButton>
-      </div>
-    ),
-  }
-];
+
 
 export default function CategoriasPage(){
     const [data, setData] = useState<TCategoria[]>([])
     const [loading, setLoading] = useState(true)
+    const router = useRouter()
     const {ct} = useAuth();
     const cargarDatos = async () => {
         try {
@@ -73,6 +39,44 @@ export default function CategoriasPage(){
     if (loading) {
     return <div>Cargando...</div>
     }
+
+    const userColumns: GridColDef<TCategoria>[] = [
+        {   field: 'id', 
+            headerName: 'Id',
+            resizable: false,
+            flex: 1
+        },
+        {   field: 'descripcion', 
+            headerName: 'Descripcion', 
+            resizable: false,
+            flex: 1
+        },
+        {   field: 'activo', 
+            headerName: 'Estado', 
+            resizable: false,
+            flex: 1,
+            valueFormatter: (value) => (value? "Activo":"Inactivo"),
+        },
+        {
+        field: 'acciones',
+        headerName: 'Acciones',
+        resizable: false,
+        sortable: false,
+        filterable: false,
+        disableColumnMenu: true,
+        width: 120,
+        renderCell: (params) => (
+        <div>
+            <IconButton onClick={() => router.push(`/ajustes/categorias/${params.row.id}`)}>
+            <Edit />
+            </IconButton>
+            <IconButton onClick={() => console.log("borrar rol:", params.row)}>
+            <Trash2 />
+            </IconButton>
+        </div>
+        ),
+    }
+    ];
 
     return (
         <ProtectedRoute>

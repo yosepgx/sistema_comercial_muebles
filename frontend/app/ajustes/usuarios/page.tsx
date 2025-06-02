@@ -8,9 +8,33 @@ import { Tusuario } from "@/components/types/usuarioType"
 import { useAuth } from "@/context/authContext"
 import { DataGrid, GridColDef } from '@mui/x-data-grid';
 import { IconButton } from "@mui/material"
-import { Edit, EyeIcon } from "lucide-react"
+import { Edit, EyeIcon, Trash2 } from "lucide-react"
+import { useRouter } from "next/navigation"
 
-const userColumns: GridColDef<Tusuario>[] = [
+
+
+
+export default function UsuariosPage(){
+    const [data, setData] = useState<Tusuario[]>([])
+    const [loading, setLoading] = useState(true)
+    const router = useRouter()
+    const {ct} = useAuth();
+    const cargarDatos = async () => {
+        try {
+        const res = await GetUsuarioListApi(ct)
+        console.log("Datos cargados:", res)
+        setData(res)
+        } catch (error) {
+        console.error("Error al cargar los datos", error)
+        } finally {
+        setLoading(false)
+        }
+    }
+    useEffect(() => {
+        cargarDatos()
+    }, [])
+
+    const userColumns: GridColDef<Tusuario>[] = [
     {   field: 'id', 
         headerName: 'Id',
         resizable: false,
@@ -47,45 +71,16 @@ const userColumns: GridColDef<Tusuario>[] = [
     width: 120,
     renderCell: (params) => (
        <div>
-        <IconButton onClick={() => handleView(params.row)}>
-          <EyeIcon />
-        </IconButton>
-        <IconButton onClick={() => handleEdit(params.row)}>
+        <IconButton onClick={() => router.push(`/ajustes/usuarios/${params.row.id}`)}>
           <Edit />
+        </IconButton>
+        <IconButton >
+          <Trash2 />
         </IconButton>
       </div>
     ),
   }
 ];
-
-const handleView = (row: Tusuario) => {
-  console.log("Ver usuario:", row);
-  
-  
-};
-
-const handleEdit = (row: Tusuario) => {
-  console.log("Editar usuario:", row);
-};
-
-export default function UsuariosPage(){
-    const [data, setData] = useState<Tusuario[]>([])
-    const [loading, setLoading] = useState(true)
-    const {ct} = useAuth();
-    const cargarDatos = async () => {
-        try {
-        const res = await GetUsuarioListApi(ct)
-        console.log("Datos cargados:", res)
-        setData(res)
-        } catch (error) {
-        console.error("Error al cargar los datos", error)
-        } finally {
-        setLoading(false)
-        }
-    }
-    useEffect(() => {
-        cargarDatos()
-    }, [])
 
     if (loading) {
     return <div>Cargando...</div>

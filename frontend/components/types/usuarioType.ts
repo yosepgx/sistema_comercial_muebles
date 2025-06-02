@@ -11,7 +11,6 @@ export const usuario = z.object({
     username: z.string(),
     email: z.string(),
     groups: z.array(string()),
-    perfil: perfil,
     is_active: z.boolean(),
   
 });
