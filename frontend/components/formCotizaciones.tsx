@@ -21,6 +21,13 @@ export default function FormCotizaciones() {
   const [listaCotizaciones, setListaCotizaciones] =useState<TCotizacion[]>([])
   const {setCrrCotizacion, SetModoCotizacion, crrTab, crrOportunidad} = useOportunidadContext()
   const router = useRouter();
+
+
+  const handleDownload = (cotizacionId: number ) => {
+    window.open(`${process.env.NEXT_PUBLIC_BACKEND_URL}oportunidades/cotizacion/${cotizacionId}/pdf/`, '_blank');
+    
+  };
+
   const columns: GridColDef<TCotizacion>[] = [
     {
       field: 'id',
@@ -74,14 +81,14 @@ export default function FormCotizaciones() {
       width: 120,
       renderCell: (params) => (
         <div className="flex gap-1">
-          <button className="p-1 rounded hover:bg-gray-100" onClick={()=>router.push(`/${params.row.id}`)}>
+          <button className="p-1 rounded hover:bg-gray-100">
             <Eye onClick={()=>{setCrrCotizacion(params.row as TCotizacion); SetModoCotizacion('una')}}/>
           </button>
           <button className="p-1 rounded hover:bg-gray-100">
             <Trash2 />
           </button>
           <button className="p-1 rounded hover:bg-gray-100">
-            <Printer />
+            <Printer onClick={()=>{handleDownload(params.row.id)}}/>
           </button>
         </div>
       )

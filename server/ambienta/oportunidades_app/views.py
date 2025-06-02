@@ -7,6 +7,10 @@ from .models import Oportunidad,Cotizacion, CotizacionDetalle
 from .serializers import OportunidadSerializer, CotizacionSerializer, CotizacionDetalleSerializer
 from ventas_app.models import Pedido, PedidoDetalle
 from django.db import transaction
+from django.http import HttpResponse
+from django.template.loader import render_to_string
+from weasyprint import HTML
+import tempfile
 
 #oportunidad -> cotizacion -> cotizacionDetalle -> pedido -> pedidoDetalle
 #TODO: agregar vigencia a las oportunidades
@@ -42,8 +46,20 @@ class CotizacionViewSet(viewsets.ModelViewSet):
 #               Verificar si ya hay otra cotización aceptada para la misma oportunidad
                 oportunidad = instance.oportunidad
                 if Cotizacion.objects.filter(oportunidad=oportunidad, estado_cotizacion='aceptada').exclude(id=instance.id).exists():
-                    raise ValidationError("Ya existe una cotización aceptada para esta oportunidad.")
-                    return Response({"mensaje": "ya hay una cotizacion aceptada"}, status= status.HTTP_405_METHOD_NOT_ALLOWED)
+                    raise ValidationError({
+                        "codigo": "COTIZACION_DUPLICADA",
+                        "detalle": "Ya existe una cotización aceptada para esta oportunidad."
+                    })
+                
+#               Validar stock suficiente
+                for detalle in instance.detalles.all():
+                    stock_disponible = detalle.producto.stock
+                    if detalle.cantidad > stock_disponible:
+                        raise ValidationError({
+                            "codigo": "STOCK_INSUFICIENTE",
+                            "detalle": f"No hay stock suficiente para el producto '{detalle.producto.nombre}'. "
+                                       f"Requiere {detalle.cantidad}, disponible {stock_disponible}."
+                        })
                 
 #               1. Actualizar la oportunidad a estado 'ganada'
                 if instance.oportunidad:
@@ -106,3 +122,19 @@ class CotizacionDetalleViewSet(viewsets.ModelViewSet):
         return super().get_queryset()
 
 
+def generar_pdf_cotizacion(request, cotizacion_id):
+    #cotizacion = Cotizacion.objects.select_related('oportunidad__cliente').prefetch_related('detalles__producto').get(id=cotizacion_id)
+    cotizacion = Cotizacion.objects.prefetch_related('detalles__producto').get(id=cotizacion_id)
+
+    html_string = render_to_string("cotizaciones/pdf_cotizacion.html", {
+        "cotizacion": cotizacion,
+        # "cliente": cotizacion.oportunidad.cliente,
+        "detalles": cotizacion.detalles.all()
+    })
+
+    with tempfile.NamedTemporaryFile(delete=True, suffix=".pdf") as output:
+        HTML(string=html_string).write_pdf(output.name)
+        output.seek(0)
+        response = HttpResponse(output.read(), content_type="application/pdf")
+        response['Content-Disposition'] = f'attachment; filename="Cotizacion_{cotizacion.id}.pdf"'
+        return response

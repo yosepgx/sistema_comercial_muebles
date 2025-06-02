@@ -1,10 +1,10 @@
 import {string, z} from "zod"
 
 const pedidoDetalle = z.object({
-    producto_id: z.number(),
-    pedido_id: z.number(),
+    producto: z.number(),
+    pedido: z.number(),
     cantidad: z.number(),
-    precio: z.number(),
+    precio_unitario: z.number(),
     descuento: z.number(),
     subtotal: z.number(),
     nrolinea: z.number(),
@@ -13,16 +13,16 @@ const pedidoDetalle = z.object({
 
 const pedido = z.object({
     id: z.number(),
-    fecha: z.date(),
-    fechaentrega: z.date(),
-    fecha_pago: z.date(),
-    // serie: z.string(),
-    // correlativo: z.string(),
-    // tipo_comprobante: z.enum(["boleta","factura"]),
+    fecha: z.string(),
+    fechaentrega: z.string(),
+    fecha_pago: z.string(),
+    serie: z.string().optional(), //read-only
+    correlativo: z.string().optional(), //read-only
+    tipo_comprobante: z.enum(["boleta","factura"]),
     direccion_entrega: z.string(),
-    cotizacion_id: z.number(),
+    cotizacion: z.number(),
     moneda: z.enum(["PEN"]),
-    estado_pedido: z.enum(["por validar", "pagado", "despachado", "anulado"]),
+    estado_pedido: z.enum(["pendiente", "pagado", "despachado", "anulado"]),
     monto_sin_impuesto: z.number(),
     monto_igv: z.number(),
     monto_total: z.number(),
@@ -33,3 +33,4 @@ const pedido = z.object({
 })
 
 export type TPedido = z.infer<typeof pedido>
+export type TPedidoDetalle = z.infer<typeof pedidoDetalle>

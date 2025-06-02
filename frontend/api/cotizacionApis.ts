@@ -110,15 +110,19 @@ export async function UpdateCotizacionAPI(token:string | null, id: number, data:
         body: JSON.stringify(data),
       });
   
+      const responseData = await response.json();
+
       if (!response.ok) {
-        throw new Error(`Error del servidor: ${response.status} - ${response.statusText}`);
+        const mensaje = responseData?.detalle || `Error del servidor: ${response.status}`;
+        throw new Error(mensaje);
       }
   
-      const responseData = await response.json();
       return responseData as TCotizacion;
   
     } catch (error) {
       console.error("Error al actualizar cotizacion:", error);
-      return null;
+      const mensaje = error instanceof Error? error.message : "Ocurrió un error inesperado.";
+    alert(mensaje);
+    return null;
     }
   }

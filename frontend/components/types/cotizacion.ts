@@ -1,10 +1,10 @@
 import {string, z} from "zod"
 
 const cotizacionDetalle = z.object({
-    producto_id: z.number(),
-    cotizacion_id: z.number(),
+    producto: z.number(),
+    cotizacion: z.number(),
     cantidad: z.number(),
-    precio: z.number(),
+    precio_unitario: z.number(),
     descuento: z.number(),
     subtotal: z.number(),
     nrolinea: z.number(),

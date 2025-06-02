@@ -19,6 +19,7 @@ import ProductSearchPopup from './popsearchproducto'
 import { CotizacionTable } from './tablecotizacion'
 import { PostCotizacionAPI, UpdateCotizacionAPI } from '@/api/cotizacionApis'
 
+//TODO: falta agregar nro de linea a cada detalle
 
 const formSchema = z. object({
   id: z.string(),     //manejado por back
@@ -64,13 +65,13 @@ export default function FormCotizacionDetalle() {
       fecha: '',
       estado_cotizacion: 'propuesta',
       oportunidad: '',
-      monto_sin_impuesto: '',
-      monto_igv: '',
-      monto_total: '',
-      descuento_adicional: '',
+      monto_sin_impuesto: '0.00',
+      monto_igv: '0.00',
+      monto_total: '0.00',
+      descuento_adicional: '0.00',
       observaciones: '',
       direccion_entrega: '',
-      activo: '',
+      activo: 'true',
     }
   })
 
@@ -86,7 +87,9 @@ export default function FormCotizacionDetalle() {
   // Sumar subtotales
   const totalConIGV = listaDetalles.reduce((acc, item) => acc + (item.subtotal || 0), 0);
   const totalSinIGV = totalConIGV / 1.18; // Asumiendo 18% IGV
-  const IGV = totalSinIGV * 0.18; // Asumiendo 18% IGV
+  const descuentoConIGV = Number(crrCotizacion?.descuento_adicional || 0 )
+  const descuentoBase = descuentoConIGV/ 1.18
+  const IGV = (totalSinIGV - descuentoBase)* 0.18; // Asumiendo 18% IGV
   
   form.setValue('monto_sin_impuesto', totalSinIGV.toFixed(2));
   form.setValue('monto_igv', IGV.toFixed(2));
@@ -131,14 +134,14 @@ const handleSelectProducto = (producto: TProducto) => {
     if(!crrCotizacion && tipoEdicion === 'nuevo')//si es creacion (nuevo) no existe aun la cotizacion
     console.log("producto seleccionado", producto)
     setListaDetalles((old) => {
-      const yaExiste = old.some(item => item.producto_id === producto.id);
+      const yaExiste = old.some(item => item.producto === producto.id);
       if (yaExiste) return old;
 
       const detalle: TCotizacionDetalle = {
-        producto_id: producto.id,
-        cotizacion_id: 0, //al crear asignar a todas estas la cotizacion
+        producto: producto.id,
+        cotizacion: 0, //al crear asignar a todas estas la cotizacion
         cantidad: 1,
-        precio: producto.rprecio_actual?producto.rprecio_actual:0 ,
+        precio_unitario: producto.rprecio_actual?producto.rprecio_actual:0 ,
         descuento: 0,
         subtotal: producto.rprecio_actual?producto.rprecio_actual * 1: 0,
         nrolinea: old.length + 1,
@@ -162,6 +165,8 @@ const handleSelectProducto = (producto: TProducto) => {
               onSelectProducto={handleSelectProducto}
       />
       {/* Breadcrumb */}
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
       <div className="flex items-center gap-2 mb-6 text-sm text-gray-600">
         <ChevronRight size={16} />
         <span onClick={()=>SetModoCotizacion('muchas')} 
@@ -171,13 +176,14 @@ const handleSelectProducto = (producto: TProducto) => {
         <span> Cotización{' '}
         {crrCotizacion ? `${crrCotizacion.id} (${crrCotizacion.estado_cotizacion})` : '0 (Propuesta)'} </span>
         {tipoEdicion === 'nuevo'&& <CustomButton type='submit'>Guardar Cotizacion</CustomButton>}
-        {crrCotizacion && tipoEdicion === "vista" && <div className="flex gap-8">
+        {crrCotizacion && tipoEdicion === "vista" && crrCotizacion.estado_cotizacion==='propuesta' 
+        && <div className="flex gap-8">
               <CustomButton
                 variant='red'
                 onClick={async () => {
                   const confirmacion = window.confirm('¿Estás seguro de que deseas rechazar esta cotización?')
                   if (confirmacion) {
-                    const nueva = { ...crrCotizacion, estado_cotizacion: 'rechazada' as 'rechazada'}
+                    const nueva = { ...crrCotizacion, estado_cotizacion: 'rechazada' as const}
                     await UpdateCotizacionAPI(null, crrCotizacion.id, nueva)
                   }
                 }}
@@ -189,12 +195,9 @@ const handleSelectProducto = (producto: TProducto) => {
               onClick={async () => {
                 const confirmacion = window.confirm('¿Deseas generar un pedido a partir de esta cotización?')
                 if (confirmacion) {
-                  const nueva = { ...crrCotizacion, estado_cotizacion: 'aceptada' as 'aceptada'}
+                  const nueva = { ...crrCotizacion, estado_cotizacion: 'aceptada' as const}
                   const respuesta = await UpdateCotizacionAPI(null, crrCotizacion.id, nueva)
-                  if(!respuesta){//no le permitio porque ya hay otra
-                    window.alert("ya existe cotizacion aceptada para esta oportunidad");
-                    return
-                  }
+                  //el manejo de la alerta se hace dentro de UpdateCotizacionAPI
                   setCrrTab('pedido')
                 }
               }}
@@ -203,8 +206,7 @@ const handleSelectProducto = (producto: TProducto) => {
             </CustomButton>
         </div>}
       </div>
-      <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+      
       {/* Sección desplegable de Descuento y observaciones */}
       <Collapsible open={isDescuentoOpen} onOpenChange={setIsDescuentoOpen}>
         <CollapsibleTrigger className="flex items-center gap-2 w-full p-3 bg-gray-50 rounded-t-lg border hover:bg-gray-100">
@@ -281,7 +283,7 @@ const handleSelectProducto = (producto: TProducto) => {
                 <FormItem className='flex flex-col'>
                   <FormLabel> Observación/Razón de rechazo</FormLabel>
                   <FormControl>
-                    <Input type = "number" {...field}/>
+                    <Input type = "text" {...field}/>
                   </FormControl>
                   <FormMessage className="min-h-[24px]"/>
                 </FormItem>

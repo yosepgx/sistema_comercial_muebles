@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -9,138 +9,172 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { DataGrid, GridColDef } from '@mui/x-data-grid'
 import CustomButton from './customButtom'
 import { useRouter } from 'next/navigation'
+import { TPedido, TPedidoDetalle } from './types/pedido'
+import { useOportunidadContext } from '@/context/oportunidadContext'
+import { GetCotizacionListApi } from '@/api/cotizacionApis'
+import { GetPedidoDetailApi, GetXMLFile, UpdatePedidoAPI } from '@/api/pedidoApis'
+import { TOportunidad } from './types/oportunidad'
+import { GetPedidoLineaListApi } from '@/api/pedidoDetalleApis'
+import {z} from 'zod'
+import { Form, FormControl, FormField, FormItem, FormMessage, FormLabel } from './ui/form'
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
 
-interface ProductoData {
-  id: number
-  codigo: string
-  producto: string
-  valorUnitario: number
-  um: string
-  cantidad: number
-  descuento: string
-  total: number
-}
+const formSchema = z. object({
+  id: z.string(),     //manejado por back
+  fecha: z.string(), //manejado por back
+  fechaentrega: z.string(),
+  fecha_pago: z.string(),
+  serie: z.string().optional(), //debe de ser manejado por back
+  correlativo: z.string().optional(), //debe de ser manejado por back
+  tipo_comprobante: z.string(),
+  direccion_entrega: z.string(),
+  cotizacion: z.string(),
+  moneda: z.enum(['PEN']),
+  estado_pedido: z.enum(["pendiente","pagado","despachado", "anulado"]), 
+  monto_sin_impuesto: z.string(), //suma ingresada al final
+  monto_igv: z.string(),
+  monto_total: z.string(),
+  descuento_adicional: z.string(),
+  observaciones: z.string(),
+  codigo_tipo_tributo: z.string(),
+  activo: z.string(),
+})
 
-const productosData: ProductoData[] = [
-  {
-    id: 1,
-    codigo: '0005',
-    producto: 'Comedor de 8 sillas',
-    valorUnitario: 2000,
-    um: 'Unidades',
-    cantidad: 1,
-    descuento: '10%',
-    total: 1800
-  },
-  {
-    id: 2,
-    codigo: '0006',
-    producto: 'Comedor de 6 sillas',
-    valorUnitario: 1800,
-    um: 'Unidades',
-    cantidad: 1,
-    descuento: '10%',
-    total: 1620
-  },
-  {
-    id: 3,
-    codigo: '0017',
-    producto: 'portaTV',
-    valorUnitario: 1500,
-    um: 'Unidades',
-    cantidad: 1,
-    descuento: '-',
-    total: 1500
-  },
-  {
-    id: 4,
-    codigo: '0034',
-    producto: 'Tocador digital',
-    valorUnitario: 2300,
-    um: 'Unidades',
-    cantidad: 1,
-    descuento: '-',
-    total: 2300
-  },
-  {
-    id: 5,
-    codigo: 'S002',
-    producto: 'Servicio de envío',
-    valorUnitario: 50,
-    um: 'Unidades',
-    cantidad: 1,
-    descuento: '-',
-    total: 50
-  }
-]
+const formSchemaSend = formSchema.transform ( data => ({
+  ...data,
+  id: parseInt(data.id,10),
+  tipo_comprobante: parseInt(data.tipo_comprobante,10),
+  cotizacion: parseInt(data.id, 10),
+  monto_sin_impuesto: parseFloat(data.monto_sin_impuesto),
+  monto_igv: parseFloat(data.monto_igv),
+  monto_total: parseFloat(data.monto_total),
+  descuento_adicional: parseFloat(data.descuento_adicional),
+}))
 
 export default function FormPedido() {
-  const [formData, setFormData] = useState({
-    codigoPedido: 'P0000001',
-    direccionEntrega: 'Jirón Manuel Belgrano 130, Pueblo Libre',
-    valorNeto: '7650.00',
-    solicitante: 'Pedro Cuellar Solís',
-    fechaPedido: '10/02/2025',
-    igv: '1377.00',
-    descuentoAuxiliar: '100.00',
-    descuentoTotal: '100.00',
-    valorTotal: '9027.00',
-    estado: 'Por validar',
-    observaciones: ''
+  const {crrTab, crrOportunidad} = useOportunidadContext()
+  const [pedido, setPedido] = useState<TPedido | null>(null)
+  const [listaDetalles, setListaDetalles] = useState<TPedidoDetalle[]>([])
+  const form = useForm<z.infer<typeof formSchema>>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      id: '',     
+      fecha: '', 
+      fechaentrega: '',
+      fecha_pago: '',
+      serie: '', 
+      correlativo: '', 
+      tipo_comprobante: '',
+      direccion_entrega: '',
+      cotizacion: '',
+      moneda: 'PEN',
+      estado_pedido: 'pendiente', 
+      monto_sin_impuesto: '',
+      monto_igv: '',
+      monto_total: '',
+      descuento_adicional: '',
+      observaciones: '',
+      codigo_tipo_tributo: '',
+      activo: ''
+    }
   })
-  const router = useRouter()
-  const handleInputChange = (field: string, value: string) => {
-    setFormData(prev => ({
-      ...prev,
-      [field]: value
-    }))
+
+  const fetchPedido = async (crrOportunidad: TOportunidad) => {
+    const data = await GetCotizacionListApi(null);
+    const filtradas = data.filter(item => item.oportunidad === crrOportunidad.id 
+      && item.estado_cotizacion === 'aceptada' 
+      && item.activo===true);
+    const ultima = filtradas[-1]
+    const pedidoFetch = await GetPedidoDetailApi(null, undefined, ultima.id)
+    
+    if(pedidoFetch && pedidoFetch.estado_pedido !== 'anulado'){
+      setPedido(pedidoFetch);
+      const listado = await GetPedidoLineaListApi(null, pedidoFetch.id)
+      setListaDetalles(listado)
+      return pedidoFetch 
+    }
   }
 
-  const columns: GridColDef[] = [
-    {
-      field: 'codigo',
-      headerName: 'CODIGO',
-      width: 100,
-      headerClassName: 'data-grid-header'
-    },
+  const cargarPedido = (pedido: TPedido) =>{
+    form.setValue('id',`${pedido.id}`);
+    form.setValue('fecha',pedido.fecha);
+    form.setValue('fechaentrega',pedido.fechaentrega);
+    form.setValue('fecha_pago',pedido.fecha_pago);
+    form.setValue('serie',pedido.serie);
+    form.setValue('correlativo',pedido.correlativo); 
+    form.setValue('tipo_comprobante',pedido.tipo_comprobante); 
+    form.setValue('direccion_entrega',pedido.direccion_entrega);
+    form.setValue('cotizacion',`${pedido.cotizacion}`);
+    form.setValue('moneda',pedido.moneda);
+    form.setValue('estado_pedido',pedido.estado_pedido);
+    form.setValue('monto_sin_impuesto',`${pedido.monto_sin_impuesto}`);
+    form.setValue('monto_igv',`${pedido.monto_igv}`);
+    form.setValue('monto_total',`${pedido.monto_total}`);
+    form.setValue('descuento_adicional',`${pedido.descuento_adicional}`);
+    form.setValue('observaciones',pedido.observaciones);
+    form.setValue('codigo_tipo_tributo',pedido.codigo_tipo_tributo);
+    form.setValue('activo',`${pedido.activo}`);
+  }
+
+  useEffect(()=>{
+    if(crrOportunidad && crrTab === 'pedido'){
+      fetchPedido(crrOportunidad).then(
+        data => {if(data)cargarPedido(data)}
+      )
+    }
+  },[crrTab])
+
+
+  const router = useRouter()
+
+  const columns: GridColDef<TPedidoDetalle>[] = [
     {
       field: 'producto',
-      headerName: 'PRODUCTO',
-      width: 200,
-      headerClassName: 'data-grid-header'
+      headerName: 'CODIGO',
+      resizable: false,
+      flex: 1
     },
+    // {
+    //   field: 'rproducto',
+    //   headerName: 'PRODUCTO',
+    //   resizable: false,
+    //   flex: 1,
+    //   renderCell: (params) => (
+    //     <span>{params.row.rproducto?.nombre || ''}</span>
+    //   ), // Maneja nulos o undefined
+    // },
     {
-      field: 'valorUnitario',
+      field: 'precio_unitario',
       headerName: 'VALOR UNITARIO',
-      width: 150,
-      headerClassName: 'data-grid-header',
-      renderCell: (params) => params.value.toLocaleString()
+      resizable: false,
+      flex: 1
     },
-    {
-      field: 'um',
-      headerName: 'UM',
-      width: 100,
-      headerClassName: 'data-grid-header'
-    },
+    // {
+    //   field: 'rum',
+    //   headerName: 'UM',
+    //   resizable: false,
+    //   flex: 1
+    // },
     {
       field: 'cantidad',
       headerName: 'CANTIDAD',
-      width: 100,
-      headerClassName: 'data-grid-header'
+      resizable: false,
+      flex: 1
     },
     {
       field: 'descuento',
       headerName: 'DESCUENTO',
-      width: 120,
-      headerClassName: 'data-grid-header'
+      resizable: false,
+      flex: 1
     },
     {
-      field: 'total',
+      field: 'subtotal',
       headerName: 'TOTAL',
-      width: 100,
-      headerClassName: 'data-grid-header',
-      renderCell: (params) => params.value.toLocaleString()
-    }
+      resizable: false,
+      flex: 1
+    },
+    
   ]
 
   return (
@@ -149,38 +183,59 @@ export default function FormPedido() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
         {/* Primera columna */}
         <div className="space-y-4">
-          <div className="space-y-2">
-            <Label className="text-sm font-medium text-gray-600">Código de Pedido</Label>
-            <Input
-              value={formData.codigoPedido}
-              onChange={(e) => handleInputChange('codigoPedido', e.target.value)}
-              className="bg-gray-100"
-              readOnly
-            />
-          </div>
-          
-          <div className="space-y-2">
+          <FormField
+            control = {form.control}
+            name = "id"
+            render={({field}) => (
+              <FormItem className='flex flex-col'>
+                <FormLabel> Código de Pedido</FormLabel>
+                <FormControl>
+                  <Input type = "text" {...field}/>
+                </FormControl>
+                <FormMessage className="min-h-[24px]"/>
+              </FormItem>
+            )}
+          />
+
+
+          {/* <div className="space-y-2">
             <Label className="text-sm font-medium text-gray-600">Solicitante</Label>
             <Input
               value={formData.solicitante}
-              onChange={(e) => handleInputChange('solicitante', e.target.value)}
               className="bg-gray-100"
             />
-          </div>
+          </div> */}
           
-          <div className="space-y-2">
-            <Label className="text-sm font-medium text-gray-600">Descuento auxiliar</Label>
-            <div className="relative">
-              <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">S/.</span>
-              <Input
-                value={formData.descuentoAuxiliar}
-                onChange={(e) => handleInputChange('descuentoAuxiliar', e.target.value)}
-                className="pl-8 bg-gray-100"
-              />
-            </div>
-          </div>
+          <FormField
+            control = {form.control}
+            name = "descuento_adicional"
+            render={({field}) => (
+              <FormItem className='flex flex-col'>
+                <FormLabel> Descuento auxiliar</FormLabel>
+                <FormControl>
+                  <Input type = "text" {...field}/>
+                </FormControl>
+                <FormMessage className="min-h-[24px]"/>
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control = {form.control}
+            name = "estado_pedido"
+            render={({field}) => (
+              <FormItem className='flex flex-col'>
+                <FormLabel> Estado del Pedido</FormLabel>
+                <FormControl>
+                  <Input type = "text" {...field}/>
+                </FormControl>
+                <FormMessage className="min-h-[24px]"/>
+              </FormItem>
+            )}
+          />
+
           
-          <div className="space-y-2">
+          {/* <div className="space-y-2">
             <Label className="text-sm font-medium text-gray-600">Estado</Label>
             <Select value={formData.estado} onValueChange={(value) => handleInputChange('estado', value)}>
               <SelectTrigger className="bg-gray-100">
@@ -192,30 +247,54 @@ export default function FormPedido() {
                 <SelectItem value="Rechazado">Rechazado</SelectItem>
               </SelectContent>
             </Select>
-          </div>
-        </div>
+          </div> */}
+
+        
 
         {/* Segunda columna */}
-        <div className="space-y-4">
-          <div className="space-y-2">
-            <Label className="text-sm font-medium text-gray-600">Dirección de entrega</Label>
-            <Input
-              value={formData.direccionEntrega}
-              onChange={(e) => handleInputChange('direccionEntrega', e.target.value)}
-              className="bg-gray-100"
-            />
-          </div>
+        <FormField
+          control = {form.control}
+          name = "direccion_entrega"
+          render={({field}) => (
+            <FormItem className='flex flex-col'>
+              <FormLabel> Dirección de entrega</FormLabel>
+              <FormControl>
+                <Input type = "text" {...field}/>
+              </FormControl>
+              <FormMessage className="min-h-[24px]"/>
+            </FormItem>
+          )}
+        />
+        <FormField
+          control = {form.control}
+          name = "fecha"
+          render={({field}) => (
+            <FormItem className='flex flex-col'>
+              <FormLabel> Fecha del pedido</FormLabel>
+              <FormControl>
+                <Input type = "text" {...field}/>
+              </FormControl>
+              <FormMessage className="min-h-[24px]"/>
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control = {form.control}
+          name = "fecha"
+          render={({field}) => (
+            <FormItem className='flex flex-col'>
+              <FormLabel> Fecha del pedido</FormLabel>
+              <FormControl>
+                <Input type = "date" {...field}/>
+              </FormControl>
+              <FormMessage className="min-h-[24px]"/>
+            </FormItem>
+          )}
+        />
+
           
-          <div className="space-y-2">
-            <Label className="text-sm font-medium text-gray-600">Fecha del pedido</Label>
-            <Input
-              value={formData.fechaPedido}
-              onChange={(e) => handleInputChange('fechaPedido', e.target.value)}
-              className="bg-gray-100"
-            />
-          </div>
-          
-          <div className="space-y-2">
+          {/* <div className="space-y-2">
             <Label className="text-sm font-medium text-gray-600">Descuento total</Label>
             <div className="relative">
               <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">S/.</span>
@@ -225,71 +304,125 @@ export default function FormPedido() {
                 className="pl-8 bg-gray-100"
               />
             </div>
-          </div>
+          </div> */}
+
+        <FormField
+          control = {form.control}
+          name = "observaciones"
+          render={({field}) => (
+            <FormItem className='flex flex-col'>
+              <FormLabel> Observaciones</FormLabel>
+              <FormControl>
+                <Input type = "date" {...field}/>
+              </FormControl>
+              <FormMessage className="min-h-[24px]"/>
+            </FormItem>
+          )}
+        />  
           
-          <div className="space-y-2">
-            <Label className="text-sm font-medium text-blue-600">Observaciones</Label>
-            <Textarea
-              value={formData.observaciones}
-              onChange={(e) => handleInputChange('observaciones', e.target.value)}
-              className="bg-blue-50 border-blue-200 min-h-[80px]"
-              placeholder="Ingrese observaciones..."
-            />
-          </div>
         </div>
 
         {/* Tercera columna */}
         <div className="space-y-4">
-          <div className="space-y-2">
-            <Label className="text-sm font-medium text-gray-600">Valor Neto</Label>
-            <div className="relative">
-              <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">S/.</span>
-              <Input
-                value={formData.valorNeto}
-                onChange={(e) => handleInputChange('valorNeto', e.target.value)}
-                className="pl-8 bg-gray-100"
-                readOnly
-              />
-            </div>
-          </div>
+          <FormField
+            control = {form.control}
+            name = "monto_sin_impuesto"
+            render={({field}) => (
+              <FormItem className='flex flex-col'>
+                <FormLabel> Monto Gravado</FormLabel>
+                <FormControl>
+                  <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">S/.</span>
+                  <Input type = "date" {...field}/>
+                </FormControl>
+                <FormMessage className="min-h-[24px]"/>
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control = {form.control}
+            name = "monto_igv"
+            render={({field}) => (
+              <FormItem className='flex flex-col'>
+                <FormLabel> Monto IGV</FormLabel>
+                <FormControl>
+                  <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">S/.</span>
+                  <Input type = "date" {...field}/>
+                </FormControl>
+                <FormMessage className="min-h-[24px]"/>
+              </FormItem>
+            )}
+          />
           
-          <div className="space-y-2">
-            <Label className="text-sm font-medium text-gray-600">IGV</Label>
-            <div className="relative">
-              <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">S/.</span>
-              <Input
-                value={formData.igv}
-                onChange={(e) => handleInputChange('igv', e.target.value)}
-                className="pl-8 bg-gray-100"
-                readOnly
-              />
-            </div>
-          </div>
-          
-          <div className="space-y-2">
-            <Label className="text-sm font-medium text-gray-600">Valor Total</Label>
-            <div className="relative">
-              <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">S/.</span>
-              <Input
-                value={formData.valorTotal}
-                onChange={(e) => handleInputChange('valorTotal', e.target.value)}
-                className="pl-8 bg-gray-100"
-                readOnly
-              />
-            </div>
-          </div>
+          <FormField
+            control = {form.control}
+            name = "monto_total"
+            render={({field}) => (
+              <FormItem className='flex flex-col'>
+                <FormLabel> Monto Total</FormLabel>
+                <FormControl>
+                  <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">S/.</span>
+                  <Input type = "date" {...field}/>
+                </FormControl>
+                <FormMessage className="min-h-[24px]"/>
+              </FormItem>
+            )}
+          />
 
           {/* Botones de acción */}
-          <div className="space-y-3 pt-4">
-            <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white">
+          <div className="flex flex-row gap-8">
+            {pedido && <CustomButton variant='primary'
+            onClick={()=>GetXMLFile(null,pedido.id)}
+            >
               Generar archivo XML
-            </Button>
-            <Button className="w-full bg-green-600 hover:bg-green-700 text-white">
-              Marcar como Pagado
-            </Button>
-            <Button className="w-full bg-pink-600 hover:bg-pink-700 text-white">
+            </CustomButton>}
+            
+            {pedido?.estado_pedido === 'pendiente' && (
+              <CustomButton
+                variant='green'
+                onClick={async () => {
+                  const confirmacion = window.confirm('¿Deseas marcar el pedido como PAGADO?');
+                  if (confirmacion) {
+                    const nuevopedido = { ...pedido, estado_pedido: 'pagado' as const };
+                    await UpdatePedidoAPI(null, nuevopedido.id, nuevopedido);
+                    setPedido(nuevopedido);
+                  }
+                }}
+              >
+                Marcar como Pagado
+              </CustomButton>
+            )}
+
+            {pedido?.estado_pedido === 'pagado' && (
+              <CustomButton
+                variant='green'
+                onClick={async () => {
+                  const confirmacion = window.confirm('¿Deseas marcar el pedido como DESPACHADO?');
+                  if (confirmacion) {
+                    const nuevopedido = { ...pedido, estado_pedido: 'despachado' as const };
+                    await UpdatePedidoAPI(null, nuevopedido.id, nuevopedido);
+                    setPedido(nuevopedido);
+                  }
+                }}
+              >
+                Marcar como Despachado
+              </CustomButton>
+            )}
+            <CustomButton
+              variant='red'
+              onClick={async () => {
+                const confirmacion = window.confirm('¿Deseas ANULAR el pedido?')
+                if (confirmacion) {
+                  if(pedido){
+                    const nuevopedido = {...pedido, estado_pedido: 'anulado' as const};
+                    await UpdatePedidoAPI(null,nuevopedido.id, nuevopedido)
+                    setPedido(nuevopedido)
+                  }
+                }
+              }}
+            >
               Anular Pedido
-            </Button>
+            </CustomButton>
           </div>
         </div>
       </div>
@@ -300,7 +433,7 @@ export default function FormPedido() {
         
         <div className="bg-white rounded-lg border">
           <DataGrid
-            rows={productosData}
+            rows={listaDetalles}
             columns={columns}
             initialState={{
               pagination: {
@@ -309,47 +442,16 @@ export default function FormPedido() {
             }}
             pageSizeOptions={[5, 10, 25]}
             disableRowSelectionOnClick
-            hideFooterPagination
-            hideFooter
-            sx={{
-              border: 'none',
-              '& .MuiDataGrid-columnHeaders': {
-                backgroundColor: '#f8f9fa',
-                borderBottom: '1px solid #e9ecef',
-                fontSize: '0.75rem',
-                fontWeight: 600,
-                color: '#6c757d'
-              },
-              '& .data-grid-header': {
-                fontSize: '0.75rem',
-                fontWeight: 600,
-                color: '#6c757d'
-              },
-              '& .MuiDataGrid-cell': {
-                borderBottom: '1px solid #f1f3f4',
-                fontSize: '0.875rem'
-              },
-              '& .MuiDataGrid-row:hover': {
-                backgroundColor: '#f8f9fa'
-              },
-              '& .MuiDataGrid-row:nth-of-type(even)': {
-                backgroundColor: '#fafafa'
-              }
-            }}
-            autoHeight
+            
           />
         </div>
       </div>
 
-      <style jsx global>{`
-        .MuiDataGrid-root {
-          font-family: inherit;
-        }
-      `}</style>
       <CustomButton variant="orange" type="button" 
         onClick={()=>{router.push('/'); localStorage.removeItem('nueva-oportunidad')}}>
         Salir
       </CustomButton>
     </div>
+    
   )
 }

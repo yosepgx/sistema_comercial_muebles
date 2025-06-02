@@ -55,10 +55,7 @@ export default function InnerPageOportunidad() {
           <FormPedido key={`pedido-${crrOportunidad?.id || 'nuevo'}`} />
         </TabsContent>
 
-        <TabsContent value="despacho">
-          <h2 className="text-xl font-bold">Despacho</h2>
-          <FormPedido key={`despacho-${crrOportunidad?.id || 'nuevo'}`} />
-        </TabsContent>
+        
 
       </Tabs>
       

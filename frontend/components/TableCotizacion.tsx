@@ -26,9 +26,9 @@ export const CotizacionTable : React.FC<CotizacionTableProps>  = ({listaDetalles
   const handleCantidadChange = (id: string, value: number) => {
     setData((prev) =>
       prev.map((row) => {
-        if (`${row.producto_id}-${row.cotizacion_id}` === id) {
+        if (`${row.producto}-${row.cotizacion}` === id) {
           const isValid = value > 0
-          const newSubtotal = isValid ? (value * row.precio - row.descuento) : row.subtotal
+          const newSubtotal = isValid ? (value * row.precio_unitario - row.descuento) : row.subtotal
           if (!isValid) {
             setErrors((e) => ({ ...e, [id]: 'Cantidad debe ser mayor a 0' }))
           } else {
@@ -58,7 +58,7 @@ export const CotizacionTable : React.FC<CotizacionTableProps>  = ({listaDetalles
 
   const handleDelete = (id: string) => {
     setData((prev) =>
-      prev.filter((row) => `${row.producto_id}-${row.cotizacion_id}` !== id)
+      prev.filter((row) => `${row.producto}-${row.cotizacion}` !== id)
     )
     setErrors((prev) => {
       const newErrors = { ...prev }
@@ -70,13 +70,13 @@ export const CotizacionTable : React.FC<CotizacionTableProps>  = ({listaDetalles
   const columns = useMemo<ColumnDef<TCotizacionDetalle>[]>(() => [
     {
       header: 'CODIGO',
-      accessorKey: 'producto_id',
+      accessorKey: 'producto',
     },
     //TODO rproducto
     //TODO rum
     {
       header: 'PRECIO UNITARIO',
-      accessorKey: 'precio',
+      accessorKey: 'precio_unitario',
       cell: info => Number(info.getValue()).toFixed(2),
     },
     {
@@ -84,7 +84,7 @@ export const CotizacionTable : React.FC<CotizacionTableProps>  = ({listaDetalles
       accessorKey: 'cantidad',
       cell: info => {
         const row = info.row.original
-        const id = `${row.producto_id}-${row.cotizacion_id}`
+        const id = `${row.producto}-${row.cotizacion}`
         const isEditing = editRowId === id
 
         return (
@@ -131,7 +131,7 @@ export const CotizacionTable : React.FC<CotizacionTableProps>  = ({listaDetalles
       header: 'Acciones',
       id: 'acciones',
       cell: ({ row }) => {
-        const id = `${row.original.producto_id}-${row.original.cotizacion_id}`
+        const id = `${row.original.producto}-${row.original.cotizacion}`
         const isEditing = editRowId === id
 
         return (

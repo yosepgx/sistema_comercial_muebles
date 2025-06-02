@@ -1,28 +1,9 @@
 import { customFetch } from "@/components/customFetch";
-import { TPedido } from "@/components/types/pedido"; 
+import { TPedidoDetalle } from "@/components/types/pedido";
 
-export const GetXMLFile = async (token: string | null, idpedido: number) => {
-  try {
-    const response = await customFetch(token, `ventas/pedido/generar-xml/${idpedido}/`, {
-      method: 'GET',
-    });
-
-    const blob = await response.blob();
-    const url = window.URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.setAttribute('download', 'pedido_1.xml');
-    document.body.appendChild(link);
-    link.click();
-    link.remove();
-  } catch (error) {
-    console.error('Error al generar el XML', error);
-  }
-};
-
-export async function GetPedidoListApi(token:string | null) {
+export async function GetPedidoLineaListApi(token:string | null, idpedido: number) {
     try {
-        const response = await customFetch(token, `ventas/pedido`, {
+        const response = await customFetch(token, `ventas/pedido-detalle/?pedido=${idpedido}`, {
             
             method: "get",
             headers:{
@@ -38,19 +19,19 @@ export async function GetPedidoListApi(token:string | null) {
         }
         const data = await response.json();
         if (data) {
-            return data as TPedido[];
+            return data as TPedidoDetalle[];
         }
         return [];
         
     } catch (error) {
-        console.error("Error al obtener datos de pedido:", error);
+        console.error("Error al obtener datos de pedido-detalle:", error);
         return [];
     }
 }
 
-export async function GetPedidoDetailApi(token:string | null, id?: number, idcotizacion?: number){
+export async function GetPedidoLineaDetailApi(token:string | null, id: number){
     try {
-        const response = await customFetch(token,idcotizacion?`ventas/pedido/?cotizacion=${idcotizacion}`:`ventas/pedido/${id}` , {
+        const response = await customFetch(token,`ventas/pedido-detalle/${id}`, {
             
             method: "get",
             headers:{
@@ -64,18 +45,16 @@ export async function GetPedidoDetailApi(token:string | null, id?: number, idcot
         }
 
         const data = await response.json();
-        return data as TPedido;
+        return data as TPedidoDetalle;
         
     } catch (error) {
-        console.error("Error al obtener datos de detalle de pedido:", error);
+        console.error("Error al obtener datos de detalle de pedido-detalle:", error);
         return null;
     }
 }
-
-
-export async function PostPedidoAPI(token:string | null, data: TPedido){
+export async function PostPedidoLineaAPI(token:string | null, data: TPedidoDetalle){
     try {
-        const response = await customFetch(token,`ventas/pedido/`, {
+        const response = await customFetch(token,`ventas/pedido-detalle/`, {
             
             method: "POST",
             headers:{
@@ -90,17 +69,17 @@ export async function PostPedidoAPI(token:string | null, data: TPedido){
         }
 
         const responseData = await response.json();
-        return responseData as TPedido;
+        return responseData as TPedidoDetalle;
         
     } catch (error) {
-        console.error("Error al guardar pedido:", error);
+        console.error("Error al guardar pedido-detalle:", error);
         return null;
     }
 }
 
-export async function DeletePedidoAPI(token:string | null, id: number){
+export async function DeletePedidoLineaAPI(token:string | null, id: number){
     try {
-        const response = await customFetch(token, `ventas/pedido/${id}/`, {
+        const response = await customFetch(token, `ventas/pedido-detalle/${id}/`, {
             
             method: "DELETE",
             headers:{
@@ -116,14 +95,14 @@ export async function DeletePedidoAPI(token:string | null, id: number){
         return true;
         
     } catch (error) {
-        console.error(`Error al borrar pedido ${id}: `, error);
+        console.error(`Error al borrar pedido-detalle ${id}: `, error);
         return false;
     }
 }
 
-export async function UpdatePedidoAPI(token:string | null, id: number, data: TPedido) {
+export async function UpdatePedidoLineaAPI(token:string | null, id: number, data: TPedidoDetalle) {
     try {
-      const response = await customFetch(token, `ventas/pedido/${id}/`, {
+      const response = await customFetch(token, `ventas/pedido-detalle/${id}/`, {
         method: "PUT",
         headers: {
           'Content-Type': 'application/json',
@@ -136,10 +115,10 @@ export async function UpdatePedidoAPI(token:string | null, id: number, data: TPe
       }
   
       const responseData = await response.json();
-      return responseData as TPedido;
+      return responseData as TPedidoDetalle;
   
     } catch (error) {
-      console.error("Error al actualizar pedido:", error);
+      console.error("Error al actualizar pedido-detalle:", error);
       return null;
     }
   }
