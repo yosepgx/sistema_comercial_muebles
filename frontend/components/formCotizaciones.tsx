@@ -12,7 +12,7 @@ import {z} from 'zod'
 import CustomButton from './customButtom'
 import { useRouter } from 'next/navigation'
 import { useOportunidadContext } from '@/context/oportunidadContext'
-import { GetCotizacionListApi } from '@/api/cotizacionApis'
+import { GetCotizacionListApi, handleDownload } from '@/api/cotizacionApis'
 
 
 export default function FormCotizaciones() {
@@ -22,11 +22,6 @@ export default function FormCotizaciones() {
   const {setCrrCotizacion, SetModoCotizacion, crrTab, crrOportunidad, setEdicionCotizacion} = useOportunidadContext()
   const router = useRouter();
 
-
-  const handleDownload = (cotizacionId: number ) => {
-    window.open(`${process.env.NEXT_PUBLIC_BACKEND_URL}oportunidades/cotizacion/${cotizacionId}/pdf/`, '_blank');
-    
-  };
 
   const columns: GridColDef<TCotizacion>[] = [
     {
@@ -88,7 +83,7 @@ export default function FormCotizaciones() {
             <Trash2 />
           </button>
           <button className="p-1 rounded hover:bg-gray-100">
-            <Printer onClick={()=>{handleDownload(params.row.id)}}/>
+            <Printer onClick={()=>{handleDownload(null,params.row.id)}}/>
           </button>
         </div>
       )

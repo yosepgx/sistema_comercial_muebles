@@ -41,6 +41,8 @@ const formSchema = z. object({
   activo: z.string(),
 })
 
+type FormValues = z.infer<typeof formSchema>
+
 const formSchemaSend = formSchema.transform ( data => ({
   ...data,
   id: parseInt(data.id,10),
@@ -126,6 +128,9 @@ export default function FormPedido() {
   },[crrTab])
 
   //no hay boton de submit y no necesita de uno
+  const onSubmit = async (data: FormValues) => {
+    console.log('Datos del formulario:', data)
+  }
 
   const router = useRouter()
 
@@ -175,9 +180,12 @@ export default function FormPedido() {
     
   ]
 
+
   return (
     <div className="container mx-auto px-4 py-6">
       {/* Información del pedido en grid */}
+      <Form {...form}> 
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
         {/* Primera columna */}
         <div className="space-y-4">
@@ -427,7 +435,8 @@ export default function FormPedido() {
           </div>
         </div>
       </div>
-
+        </form>
+      </Form>        
       {/* Sección RESUMEN PRODUCTOS */}
       <div className="mt-8">
         <h3 className="text-lg font-semibold mb-4 text-gray-800">RESUMEN PRODUCTOS</h3>

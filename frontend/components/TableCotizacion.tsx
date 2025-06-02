@@ -9,6 +9,7 @@ import {
 } from '@tanstack/react-table'
 import { Edit, Save, Trash2 } from 'lucide-react'
 import { TCotizacionDetalle } from './types/cotizacion';
+import { UNIDADES_MEDIDA_BUSCA } from '@/constants/unidadesMedidaConstants';
 
 interface CotizacionTableProps {
   detalles: TCotizacionDetalle[];
@@ -69,8 +70,18 @@ export const CotizacionTable : React.FC<CotizacionTableProps>  = ({detalles, set
       header: 'CODIGO',
       accessorKey: 'producto',
     },
-    //TODO rnombre
-    //TODO rum
+    {
+      header: 'NOMBRE',
+      accessorKey: 'rnombre',
+    },
+    {
+      header: 'UM',
+      accessorKey: 'rum',
+      cell: ({ getValue }) => {
+        const clave = getValue() as string;
+        return UNIDADES_MEDIDA_BUSCA[clave] ?? 'Sin unidad';
+      }
+    },
     {
       header: 'PRECIO UNITARIO',
       accessorKey: 'precio_unitario',

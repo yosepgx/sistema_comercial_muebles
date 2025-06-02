@@ -122,19 +122,24 @@ class CotizacionDetalleViewSet(viewsets.ModelViewSet):
         return super().get_queryset()
 
 
-def generar_pdf_cotizacion(request, cotizacion_id):
-    #cotizacion = Cotizacion.objects.select_related('oportunidad__cliente').prefetch_related('detalles__producto').get(id=cotizacion_id)
-    cotizacion = Cotizacion.objects.prefetch_related('detalles__producto').get(id=cotizacion_id)
+class GenerarPDFCotizacionView(APIView):
 
-    html_string = render_to_string("cotizaciones/pdf_cotizacion.html", {
-        "cotizacion": cotizacion,
-        # "cliente": cotizacion.oportunidad.cliente,
-        "detalles": cotizacion.detalles.all()
-    })
+    def get(self, request, cotizacion_id):
+        try:
+            cotizacion = Cotizacion.objects.prefetch_related('detalles__producto').get(id=cotizacion_id)
+            #cotizacion = Cotizacion.objects.select_related('oportunidad__cliente').prefetch_related('detalles__producto').get(id=cotizacion_id)
+        except Cotizacion.DoesNotExist:
+            return HttpResponse("Cotización no encontrada", status=404)
 
-    with tempfile.NamedTemporaryFile(delete=True, suffix=".pdf") as output:
-        HTML(string=html_string).write_pdf(output.name)
-        output.seek(0)
-        response = HttpResponse(output.read(), content_type="application/pdf")
+        html_string = render_to_string("cotizaciones/pdf_cotizacion.html", {
+            "cotizacion": cotizacion,
+            # "cliente": cotizacion.oportunidad.cliente,
+            "detalles": cotizacion.detalles.all()
+        })
+
+        pdf_bytes = HTML(string=html_string).write_pdf()
+        
+        response = HttpResponse(pdf_bytes, content_type="application/pdf")
+    #    response['Content-Disposition'] = f'inline; filename="Cotizacion_{cotizacion.id}.pdf"'
         response['Content-Disposition'] = f'attachment; filename="Cotizacion_{cotizacion.id}.pdf"'
         return response

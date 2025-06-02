@@ -1,6 +1,26 @@
 import { customFetch } from "@/components/customFetch";
 import { TCotizacion } from "@/components/types/cotizacion"; 
 
+
+export const handleDownload = async (token:string | null,cotizacionId: number) => {
+  try {
+    const res = await customFetch(token, `oportunidades/cotizacion/${cotizacionId}/pdf/`, {
+      method: 'GET',
+    });
+
+    if (!res.ok) {
+      throw new Error("Error al descargar PDF");
+    }
+
+    const blob = await res.blob();
+    const url = window.URL.createObjectURL(blob);
+    window.open(url, '_blank'); // O puedes usar un <a download> si prefieres
+
+  } catch (error) {
+    console.error("Fallo al descargar el PDF:", error);
+  }
+};
+
 export async function GetCotizacionListApi(token:string | null) {
     try {
         const response = await customFetch(token, `oportunidades/cotizacion`, {
