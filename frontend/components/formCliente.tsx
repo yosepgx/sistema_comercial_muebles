@@ -68,7 +68,7 @@ const formSchemaSend = formSchema.transform(data => ({
 
 export default function FormCliente() {
   const [registrarActivo, setRegistrarActivo] = useState(false);
-  const [tipoRegistrar, setTipoRegistrar] = useState<"nuevo" | "buscado">("nuevo");
+  const [tipoRegistrar, setTipoRegistrar] = useState<"registrar" | "buscado">("registrar");
   const [isSearchPopupOpen, setIsSearchPopupOpen] = useState(false);
   const {crrOportunidad, setCrrOportunidad, setCrrTab, tipoEdicion,crrTab, cliente, setCliente} = useOportunidadContext()
   const router = useRouter()
@@ -121,14 +121,14 @@ export default function FormCliente() {
   const onSubmit = async (data: FormValues) => {
     console.log('Datos del formulario:', data)
     //TODO ver que solo haga post una sola vez 
-    //TODO hacer POST solo si es nuevo cliente
+    //TODO hacer POST solo si es registrar cliente
     if(!crrOportunidad)
       return;
 
     let clienteId: number | null = null
 
     const verified = formSchemaSend.parse(data)
-    if (tipoRegistrar === "nuevo") {
+    if (tipoRegistrar === "registrar") {
       const nuevoCliente = await PostClienteAPI('', verified)
       if (nuevoCliente) clienteId = nuevoCliente.id
     } else {
@@ -185,7 +185,7 @@ export default function FormCliente() {
               variant="primary"
               onClick={()=>{
                 setRegistrarActivo(true)
-                setTipoRegistrar("nuevo")
+                setTipoRegistrar("registrar")
               }}
             >
               Nuevo Cliente
@@ -342,7 +342,7 @@ export default function FormCliente() {
                   type="submit"
                   disabled = {!registrarActivo}
                 >
-                  {tipoRegistrar === "nuevo"? "Registrar Nuevo Cliente" : "Guardar y Continuar"}
+                  {tipoRegistrar === "registrar"? "Registrar Nuevo Cliente" : "Guardar y Continuar"}
                 </CustomButton>
               </div>
             </div>

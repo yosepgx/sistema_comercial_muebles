@@ -56,7 +56,7 @@ export default function FormCotizacionDetalle() {
   const [tipoDireccion, setTipoDireccion] = useState<'tienda' | 'otro'>('tienda')
   const [isDescuentoOpen, setIsDescuentoOpen] = useState(true)
   const [isSearchPopupOpen, setIsSearchPopupOpen] = useState(false);
-  const {crrCotizacion, crrTab, SetModoCotizacion, tipoEdicion, crrOportunidad, setCrrTab} = useOportunidadContext()
+  const {crrCotizacion, crrTab, SetModoCotizacion, tipoEdicion, crrOportunidad, setCrrTab,edicionCotizacion} = useOportunidadContext()
   const [listaDetalles, setListaDetalles] = useState<TCotizacionDetalle[]>([])
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -103,7 +103,7 @@ const onSubmit = async (rawdata: FormValues) => {
     rawdata.oportunidad = `${crrOportunidad?.id}`
     if(tipoDireccion === 'tienda')rawdata.direccion_entrega = 'tienda';
     const data = formSchemaSend.parse(rawdata)
-    if(!crrCotizacion && tipoEdicion === 'nuevo'){
+    if(!crrCotizacion && edicionCotizacion === 'nuevo'){
       //creacion de cotizacion
       const nuevaCotizacion = await PostCotizacionAPI(null, data)
       //creacion de detalles asociados
@@ -131,7 +131,6 @@ const onSubmit = async (rawdata: FormValues) => {
 
 const handleSelectProducto = (producto: TProducto) => {
   try {
-    if(!crrCotizacion && tipoEdicion === 'nuevo')//si es creacion (nuevo) no existe aun la cotizacion
     console.log("producto seleccionado", producto)
     setListaDetalles((old) => {
       const yaExiste = old.some(item => item.producto === producto.id);
@@ -175,7 +174,7 @@ const handleSelectProducto = (producto: TProducto) => {
           </span>
         <span> Cotización{' '}
         {crrCotizacion ? `${crrCotizacion.id} (${crrCotizacion.estado_cotizacion})` : '0 (Propuesta)'} </span>
-        {tipoEdicion === 'nuevo'&& <CustomButton type='submit'>Guardar Cotizacion</CustomButton>}
+        {edicionCotizacion === 'nuevo'&& <CustomButton type='submit'>Guardar Cotizacion</CustomButton>}
         {crrCotizacion && tipoEdicion === "vista" && crrCotizacion.estado_cotizacion==='propuesta' 
         && <div className="flex gap-8">
               <CustomButton

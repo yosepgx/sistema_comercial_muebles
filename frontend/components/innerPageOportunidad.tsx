@@ -8,20 +8,31 @@ import { useOportunidadContext } from "@/context/oportunidadContext"
 import { useEffect } from "react"
 import { GetOportunidadDetailApi } from "@/api/oportunidadApis"
 import FormPadreCotizaciones from "./formPadreCotizaciones"
+import { useParams } from "next/navigation"
 
-export default function InnerPageOportunidad() {
-  const {crrTab, setCrrTab, setTipoEdicion, tipoEdicion, setCrrOportunidad, crrOportunidad} = useOportunidadContext()
+type Props = {
+  tipo: 'nuevo' | 'edicion'
+}
+
+export default function InnerPageOportunidad({tipo} : Props) {
+  const {id} = useParams()
+  const {crrTab, setCrrTab, setTipoEdicion, setCrrOportunidad, crrOportunidad} = useOportunidadContext()
   
   useEffect(()=>{
-    if(tipoEdicion === 'nuevo'){
+    if(tipo === 'nuevo'){
       const id= localStorage.getItem('nueva-oportunidad')
       if(id){
-        GetOportunidadDetailApi('token', parseInt(id,10))
+        GetOportunidadDetailApi(null, parseInt(id,10))
         .then(data => setCrrOportunidad(data))
       }
     }
+    else if(tipo === 'edicion' && id ){
+      GetOportunidadDetailApi(null, parseInt(id as string, 10))
+      .then(data => setCrrOportunidad(data))
+    }
+    setTipoEdicion(tipo)
     //se quita  nueva-cotizacion  del storage al salir de la vista de oportunidad nueva o al terminar la creacion
-  },[])
+  },[tipo,id])
 
   return (
     <div className="p-6">

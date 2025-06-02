@@ -16,7 +16,18 @@ import CustomButton from "@/components/customButtom";
 import { useRouter } from "next/navigation";
 
 
-const Columns: GridColDef<TOportunidad>[] = [
+
+
+export default function HomePage() {
+  const [data, setData] = useState<TOportunidad[]>([])
+  const [loading, setLoading] = useState(true)
+  const {ct} = useAuth();
+  const router = useRouter()
+  const [busquedaGeneral, setBusquedaGeneral] = useState("");
+  const [fechaInicio, setFechaInicio] = useState<Date | null>(null);
+  const [fechaFin, setFechaFin] = useState<Date | null>(null);
+
+  const Columns: GridColDef<TOportunidad>[] = [
     {   field: 'id', 
         headerName: 'Id',
         resizable: false,
@@ -66,7 +77,8 @@ const Columns: GridColDef<TOportunidad>[] = [
     width: 120,
     renderCell: (params) => (
        <div>
-        <IconButton onClick={() => console.log("Ver rol:", params.row)}>
+        <IconButton onClick={() => {router.push(`/${params.row.id}`); 
+        localStorage.removeItem('nueva-oportunidad');}}>
           <EyeIcon />
         </IconButton>
         <IconButton onClick={() => console.log("edit rol:", params.row)}>
@@ -76,16 +88,6 @@ const Columns: GridColDef<TOportunidad>[] = [
     ),
   }
 ];
-
-export default function HomePage() {
-  const [data, setData] = useState<TOportunidad[]>([])
-  const [loading, setLoading] = useState(true)
-  const {ct} = useAuth();
-  const router = useRouter()
-  const [busquedaGeneral, setBusquedaGeneral] = useState("");
-
-  const [fechaInicio, setFechaInicio] = useState<Date | null>(null);
-  const [fechaFin, setFechaFin] = useState<Date | null>(null);
 
   const cargarDatos = async () => {
         try {
@@ -168,7 +170,9 @@ export default function HomePage() {
               value={fechaFin}
               onChange={(newValue) => setFechaFin(newValue)}
             />
-            <CustomButton onClick={()=>{router.push('/nuevo'); localStorage.removeItem('nueva-oportunidad');}}>Nueva</CustomButton>
+            <CustomButton onClick={()=>{router.push('/nuevo'); 
+              localStorage.removeItem('nueva-oportunidad');
+              }}>Nueva</CustomButton>
             </div>
             <DataGrid
             rows = {filteredData? filteredData : []}

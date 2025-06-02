@@ -9,12 +9,12 @@ import MainWrap from "@/components/mainwrap"
 import { OportunidadProvider, useOportunidadContext } from "@/context/oportunidadContext"
 import InnerPageOportunidad from "@/components/innerPageOportunidad"
 
-export default function NuevaOportunidadPage() {
+export default function EditOportunidadPage() {
   return (
   <ProtectedRoute>
     <MainWrap>
       <OportunidadProvider>
-      <InnerPageOportunidad tipo="nuevo"/>
+      <InnerPageOportunidad tipo="edicion"/>
       </OportunidadProvider>
     </MainWrap>
   </ProtectedRoute>

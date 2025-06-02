@@ -19,7 +19,7 @@ export default function FormCotizaciones() {
   const [tipoDireccion, setTipoDireccion] = useState<'tienda' | 'otro'>('tienda')
   const [direccion, setDireccion] = useState("")
   const [listaCotizaciones, setListaCotizaciones] =useState<TCotizacion[]>([])
-  const {setCrrCotizacion, SetModoCotizacion, crrTab, crrOportunidad} = useOportunidadContext()
+  const {setCrrCotizacion, SetModoCotizacion, crrTab, crrOportunidad, setEdicionCotizacion} = useOportunidadContext()
   const router = useRouter();
 
 
@@ -82,7 +82,7 @@ export default function FormCotizaciones() {
       renderCell: (params) => (
         <div className="flex gap-1">
           <button className="p-1 rounded hover:bg-gray-100">
-            <Eye onClick={()=>{setCrrCotizacion(params.row as TCotizacion); SetModoCotizacion('una')}}/>
+            <Eye onClick={()=>{setCrrCotizacion(params.row as TCotizacion); SetModoCotizacion('una'); setEdicionCotizacion('edicion');}}/>
           </button>
           <button className="p-1 rounded hover:bg-gray-100">
             <Trash2 />
@@ -135,7 +135,7 @@ export default function FormCotizaciones() {
 
           {/* Botón Nueva Cotización */}
           <div className="flex justify-end mb-4">
-            <CustomButton variant='primary' onClick={()=>{setCrrCotizacion(null); SetModoCotizacion('una')}}>
+            <CustomButton variant='primary' onClick={()=>{setCrrCotizacion(null); SetModoCotizacion('una'); setEdicionCotizacion("nuevo");}}>
               Nueva Cotización
             </CustomButton>
           </div>

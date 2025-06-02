@@ -21,6 +21,8 @@ interface OportunidadContextType{
     SetModoCotizacion: Dispatch<SetStateAction<"muchas" | "una">>;
     crrCotizacion: TCotizacion | null;
     setCrrCotizacion: Dispatch<SetStateAction<TCotizacion | null>>;
+    edicionCotizacion: "nuevo" | "edicion";
+    setEdicionCotizacion: Dispatch<SetStateAction<"nuevo" | "edicion">>;
 }
 
 //Para todas las pestañas se necesita:
@@ -36,6 +38,7 @@ export const OportunidadProvider = ({children}: {children: ReactNode}) => {
     const [cliente, setCliente] = useState<TCliente | null>(null);
     const [modoCotizacion, SetModoCotizacion] = useState<"muchas" | "una">("muchas")
     const [crrCotizacion, setCrrCotizacion] = useState<TCotizacion | null>(null)
+    const [edicionCotizacion, setEdicionCotizacion] = useState<"nuevo" | "edicion">("nuevo")
     const router = useRouter();
     const {ct} = useAuth()
     const [crrTab, setCrrTab] = useState("oportunidad")
@@ -53,7 +56,9 @@ export const OportunidadProvider = ({children}: {children: ReactNode}) => {
         modoCotizacion,
         SetModoCotizacion,
         crrCotizacion,
-        setCrrCotizacion}}>
+        setCrrCotizacion,
+        edicionCotizacion,
+        setEdicionCotizacion}}>
             {children}
        </OportunidadContext.Provider> 
     )

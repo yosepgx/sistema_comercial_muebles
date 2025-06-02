@@ -14,7 +14,7 @@ import { format } from "date-fns-tz"
 import { TOportunidad } from "./types/oportunidad"
 import CustomButton from "./customButtom"
 import { useOportunidadContext } from "@/context/oportunidadContext"
-import { GetOportunidadDetailApi, PostOportunidadAPI } from "@/api/oportunidadApis"
+import { GetOportunidadDetailApi, PostOportunidadAPI, UpdateOportunidadAPI } from "@/api/oportunidadApis"
 import { cliente } from "./types/clienteType"
 import { useRouter } from "next/navigation"
 const formSchema = z.object({
@@ -74,13 +74,22 @@ export default function FormOportunidad() {
    const onSubmit = async (rawdata: FormValues) => {
     console.log('Datos del formulario:', rawdata)
     const data = formSchemaSend.parse(rawdata)
-    if(tipoEdicion === 'nuevo'){
-      const nuevaOportunidad = await PostOportunidadAPI('',data)
-      console.log('nueva oportunidad', nuevaOportunidad)
+    let nuevaOportunidad = null
+    if(tipoEdicion === 'nuevo' && !crrOportunidad){
+      nuevaOportunidad = await PostOportunidadAPI('',data)
+    }
+    //si estas creando (nuevo) y hay oportunidad -> update
+    //si estas editando (edicion) hay oportunidad -> update
+    //si estas editando y no hay oportunidad por alguna razon -> es un error
+    else if(crrOportunidad){ //caso es edicion o ya fue creada el id no va cambiar
+      nuevaOportunidad = await UpdateOportunidadAPI(null,data.id, data)
+    }
+    if(nuevaOportunidad){
+      localStorage.setItem('nueva-oportunidad', `${nuevaOportunidad.id}`)
       setCrrOportunidad(nuevaOportunidad)
       setCrrTab('cotizaciones')
-      if(nuevaOportunidad)localStorage.setItem('nueva-oportunidad', `${nuevaOportunidad.id}`)
     }
+    
   }
 
     return (
