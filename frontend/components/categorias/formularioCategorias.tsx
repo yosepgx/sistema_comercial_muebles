@@ -5,12 +5,12 @@ import {string, z} from 'zod';
 import { Tusuario } from '../types/usuarioType';
 import { useEffect, useState } from 'react';
 import { GetUsuarioDetailApi } from '@/api/usuarioApis';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import { Form, FormControl, FormField, FormItem, FormMessage, FormLabel } from '../ui/form'
 import { Input } from '../ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 import { TCategoria } from '@/app/inventario/producto/types/productoTypes';
-import { GetCategoriaDetailApi } from '@/api/categoriaApis';
+import { GetCategoriaDetailApi, PostCategoriaAPI, UpdateCategoriaAPI } from '@/api/categoriaApis';
 
 const formSchema = z.object({
     id: z.string(),
@@ -35,6 +35,7 @@ type Props = {
 export default function FormularioCategorias({tipo}: Props){
     const [loading, setLoading] = useState(true);
     const {id} = useParams()
+    const router = useRouter()
     const form = useForm<z.infer<typeof formSchema>>({
           resolver: zodResolver(formSchema),
           defaultValues: {
@@ -59,8 +60,15 @@ export default function FormularioCategorias({tipo}: Props){
         
       },[tipo,id])
       
-    const onSubmit = async (data: FormValues) => {
-        console.log(data)
+    const onSubmit = async (rawdata: FormValues) => {
+        const data = formSchemaSend.parse(rawdata)
+        if(tipo === 'nuevo'){
+            await PostCategoriaAPI(null,data);
+        }
+        else{
+            await UpdateCategoriaAPI(null, data.id, data)
+        }
+        router.push('/ajustes/categorias')
     }
 
 

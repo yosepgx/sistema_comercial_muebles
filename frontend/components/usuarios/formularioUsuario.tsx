@@ -2,13 +2,14 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import {string, z} from 'zod';
-import { Tusuario } from '../types/usuarioType';
+import { Tusuario, usuario } from '../types/usuarioType';
 import { useEffect, useState } from 'react';
-import { GetUsuarioDetailApi } from '@/api/usuarioApis';
-import { useParams } from 'next/navigation';
+import { GetUsuarioDetailApi, PostUsuarioAPI, UpdateUsuarioAPI } from '@/api/usuarioApis';
+import { useParams, useRouter } from 'next/navigation';
 import { Form, FormControl, FormField, FormItem, FormMessage, FormLabel } from '../ui/form'
 import { Input } from '../ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
+import { GetRolListApi } from '@/api/rolesApis';
 
 const formSchema = z.object({
     id: z.string(),
@@ -35,6 +36,7 @@ type Props = {
 
 export default function FormularioUsuario({tipo}: Props){
     const [loading, setLoading] = useState(true);
+    const router = useRouter()
     const {id} = useParams()
     const form = useForm<z.infer<typeof formSchema>>({
           resolver: zodResolver(formSchema),
@@ -64,8 +66,27 @@ export default function FormularioUsuario({tipo}: Props){
         
       },[tipo,id])
       
-    const onSubmit = async (data: FormValues) => {
-        console.log(data)
+    const onSubmit = async (rawdata: FormValues) => {
+        //check si roles existen
+        const verified = formSchemaSend.parse(rawdata)
+        const {rol , ...data} = verified
+        const roles = await GetRolListApi(null);
+        const roleNames = roles.map((role: { name: string }) => role.name);
+        const requiredRoles = ['administrador', 'ventas', 'logistica'];
+        const allRolesExist = requiredRoles.every(role => roleNames.includes(role));
+
+        if (allRolesExist) {
+            if(tipo === "nuevo"){
+                await PostUsuarioAPI(null,data);
+            }
+            else{
+                await UpdateUsuarioAPI(null,data.id,data);
+            }
+            router.push('/ajustes/usuarios')
+        }
+        else{
+            console.warn("No existen todos los roles necesarios")
+        }
     }
 
 
