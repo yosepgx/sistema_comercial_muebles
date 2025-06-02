@@ -9,6 +9,8 @@ const pedidoDetalle = z.object({
     subtotal: z.number(),
     nrolinea: z.number(),
     activo: z.boolean(),
+    rnombre: z.string(),
+    rum: z.string()
 })
 
 const pedido = z.object({

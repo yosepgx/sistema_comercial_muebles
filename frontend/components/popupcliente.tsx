@@ -109,6 +109,7 @@ const ClientSearchPopup: React.FC<ClientSearchPopupProps> = ({
       headerClassName: 'data-grid-header',
       renderCell: (params) => (
         <CustomButton
+          type='button'
           variant="primary"
           onClick={() => handleSelectClient(params.row as TCliente)}
           

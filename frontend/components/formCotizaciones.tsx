@@ -135,7 +135,7 @@ export default function FormCotizaciones() {
 
           {/* Botón Nueva Cotización */}
           <div className="flex justify-end mb-4">
-            <CustomButton variant='primary' onClick={()=>{setCrrCotizacion(null); SetModoCotizacion('una'); setEdicionCotizacion("nuevo");}}>
+            <CustomButton type='button' variant='primary' onClick={()=>{setCrrCotizacion(null); SetModoCotizacion('una'); setEdicionCotizacion("nuevo");}}>
               Nueva Cotización
             </CustomButton>
           </div>

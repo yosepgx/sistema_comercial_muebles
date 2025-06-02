@@ -76,6 +76,7 @@ const ProductSearchPopup: React.FC<ProductSearchPopupProps> = ({
       filterable: false,
       renderCell: (params) => (
         <CustomButton
+          type='button'
           variant="primary"
           onClick={() => handleSelectProducto(params.row as TProducto)}
         >

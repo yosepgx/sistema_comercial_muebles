@@ -3,7 +3,7 @@ import { TCotizacionDetalle } from "@/components/types/cotizacion";
 
 export async function GetCotizacionLineaListApi(token:string | null, idcotizacion: number) {
     try {
-        const response = await customFetch(token, `oportunidades/cotizacion-detalle/?cotizacion=${idcotizacion}`, {
+        const response = await customFetch(token, `oportunidades/cotizacion-detalle/?cotizacion_id=${idcotizacion}`, {
             
             method: "get",
             headers:{

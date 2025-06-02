@@ -170,7 +170,8 @@ export default function HomePage() {
               value={fechaFin}
               onChange={(newValue) => setFechaFin(newValue)}
             />
-            <CustomButton onClick={()=>{router.push('/nuevo'); 
+            <CustomButton type="button"
+            onClick={()=>{router.push('/nuevo'); 
               localStorage.removeItem('nueva-oportunidad');
               }}>Nueva</CustomButton>
             </div>

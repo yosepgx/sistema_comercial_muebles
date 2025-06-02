@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { Dispatch, SetStateAction, useMemo, useState } from 'react'
 import {
   useReactTable,
   getCoreRowModel,
@@ -11,20 +11,17 @@ import { Edit, Save, Trash2 } from 'lucide-react'
 import { TCotizacionDetalle } from './types/cotizacion';
 
 interface CotizacionTableProps {
-  listaDetalles: TCotizacionDetalle[];
+  detalles: TCotizacionDetalle[];
+  setDetalles: Dispatch<SetStateAction<TCotizacionDetalle[]>>;
 }
 
-export const CotizacionTable : React.FC<CotizacionTableProps>  = ({listaDetalles}) => {
-  const [data, setData] = useState<TCotizacionDetalle[]>(listaDetalles)
+
+export const CotizacionTable : React.FC<CotizacionTableProps>  = ({detalles, setDetalles}) => {
   const [editRowId, setEditRowId] = useState<string | null>(null)
   const [errors, setErrors] = useState<Record<string, string>>({})
 
-  useEffect(() => {
-  setData(listaDetalles)
-  }, [listaDetalles])
-
   const handleCantidadChange = (id: string, value: number) => {
-    setData((prev) =>
+    setDetalles((prev) =>
       prev.map((row) => {
         if (`${row.producto}-${row.cotizacion}` === id) {
           const isValid = value > 0
@@ -57,7 +54,7 @@ export const CotizacionTable : React.FC<CotizacionTableProps>  = ({listaDetalles
   }
 
   const handleDelete = (id: string) => {
-    setData((prev) =>
+    setDetalles((prev) =>
       prev.filter((row) => `${row.producto}-${row.cotizacion}` !== id)
     )
     setErrors((prev) => {
@@ -72,7 +69,7 @@ export const CotizacionTable : React.FC<CotizacionTableProps>  = ({listaDetalles
       header: 'CODIGO',
       accessorKey: 'producto',
     },
-    //TODO rproducto
+    //TODO rnombre
     //TODO rum
     {
       header: 'PRECIO UNITARIO',
@@ -165,7 +162,7 @@ export const CotizacionTable : React.FC<CotizacionTableProps>  = ({listaDetalles
   ], [editRowId, errors])
 
   const table = useReactTable({
-    data,
+    data: detalles,
     columns,
     getCoreRowModel: getCoreRowModel()
   })

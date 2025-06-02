@@ -169,10 +169,14 @@ export function DataTable<TData, TValue>({
           <option value="false">Inactivo</option>
         </select>}
 
-      {canCreate && <CustomButton onClick={()=> {
+      {canCreate && <CustomButton 
+        type='button'
+        onClick={()=> {
         if(directionCreate)router.push(directionCreate);
       }}>Crear</CustomButton>}
-      {canExport && <CustomButton onClick={()=>{
+      {canExport && <CustomButton 
+        type='button'
+        onClick={()=>{
         const exportData = table.getFilteredRowModel().rows.map(row => row.original)
         console.log("data a exportar:", exportData)
         

@@ -1,7 +1,6 @@
 from inventario_app.models import Producto,Almacen,CategoriaProducto,Inventario, Precio
 import pandas as pd
 from django.db import IntegrityError
-#TODO agregar precios
 #categoria -> precios -> producto -> almacen -> inventario
 class ServiceCargarDataInventario:
     def Categorias(archivo):

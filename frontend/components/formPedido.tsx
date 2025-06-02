@@ -125,6 +125,7 @@ export default function FormPedido() {
     }
   },[crrTab])
 
+  //no hay boton de submit y no necesita de uno
 
   const router = useRouter()
 
@@ -135,27 +136,24 @@ export default function FormPedido() {
       resizable: false,
       flex: 1
     },
-    // {
-    //   field: 'rproducto',
-    //   headerName: 'PRODUCTO',
-    //   resizable: false,
-    //   flex: 1,
-    //   renderCell: (params) => (
-    //     <span>{params.row.rproducto?.nombre || ''}</span>
-    //   ), // Maneja nulos o undefined
-    // },
+    {
+      field: 'rnombre',
+      headerName: 'PRODUCTO',
+      resizable: false,
+      flex: 1,
+    },
     {
       field: 'precio_unitario',
       headerName: 'VALOR UNITARIO',
       resizable: false,
       flex: 1
     },
-    // {
-    //   field: 'rum',
-    //   headerName: 'UM',
-    //   resizable: false,
-    //   flex: 1
-    // },
+    {
+      field: 'rum',
+      headerName: 'UM',
+      resizable: false,
+      flex: 1
+    },
     {
       field: 'cantidad',
       headerName: 'CANTIDAD',
@@ -371,7 +369,7 @@ export default function FormPedido() {
 
           {/* Botones de acción */}
           <div className="flex flex-row gap-8">
-            {pedido && <CustomButton variant='primary'
+            {pedido && <CustomButton type='button' variant='primary'
             onClick={()=>GetXMLFile(null,pedido.id)}
             >
               Generar archivo XML
@@ -379,6 +377,7 @@ export default function FormPedido() {
             
             {pedido?.estado_pedido === 'pendiente' && (
               <CustomButton
+                type='button'
                 variant='green'
                 onClick={async () => {
                   const confirmacion = window.confirm('¿Deseas marcar el pedido como PAGADO?');
@@ -395,6 +394,7 @@ export default function FormPedido() {
 
             {pedido?.estado_pedido === 'pagado' && (
               <CustomButton
+                type='button'
                 variant='green'
                 onClick={async () => {
                   const confirmacion = window.confirm('¿Deseas marcar el pedido como DESPACHADO?');
@@ -409,6 +409,7 @@ export default function FormPedido() {
               </CustomButton>
             )}
             <CustomButton
+              type='button'
               variant='red'
               onClick={async () => {
                 const confirmacion = window.confirm('¿Deseas ANULAR el pedido?')

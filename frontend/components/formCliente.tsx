@@ -11,7 +11,7 @@ import { useForm } from 'react-hook-form'
 import { Form, FormControl, FormField, FormItem, FormMessage, FormLabel } from './ui/form'
 import CustomButton from './customButtom'
 import ClientSearchPopup from './popupcliente'
-import { GetClienteDetailApi, PostClienteAPI } from '@/api/clienteApis'
+import { GetClienteDetailApi, PostClienteAPI, UpdateClienteAPI } from '@/api/clienteApis'
 import {format} from 'date-fns'
 import { UpdateOportunidadAPI } from '@/api/oportunidadApis'
 import { useOportunidadContext } from '@/context/oportunidadContext'
@@ -68,7 +68,7 @@ const formSchemaSend = formSchema.transform(data => ({
 
 export default function FormCliente() {
   const [registrarActivo, setRegistrarActivo] = useState(false);
-  const [tipoRegistrar, setTipoRegistrar] = useState<"registrar" | "buscado">("registrar");
+  const [tipoRegistrar, setTipoRegistrar] = useState<"registrar" | "buscado">("buscado");
   const [isSearchPopupOpen, setIsSearchPopupOpen] = useState(false);
   const {crrOportunidad, setCrrOportunidad, setCrrTab, tipoEdicion,crrTab, cliente, setCliente} = useOportunidadContext()
   const router = useRouter()
@@ -128,10 +128,15 @@ export default function FormCliente() {
     let clienteId: number | null = null
 
     const verified = formSchemaSend.parse(data)
-    if (tipoRegistrar === "registrar") {
+    if (tipoRegistrar === "registrar" && !cliente) {
       const nuevoCliente = await PostClienteAPI('', verified)
       if (nuevoCliente) clienteId = nuevoCliente.id
-    } else {
+    } 
+    else if(tipoRegistrar === "registrar" && cliente && cliente.id === verified.id){
+      const nuevoCliente = await UpdateClienteAPI(null, verified.id,verified)
+      if (nuevoCliente) clienteId = nuevoCliente.id
+    }
+    else if (tipoRegistrar === 'buscado'){ 
       clienteId = verified.id
     }
 
@@ -140,6 +145,7 @@ export default function FormCliente() {
 
       await UpdateOportunidadAPI('', crrOportunidad.id, nuevaOportunidad)
       setCrrOportunidad(nuevaOportunidad) // Esto sí actualiza el estado
+      setCliente(verified)// parece poco util
       setCrrTab('pedido') // Cambiar de tab
   }
 }
@@ -176,12 +182,14 @@ export default function FormCliente() {
           {/* Botones de acción */}
           <div className="flex gap-3 mb-6">
             <CustomButton
+              type='button'
               variant='primary'
               onClick={handleBuscarCliente}
             >
               Buscar Cliente
             </CustomButton>
             <CustomButton 
+              type='button'
               variant="primary"
               onClick={()=>{
                 setRegistrarActivo(true)

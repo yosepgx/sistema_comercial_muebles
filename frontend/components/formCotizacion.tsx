@@ -83,18 +83,19 @@ export default function FormCotizacionDetalle() {
     }
   },[crrTab])
 
-  useEffect(() => {
-  // Sumar subtotales
+useEffect(() => {
   const totalConIGV = listaDetalles.reduce((acc, item) => acc + (item.subtotal || 0), 0);
-  const totalSinIGV = totalConIGV / 1.18; // Asumiendo 18% IGV
-  const descuentoConIGV = Number(crrCotizacion?.descuento_adicional || 0 )
-  const descuentoBase = descuentoConIGV/ 1.18
-  const IGV = (totalSinIGV - descuentoBase)* 0.18; // Asumiendo 18% IGV
-  
-  form.setValue('monto_sin_impuesto', totalSinIGV.toFixed(2));
-  form.setValue('monto_igv', IGV.toFixed(2));
-  form.setValue('monto_total', totalConIGV.toFixed(2));
-}, [listaDetalles]);
+  const totalSinIGV = totalConIGV / 1.18;
+
+  const descuentoFormValue = Number(form.watch('descuento_adicional') || 0);
+  const descuentoBase = descuentoFormValue / 1.18;
+  const igvCalculado = (totalSinIGV - descuentoBase) * 0.18;
+  const totalFinal = (totalSinIGV - descuentoBase) + igvCalculado;
+
+  form.setValue('monto_sin_impuesto', (totalSinIGV - descuentoBase).toFixed(2));
+  form.setValue('monto_igv', igvCalculado.toFixed(2));
+  form.setValue('monto_total', totalFinal.toFixed(2));
+}, [listaDetalles, form.watch('descuento_adicional')]);
 
 const onSubmit = async (rawdata: FormValues) => {
   console.log('Datos del formulario:', rawdata)
@@ -144,9 +145,11 @@ const handleSelectProducto = (producto: TProducto) => {
         descuento: 0,
         subtotal: producto.rprecio_actual?producto.rprecio_actual * 1: 0,
         nrolinea: old.length + 1,
-        activo: true
+        activo: true,
+        rnombre: '',
+        rum: '',
       };
-
+      console.log("ATENCION detalle:",detalle)
       return [...old, detalle];
     });
 
@@ -178,6 +181,7 @@ const handleSelectProducto = (producto: TProducto) => {
         {crrCotizacion && tipoEdicion === "vista" && crrCotizacion.estado_cotizacion==='propuesta' 
         && <div className="flex gap-8">
               <CustomButton
+                type='button'
                 variant='red'
                 onClick={async () => {
                   const confirmacion = window.confirm('¿Estás seguro de que deseas rechazar esta cotización?')
@@ -190,6 +194,7 @@ const handleSelectProducto = (producto: TProducto) => {
               Rechazar Cotización
             </CustomButton>
             <CustomButton
+              type='button'
               variant='green'
               onClick={async () => {
                 const confirmacion = window.confirm('¿Deseas generar un pedido a partir de esta cotización?')
@@ -254,7 +259,7 @@ const handleSelectProducto = (producto: TProducto) => {
                     <FormItem className='flex flex-col'>
                       <FormLabel> Monto de Descuento Auxiliar</FormLabel>
                       <FormControl>
-                        <Input type = "number" {...field} className='flex'/>
+                        <Input type = "number" step={"0.1"}{...field} className='flex'/>
                       </FormControl>
                       <FormMessage className="min-h-[24px]"/>
                     </FormItem>
@@ -298,7 +303,7 @@ const handleSelectProducto = (producto: TProducto) => {
               </Label>
               <Input
                 id="valorTotal"
-                value={maximoPermisible}
+                value={form.watch('monto_total')}
                 disabled = {true}
               />
               </div>
@@ -309,7 +314,7 @@ const handleSelectProducto = (producto: TProducto) => {
               </Label>
               <Input
                 id="montoGravado"
-                value={maximoPermisible}
+                value={form.watch('monto_sin_impuesto')}
                 disabled = {true}
               />
               </div>
@@ -320,7 +325,7 @@ const handleSelectProducto = (producto: TProducto) => {
               </Label>
               <Input
                 id="igv"
-                value={maximoPermisible}
+                value={form.watch('monto_igv')}
                 disabled = {true}
               />
               </div>
@@ -339,6 +344,7 @@ const handleSelectProducto = (producto: TProducto) => {
         {/* Botones de acción */}
         <div className="flex justify-between items-center mb-4">
           <CustomButton variant='primary'
+          type='button'
           onClick={()=>setIsSearchPopupOpen(true)}>
             Agregar Línea
           </CustomButton>
@@ -347,7 +353,10 @@ const handleSelectProducto = (producto: TProducto) => {
       
         {/* Tabla de detalles */}
         <div className="bg-white rounded-lg border">
-          <CotizacionTable listaDetalles = {listaDetalles}/>
+          <CotizacionTable
+            detalles={listaDetalles}
+            setDetalles={setListaDetalles}
+          />
         </div>
       </div>
          

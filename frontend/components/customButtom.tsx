@@ -8,7 +8,7 @@ interface CustomButtonProps {
   type?: "button" | "submit" | "reset";
 }
 
-export default function CustomButton({ variant = "primary", children, onClick, type ,disabled }: CustomButtonProps) {
+export default function CustomButton({ variant = "primary", children, onClick, type = 'button' ,disabled }: CustomButtonProps) {
   const baseStyles = "px-4 py-2 rounded font-semibold transition";
 
   const variantMap: Record<string, string> = {
