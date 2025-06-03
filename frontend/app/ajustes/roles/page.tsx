@@ -21,25 +21,7 @@ const userColumns: GridColDef<Trol>[] = [
         resizable: false,
         flex: 1
     },
-    {
-    field: 'acciones',
-    headerName: 'Acciones',
-    resizable: false,
-    sortable: false,
-    filterable: false,
-    disableColumnMenu: true,
-    width: 120,
-    renderCell: (params) => (
-       <div>
-        <IconButton onClick={() => console.log("Ver rol:", params.row)}>
-          <EyeIcon />
-        </IconButton>
-        <IconButton onClick={() => console.log("edit rol:", params.row)}>
-          <Edit />
-        </IconButton>
-      </div>
-    ),
-  }
+    
 ];
 
 export default function RolesPage(){

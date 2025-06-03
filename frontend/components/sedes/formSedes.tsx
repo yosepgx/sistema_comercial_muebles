@@ -1,20 +1,19 @@
 'use client'
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
-import {string, z} from 'zod';
-import { Tusuario } from '../types/usuarioType';
+import { z } from 'zod';
 import { useEffect, useState } from 'react';
-import { GetUsuarioDetailApi } from '@/api/usuarioApis';
 import { useParams, useRouter } from 'next/navigation';
-import { Form, FormControl, FormField, FormItem, FormMessage, FormLabel } from '../ui/form'
+import { Form, FormControl, FormField, FormItem, FormMessage, FormLabel } from '../ui/form';
 import { Input } from '../ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
-import { TCategoria } from '@/app/inventario/producto/types/productoTypes';
-import { GetCategoriaDetailApi, PostCategoriaAPI, UpdateCategoriaAPI } from '@/api/categoriaApis';
+import { TSede } from '../types/sede';
+import { GetSedeDetailApi, PostSedeAPI, UpdateSedeAPI } from '@/api/sedeApis';
 
 const formSchema = z.object({
     id: z.string(),
-    descripcion: z.string(),
+    nombre: z.string(),
+    dgeneral: z.string(),
     activo: z.string()
 })
 
@@ -24,6 +23,7 @@ type FormValues = z.infer<typeof formSchema>
 const formSchemaSend = formSchema.transform(data => ({
     ...data,
     id: parseInt(data.id, 10),
+    dgeneral: parseInt(data.id, 10),
     activo: data.activo === "true",
   })
 )
@@ -32,7 +32,7 @@ type Props = {
   tipo: 'nuevo' | 'edicion'
 }
 
-export default function FormularioCategorias({tipo}: Props){
+export default function FormularioSede({tipo}: Props){
     const [loading, setLoading] = useState(true);
     const {id} = useParams()
     const router = useRouter()
@@ -40,20 +40,22 @@ export default function FormularioCategorias({tipo}: Props){
           resolver: zodResolver(formSchema),
           defaultValues: {
             id: '',
-            descripcion: '',
+            nombre: '',
+            dgeneral: '1',
             activo: 'true',
           }});
 
-    const cargarCategoria = (categoria: TCategoria | null) => {
-        if(!categoria)return;
-        form.setValue('id', `${categoria.id}`);
-        form.setValue('descripcion', categoria.descripcion);
-        form.setValue('activo', `${categoria.activo}`);
+    const cargarCategoria = (sede: TSede | null) => {
+        if(!sede)return;
+        form.setValue('id', `${sede.id}`);
+        form.setValue('dgeneral',`${sede.id}`)
+        form.setValue('nombre', sede.nombre);
+        form.setValue('activo', `${sede.activo}`);
       }
       
     useEffect(()=>{
         if(tipo ==='edicion' && id){
-            GetCategoriaDetailApi(null, parseInt(id as string, 10)).then(
+            GetSedeDetailApi(null, parseInt(id as string, 10)).then(
                 data => cargarCategoria(data)
             ).finally(() => setLoading(false))
         }
@@ -61,14 +63,15 @@ export default function FormularioCategorias({tipo}: Props){
       },[tipo,id])
       
     const onSubmit = async (rawdata: FormValues) => {
+        //se podria traer un listado de data general y saca el ultimo activo 
         const data = formSchemaSend.parse(rawdata)
         if(tipo === 'nuevo'){
-            await PostCategoriaAPI(null,data);
+            await PostSedeAPI(null,data);
         }
         else{
-            await UpdateCategoriaAPI(null, data.id, data)
+            await UpdateSedeAPI(null, data.id, data)
         }
-        router.push('/ajustes/categorias')
+        router.push('/ajustes/datos/')
     }
 
 
@@ -83,7 +86,7 @@ export default function FormularioCategorias({tipo}: Props){
                 name = "id"
                 render={({field}) => (
                     <FormItem className='flex flex-col'>
-                    <FormLabel> Codigo de categoria</FormLabel>
+                    <FormLabel> Codigo de sede</FormLabel>
                     <FormControl>
                         <Input type = "text" {...field} hidden = {tipo === 'nuevo'} disabled={true}/>
                     </FormControl>
@@ -93,10 +96,10 @@ export default function FormularioCategorias({tipo}: Props){
                 />
                 <FormField
                 control = {form.control}
-                name = "descripcion"
+                name = "nombre"
                 render={({field}) => (
                     <FormItem className='flex flex-col'>
-                    <FormLabel> Descripcion de categoria</FormLabel>
+                    <FormLabel> Nombre de sede</FormLabel>
                     <FormControl>
                         <Input type = "text" {...field}/>
                     </FormControl>

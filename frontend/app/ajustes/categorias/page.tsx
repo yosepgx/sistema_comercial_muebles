@@ -4,6 +4,7 @@
 import { GetCategoriaListApi } from "@/api/categoriaApis";
 import { GetRolListApi } from "@/api/rolesApis";
 import { TCategoria } from "@/app/inventario/producto/types/productoTypes";
+import CustomButton from "@/components/customButtom";
 import MainWrap from "@/components/mainwrap"
 import { ProtectedRoute } from "@/components/protectedRoute"
 import { Trol } from "@/components/types/rolType";
@@ -81,6 +82,11 @@ export default function CategoriasPage(){
     return (
         <ProtectedRoute>
             <MainWrap>
+                <div className="flex justify-end mb-4">
+                <CustomButton type='button' variant='primary' onClick={()=>{router.push('/ajustes/categorias/nuevo')}}>
+                    Nueva Categoría
+                </CustomButton>
+                </div>
                 <DataGrid
                     rows = {data? data : []}
                     columns={userColumns}

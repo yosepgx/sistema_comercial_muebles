@@ -10,6 +10,7 @@ import { DataGrid, GridColDef } from '@mui/x-data-grid';
 import { IconButton } from "@mui/material"
 import { Edit, EyeIcon, Trash2 } from "lucide-react"
 import { useRouter } from "next/navigation"
+import CustomButton from "@/components/customButtom"
 
 
 
@@ -89,6 +90,11 @@ export default function UsuariosPage(){
 
     return (
         <ProtectedRoute>
+            <div className="flex justify-end mb-4">
+            <CustomButton type='button' variant='primary' onClick={()=>{router.push('/ajustes/usuarios/nuevo')}}>
+                Nueva Sede
+            </CustomButton>
+            </div>
             <MainWrap>
                 <DataGrid
                 rows = {data? data : []}
