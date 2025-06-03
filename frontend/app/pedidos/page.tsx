@@ -10,119 +10,16 @@ import { useAuth } from "@/context/authContext";
 import { ProtectedRoute } from "@/components/protectedRoute";
 import MainWrap from "@/components/mainwrap";
 import { TPedido } from "@/components/types/pedido";
-import { Edit, EyeIcon } from "lucide-react";
+import { Edit, EyeIcon, Trash2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { transformDateUTCHourToUserTime } from "@/components/transformDate";
-
-
-const Columns: GridColDef<TPedido>[] = [
-    {   field: 'id', 
-        headerName: 'Id',
-        resizable: false,
-        flex: 1
-    },
-    {   field: 'fecha', 
-        headerName: 'Fecha de creacion',
-        resizable: false,
-        flex: 1,
-        valueFormatter: (value) => transformDateUTCHourToUserTime(value),
-
-    },
-    {   field: 'fechaentrega', 
-        headerName: 'Fecha de entrega',
-        resizable: false,
-        flex: 1
-    },
-    {   field: 'fecha_pago', 
-        headerName: 'Fecha de pago',
-        resizable: false,
-        flex: 1
-    },
-    // {   field: 'serie', 
-    //     headerName: 'Id',
-    //     resizable: false,
-    //     flex: 1
-    // },
-
-    // {   field: 'correlativo', 
-    //     headerName: 'Fecha de creacion',
-    //     resizable: false,
-    //     flex: 1
-    // },
-    // {   field: 'tipo_comprobante', 
-    //     headerName: 'Estado',
-    //     resizable: false,
-    //     flex: 1
-    // },
-    {   field: 'direccion', 
-        headerName: 'Direccion Entrega',
-        resizable: false,
-        flex: 1
-    },
-    {   field: 'cotizacion', 
-        headerName: 'Codigo de Cotizacion',
-        resizable: false,
-        flex: 1
-    },
-    {   field: 'estado_pedido', 
-        headerName: 'Estado Pedido',
-        resizable: false,
-        flex: 1
-    },
-    // {   field: 'monto_sin_impuesto', 
-    //     headerName: 'Monto Sin Impuesto',
-    //     resizable: false,
-    //     flex: 1
-    // },
-    // {   field: 'monto_igv', 
-    //     headerName: 'Monto Con IGV',
-    //     resizable: false,
-    //     flex: 1
-    // },
-    {   field: 'monto_total', 
-        headerName: 'Monto Total',
-        resizable: false,
-        flex: 1
-    },
-    {   field: 'descuento_adicional', 
-        headerName: 'Descuento auxiliar',
-        resizable: false,
-        flex: 1
-    },
-    
-    {   field: 'activo', 
-        headerName: 'Activo',
-        resizable: false,
-        flex: 1,
-        valueFormatter: (value) => (value? "Activo":"Inactivo"),
-
-    },
-    {
-    field: 'acciones',
-    headerName: 'Acciones',
-    resizable: false,
-    sortable: false,
-    filterable: false,
-    disableColumnMenu: true,
-    width: 120,
-    renderCell: (params) => (
-       <div>
-        <IconButton onClick={() => console.log("Ver rol:", params.row)}>
-          <EyeIcon />
-        </IconButton>
-        <IconButton onClick={() => console.log("edit rol:", params.row)}>
-          <Edit />
-        </IconButton>
-      </div>
-    ),
-  }
-];
-
+import { useRouter } from "next/navigation";
 
 export default function PedidosPage(){
     const [data, setData] = useState<TPedido[]>([])
     const [loading, setLoading] = useState(true)
+    const router = useRouter()
     const {ct} = useAuth();
 
     const [busquedaGeneral, setBusquedaGeneral] = useState("");
@@ -185,6 +82,108 @@ export default function PedidosPage(){
   return result;
 }, [data, busquedaGeneral, fechaInicio, fechaFin, campoFecha]);
 
+  const Columns: GridColDef<TPedido>[] = [
+      {   field: 'id', 
+          headerName: 'Id',
+          resizable: false,
+          flex: 1
+      },
+      {   field: 'fecha', 
+          headerName: 'Fecha de creacion',
+          resizable: false,
+          flex: 1,
+          valueFormatter: (value) => transformDateUTCHourToUserTime(value),
+
+      },
+      {   field: 'fechaentrega', 
+          headerName: 'Fecha de entrega',
+          resizable: false,
+          flex: 1
+      },
+      {   field: 'fecha_pago', 
+          headerName: 'Fecha de pago',
+          resizable: false,
+          flex: 1
+      },
+      // {   field: 'serie', 
+      //     headerName: 'Id',
+      //     resizable: false,
+      //     flex: 1
+      // },
+
+      // {   field: 'correlativo', 
+      //     headerName: 'Fecha de creacion',
+      //     resizable: false,
+      //     flex: 1
+      // },
+      // {   field: 'tipo_comprobante', 
+      //     headerName: 'Estado',
+      //     resizable: false,
+      //     flex: 1
+      // },
+      {   field: 'direccion', 
+          headerName: 'Direccion Entrega',
+          resizable: false,
+          flex: 1
+      },
+      {   field: 'cotizacion', 
+          headerName: 'Codigo de Cotizacion',
+          resizable: false,
+          flex: 1
+      },
+      {   field: 'estado_pedido', 
+          headerName: 'Estado Pedido',
+          resizable: false,
+          flex: 1
+      },
+      // {   field: 'monto_sin_impuesto', 
+      //     headerName: 'Monto Sin Impuesto',
+      //     resizable: false,
+      //     flex: 1
+      // },
+      // {   field: 'monto_igv', 
+      //     headerName: 'Monto Con IGV',
+      //     resizable: false,
+      //     flex: 1
+      // },
+      {   field: 'monto_total', 
+          headerName: 'Monto Total',
+          resizable: false,
+          flex: 1
+      },
+      {   field: 'descuento_adicional', 
+          headerName: 'Descuento auxiliar',
+          resizable: false,
+          flex: 1
+      },
+      
+      {   field: 'activo', 
+          headerName: 'Activo',
+          resizable: false,
+          flex: 1,
+          valueFormatter: (value) => (value? "Activo":"Inactivo"),
+
+      },
+      {
+      field: 'acciones',
+      headerName: 'Acciones',
+      resizable: false,
+      sortable: false,
+      filterable: false,
+      disableColumnMenu: true,
+      width: 120,
+      renderCell: (params) => (
+        <div>
+          <IconButton onClick={() => router.push(`/pedidos/${params.row.id}`)}>
+            <Edit />
+          </IconButton>
+          <IconButton onClick={() => console.log("borrar:", params.row)}>
+            <Trash2 />
+          </IconButton>
+        </div>
+      ),
+    }
+  ];
     if (loading) {
     return <div>Cargando...</div>
     }
