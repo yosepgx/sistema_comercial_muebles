@@ -20,38 +20,9 @@ import { CotizacionTable } from '../tablecotizacion'
 import { GetCotizacionDetailApi, PostCotizacionAPI, UpdateCotizacionAPI } from '@/api/cotizacionApis'
 import { TCotizacion } from '../types/cotizacion'
 import { useParams } from 'next/navigation'
+import { formCotizacionSchema, formCotizacionSchemaSend, FormCotizacionValues } from '../schemas/formCotizacionSchema'
+import { useCalculosCotizacion } from '../hooks/useCalculosCotizacion'
 
-//TODO: falta agregar nro de linea a cada detalle
-
-const formSchema = z. object({
-  id: z.string(),     //manejado por back
-  fecha: z.string(), //manejado por back 
-  estado_cotizacion: z.enum(["propuesta","aceptada","rechazada"]), // si usa el boton de aceptar o rechazar 
-  //vendedor_asignado: z.number(),
-  oportunidad: z.string(),
-  monto_sin_impuesto: z.string(), //suma ingresada al final
-  monto_igv: z.string(),
-  monto_total: z.string(),
-  descuento_adicional: z.string(),
-  observaciones: z.string(),
-  direccion_entrega: z.string(),
-  activo: z.string(),
-
-})
-
-const formSchemaSend = formSchema.transform ( data => ({
-  ...data,
-  id: parseInt(data.id,10),
-  oportunidad: parseInt(data.oportunidad,10),
-  monto_sin_impuesto: parseInt(data.monto_sin_impuesto,10),
-  monto_igv: parseInt(data.monto_sin_impuesto,10),
-  monto_total: parseInt(data.monto_sin_impuesto,10),
-  descuento_adicional: parseInt(data.monto_sin_impuesto,10),
-  activo: data.activo==='true',
-  //vendedor_asignado = 1, //TODO: funcionalidades de asignar vendedor
-  
-}))
-type FormValues = z.infer<typeof formSchema>
 
 type Props = {
   edicionCotizacion: 'nuevo' | 'edicion'
@@ -66,8 +37,8 @@ export default function FormCotizacionStandAlone({edicionCotizacion}: Props) {
   const [isSearchPopupOpen, setIsSearchPopupOpen] = useState(false);
   const [crrCotizacion, setCrrCotizacion] = useState<TCotizacion | null>(null)
   const [listaDetalles, setListaDetalles] = useState<TCotizacionDetalle[]>([])
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
+  const form = useForm<z.infer<typeof formCotizacionSchema>>({
+    resolver: zodResolver(formCotizacionSchema),
     defaultValues:{
       id: '',
       fecha: '',
@@ -82,6 +53,8 @@ export default function FormCotizacionStandAlone({edicionCotizacion}: Props) {
       activo: 'true',
     }
   })
+
+const descuento = form.watch('descuento_adicional', '0.00');
 
 const fetchCotizacion = async () => {
     const cotizacion = await GetCotizacionDetailApi(null, parseInt(id as string, 10))
@@ -118,26 +91,14 @@ useEffect(()=>{
     }
   },[edicionCotizacion, id])
 
-useEffect(() => {
-  const totalConIGV = listaDetalles.reduce((acc, item) => acc + (item.subtotal || 0), 0);
-  const totalSinIGV = totalConIGV / 1.18;
+useCalculosCotizacion({listaDetalles, descuento, form, crrCotizacion})
 
-  const descuentoFormValue = Number(form.watch('descuento_adicional') || 0);
-  const descuentoBase = descuentoFormValue / 1.18;
-  const igvCalculado = (totalSinIGV - descuentoBase) * 0.18;
-  const totalFinal = (totalSinIGV - descuentoBase) + igvCalculado;
-
-  form.setValue('monto_sin_impuesto', (totalSinIGV - descuentoBase).toFixed(2));
-  form.setValue('monto_igv', igvCalculado.toFixed(2));
-  form.setValue('monto_total', totalFinal.toFixed(2));
-}, [listaDetalles, form.watch('descuento_adicional')]);
-
-const onSubmit = async (rawdata: FormValues) => {
+const onSubmit = async (rawdata: FormCotizacionValues) => {
   console.log('Datos del formulario:', rawdata)
   console.log('Datos del listado:', listaDetalles)
   try {
     if(tipoDireccion === 'tienda')rawdata.direccion_entrega = 'tienda';
-    const data = formSchemaSend.parse(rawdata)
+    const data = formCotizacionSchemaSend.parse(rawdata)
     if(!crrCotizacion && edicionCotizacion === 'nuevo'){
       //creacion de cotizacion
       const nuevaCotizacion = await PostCotizacionAPI(null, data)
