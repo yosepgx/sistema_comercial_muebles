@@ -15,35 +15,15 @@ import { TOportunidad } from "./types/oportunidad"
 import CustomButton from "./customButtom"
 import { useOportunidadContext } from "@/context/oportunidadContext"
 import { GetOportunidadDetailApi, PostOportunidadAPI, UpdateOportunidadAPI } from "@/api/oportunidadApis"
-import { cliente } from "./types/clienteType"
 import { useRouter } from "next/navigation"
-const formSchema = z.object({
-  id: z.string(),
-  cliente: z.string().nullable(), 
-  sede: z.string(),
-  fecha_contacto: z.string(), //manejado por back
-  estado_oportunidad: z.enum(["ganado","perdido","negociacion"]),
-  activo: z.string(),
-  rcliente: cliente.optional().nullable(),
-})
-
-const formSchemaSend = formSchema.transform(data => ({
-  ...data,
-  id: parseInt(data.id,10),
-  cliente: data.cliente?parseInt(data.cliente,10):null,
-  sede: parseInt(data.sede,10),
-  fecha_contacto: format(data.fecha_contacto, 'yyyy-MM-dd'),
-  activo: data.activo === 'true',
-  })
-)
-type FormValues = z.infer<typeof formSchema>
+import { formOportunidadSchema, formOportunidadSchemaSend, FormOportunidadValues } from "./schemas/formOportunidadSchema"
 
 
 export default function FormOportunidad() {
   const {tipoEdicion, setCrrTab, setCrrOportunidad, crrOportunidad} = useOportunidadContext()
 
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
+  const form = useForm<z.infer<typeof formOportunidadSchema>>({
+    resolver: zodResolver(formOportunidadSchema),
     defaultValues: {
       id: crrOportunidad?`${crrOportunidad.id}`: '0',
       cliente: crrOportunidad?`${crrOportunidad.cliente}`:null, 
@@ -71,9 +51,9 @@ export default function FormOportunidad() {
 }, [crrOportunidad]);
 
 
-   const onSubmit = async (rawdata: FormValues) => {
+   const onSubmit = async (rawdata: FormOportunidadValues) => {
     console.log('Datos del formulario:', rawdata)
-    const data = formSchemaSend.parse(rawdata)
+    const data = formOportunidadSchemaSend.parse(rawdata)
     let nuevaOportunidad = null
     if(tipoEdicion === 'nuevo' && !crrOportunidad){
       nuevaOportunidad = await PostOportunidadAPI('',data)

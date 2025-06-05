@@ -1,6 +1,6 @@
 import {z} from 'zod'
 
-export const pedidoSchema = z. object({
+export const formPedidoSchema = z. object({
   id: z.string(),     //manejado por back
   fecha: z.string(), //manejado por back
   fechaentrega: z.string(),
@@ -21,9 +21,9 @@ export const pedidoSchema = z. object({
   activo: z.string(),
 })
 
-export type FormPedidoValues = z.infer<typeof pedidoSchema>
+export type FormPedidoValues = z.infer<typeof formPedidoSchema>
 
-export const pedidoSchemaSend = pedidoSchema.transform ( data => ({
+export const formPedidoSchemaSend = formPedidoSchema.transform ( data => ({
   ...data,
   id: parseInt(data.id,10),
   tipo_comprobante: parseInt(data.tipo_comprobante,10),

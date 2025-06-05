@@ -20,47 +20,16 @@ import { Form, FormControl, FormField, FormItem, FormMessage, FormLabel } from '
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import {format} from  'date-fns'
+import { formPedidoSchema, FormPedidoValues } from './schemas/pedidoSchemas'
 import { UNIDADES_MEDIDA_BUSCA } from '@/constants/unidadesMedidaConstants'
-const formSchema = z. object({
-  id: z.string(),     //manejado por back
-  fecha: z.string(), //manejado por back
-  fechaentrega: z.string(),
-  fecha_pago: z.string(),
-  serie: z.string().optional(), //debe de ser manejado por back
-  correlativo: z.string().optional(), //debe de ser manejado por back
-  tipo_comprobante: z.enum(["boleta","factura"]),
-  direccion: z.string(),
-  cotizacion: z.string(),
-  moneda: z.enum(['PEN']),
-  estado_pedido: z.enum(["pendiente","pagado","despachado", "anulado"]), 
-  monto_sin_impuesto: z.string(), //suma ingresada al final
-  monto_igv: z.string(),
-  monto_total: z.string(),
-  descuento_adicional: z.string(),
-  observaciones: z.string(),
-  codigo_tipo_tributo: z.string(),
-  activo: z.string(),
-})
 
-type FormValues = z.infer<typeof formSchema>
-
-const formSchemaSend = formSchema.transform ( data => ({
-  ...data,
-  id: parseInt(data.id,10),
-  tipo_comprobante: parseInt(data.tipo_comprobante,10),
-  cotizacion: parseInt(data.id, 10),
-  monto_sin_impuesto: parseFloat(data.monto_sin_impuesto),
-  monto_igv: parseFloat(data.monto_igv),
-  monto_total: parseFloat(data.monto_total),
-  descuento_adicional: parseFloat(data.descuento_adicional),
-}))
 
 export default function FormPedido() {
   const {crrTab, crrOportunidad} = useOportunidadContext()
   const [pedido, setPedido] = useState<TPedido | null>(null)
   const [listaDetalles, setListaDetalles] = useState<TPedidoDetalle[]>([])
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
+  const form = useForm<z.infer<typeof formPedidoSchema>>({
+    resolver: zodResolver(formPedidoSchema),
     defaultValues: {
       id: '',     
       fecha: '', 
@@ -129,7 +98,7 @@ export default function FormPedido() {
   },[crrTab])
 
   //no hay boton de submit y no necesita de uno
-  const onSubmit = async (data: FormValues) => {
+  const onSubmit = async (data: FormPedidoValues) => {
     console.log('Datos del formulario:', data)
   }
 

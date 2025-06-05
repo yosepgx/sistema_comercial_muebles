@@ -21,7 +21,7 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import {format} from  'date-fns'
 import { UNIDADES_MEDIDA_BUSCA } from '@/constants/unidadesMedidaConstants'
-import { pedidoSchema,pedidoSchemaSend, FormPedidoValues } from '../schemas/pedidoSchemas'
+import { formPedidoSchema,formPedidoSchemaSend, FormPedidoValues } from '../schemas/pedidoSchemas'
 
 type Props = {
   tipo: 'nuevo' | 'edicion'
@@ -33,8 +33,8 @@ export default function FormPedidoStandAlone({tipo} : Props) {
   const {id} = useParams();
   const router = useRouter();
   const [listaDetalles, setListaDetalles] = useState<TPedidoDetalle[]>([])
-  const form = useForm<z.infer<typeof pedidoSchema>>({
-    resolver: zodResolver(pedidoSchema),
+  const form = useForm<z.infer<typeof formPedidoSchema>>({
+    resolver: zodResolver(formPedidoSchema),
     defaultValues: {
       id: '',     
       fecha: '', 
