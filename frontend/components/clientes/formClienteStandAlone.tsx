@@ -13,55 +13,8 @@ import CustomButton from '../customButtom'
 import { GetClienteDetailApi, PostClienteAPI, UpdateClienteAPI } from '@/api/clienteApis'
 import { format } from 'date-fns'
 import { useParams, useRouter } from 'next/navigation'
+import { formClienteSchema, formClienteSchemaSend, FormClienteValues } from '../schemas/formClienteSchema'
 
-const formSchema = z.object({
-  id: z.string().min(1, 'no se encontro id'),
-  nombre: z.string().min(1, 'Se necesita indicar un nombre'),
-  correo: z.string().min(1, 'Se necesita llenar este campo o indicar ninguno'),
-  telefono: z.string().min(1, 'Se necesita llenar este campo o indicar ninguno'),
-  naturaleza: z.enum(["Natural","Empresa"]),
-  tipo_interes: z.enum(["cliente","lead"]), //manejado por back
-  fecha_conversion: z.string(), //se maneja en back
-  documento: z.string(),
-  tipo_documento: z.string(),
-  activo: z.string(), //manejado por back
-}).superRefine((data, ctx) => {
-    if (data.tipo_documento === 'DNI' && data.documento.length !== 8) {
-      ctx.addIssue({
-        path: ['documento'],
-        code: z.ZodIssueCode.custom,
-        message: 'El DNI debe tener exactamente 8 dígitos',
-      })
-    }
-
-    if (data.tipo_documento === 'RUC' && data.documento.length !== 11) {
-      ctx.addIssue({
-        path: ['documento'],
-        code: z.ZodIssueCode.custom,
-        message: 'El RUC debe tener exactamente 11 dígitos',
-      })
-    }
-
-    if (!/^\d+$/.test(data.documento)) {
-      ctx.addIssue({
-        path: ['documento'],
-        code: z.ZodIssueCode.custom,
-        message: 'El documento debe contener solo números',
-      })
-    }
-  })
-
-
-type FormValues = z.infer<typeof formSchema>
-
-
-const formSchemaSend = formSchema.transform(data => ({
-    ...data,
-    id: parseInt(data.id, 10),
-    fecha_conversion: format(data.fecha_conversion, 'yyyy-MM-dd'),
-    activo: data.activo === "true",
-  })
-)
 
 type Props = {
   tipo: 'nuevo' | 'edicion'
@@ -96,8 +49,8 @@ export default function FormClienteStandAlone({tipo}:Props) {
     }
   },[tipo,id])
   
-  const form = useForm<z.infer<typeof formSchema>>({
-      resolver: zodResolver(formSchema),
+  const form = useForm<z.infer<typeof formClienteSchema>>({
+      resolver: zodResolver(formClienteSchema),
       defaultValues: {
           id: cliente?cliente.id.toString():'0',
           nombre: cliente?cliente.nombre: '',
@@ -113,13 +66,13 @@ export default function FormClienteStandAlone({tipo}:Props) {
       });
 
 
-  const onSubmit = async (data: FormValues) => {
+  const onSubmit = async (data: FormClienteValues) => {
         console.log('Datos del formulario:', data)
         //TODO ver que solo haga post una sola vez 
         //TODO hacer POST solo si es registrar cliente
         let clienteId: number | null = null
 
-        const verified = formSchemaSend.parse(data)
+        const verified = formClienteSchemaSend.parse(data)
         if (tipo === "nuevo" && !cliente) {
         const nuevoCliente = await PostClienteAPI('', verified)
         if (nuevoCliente) clienteId = nuevoCliente.id
