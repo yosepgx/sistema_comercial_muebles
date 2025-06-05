@@ -2,12 +2,13 @@ import pandas as pd
 from clientes_app.models import Cliente
 from oportunidades_app.models import Oportunidad, Cotizacion,CotizacionDetalle
 from inventario_app.models import Producto
+from ajustes_app.models import Sede
 #TODO: carga de vendedor asignado
-#oportunidades -> cotizacion -> cotizacionDetalle
+#dgeneral -> sede -> oportunidades -> cotizacion -> cotizacionDetalle
 class ServiceCargarDatosOportunidades:
     def Oportunidades(archivo):
         try:
-            campos = {'cliente': int,'fecha_contacto': str,
+            campos = {'cliente': int,'sede': int, 'fecha_contacto': str,
                       'estado_oportunidad': str ,
                       'activo': bool}
             df = pd.read_excel(archivo, sheet_name='Oportunidad', 
@@ -19,9 +20,11 @@ class ServiceCargarDatosOportunidades:
             for _, row in df.iterrows():
                 datos = row.to_dict()
                 id_cliente = datos.pop('cliente')
-                cont = Cliente.objects.get(id=id_cliente)
+                id_sede = datos.pop('sede')
+                cli = Cliente.objects.get(id=id_cliente)
+                sed = Sede.objects.get(id=id_sede)
                 
-                obj = Oportunidad(cliente=cont, **datos)
+                obj = Oportunidad(cliente=cli, sede = sed , **datos)
                 objetos.append(obj)
             
             Oportunidad.objects.bulk_create(objetos)

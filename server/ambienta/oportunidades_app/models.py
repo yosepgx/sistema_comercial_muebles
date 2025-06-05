@@ -1,7 +1,7 @@
 from django.db import models
 from inventario_app.models import Producto
 from clientes_app.models import Cliente
-
+from ajustes_app.models import Sede
 #modelos: oportunidad, cotizacion, cotizacionDetalle
 
 class Oportunidad(models.Model):
@@ -17,7 +17,7 @@ class Oportunidad(models.Model):
     ]
 
     cliente = models.ForeignKey(Cliente, on_delete=models.CASCADE,null=True)
-    #sede = models.ForeignKey(Sede, on_delete=models.CASCADE) #TODO: agregar model Sedez
+    sede = models.ForeignKey(Sede, on_delete=models.CASCADE)
     fecha_contacto = models.DateField(auto_now_add=True)
     
     estado_oportunidad = models.CharField(

@@ -11,6 +11,8 @@ from django.http import HttpResponse
 from django.template.loader import render_to_string
 from weasyprint import HTML
 import tempfile
+from ventas_app.services import CorrelativoService
+from clientes_app.models import Cliente
 
 #oportunidad -> cotizacion -> cotizacionDetalle -> pedido -> pedidoDetalle
 #TODO: agregar vigencia a las oportunidades
@@ -74,16 +76,28 @@ class CotizacionViewSet(viewsets.ModelViewSet):
         
         return Response(serializer.data, status=status.HTTP_200_OK)
     
-    def crear_pedido_desde_cotizacion(self, cotizacion):
+    def crear_pedido_desde_cotizacion(self, cotizacion : Cotizacion):
         """
         Crea un pedido a partir de una cotización aceptada
         """
+        cliente = cotizacion.oportunidad.cliente
+        if not cliente:
+            raise ValueError("La cotización no tiene un cliente asociado.")
+        if cliente.tipo_documento == Cliente.TIPODNI:
+            tipo_comprobante = Pedido.TIPOBOLETA
+        else:
+            tipo_comprobante = Pedido.TIPOFACTURA
+
+        sede = cotizacion.oportunidad.sede
+        if not sede or not sede.id:
+            raise ValueError("La cotización no tiene una sede asociada.")
+        
         # Creamos el pedido con la información de la cotización
         pedido = Pedido.objects.create(
             #fecha = now_add
             fechaentrega = None,
             fecha_pago = None,
-            #TODO: agregar serie, correlativo, tipo_comprobante(boleta, factura)
+            tipo_comprobante = tipo_comprobante, #boleta/factura
             estado_pedido='por_validar',
             codigo_tipo_tributo = "1000",
             cotizacion=cotizacion,
@@ -96,6 +110,11 @@ class CotizacionViewSet(viewsets.ModelViewSet):
             direccion = cotizacion.direccion_entrega,
             activo = True
         )
+
+        # Darle una Serie y un correlativo (solo facturas y boletas, la NC y ND se trabajan con las anulaciones)
+        resultado = CorrelativoService.guardar_siguiente_correlativo(sede_id=sede.id,tipo_documento=tipo_comprobante)
+        pedido.serie = resultado['serie']
+        pedido.correlativo = resultado['correlativo']
 
         # Copiar cada línea de detalle de la cotización al pedido
         for detalle in cotizacion.detalles.all():

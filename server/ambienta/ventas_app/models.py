@@ -1,13 +1,22 @@
 from django.db import models
 from oportunidades_app.models import Cotizacion
 from inventario_app.models import Producto
+from ajustes_app.models import Sede
 class Pedido(models.Model):
 
     TIPOFACTURA = 'factura'
     TIPOBOLETA = 'boleta'
+    TIPONCBOLETA = 'nota_credito_boleta'
+    TIPONDBOLETA = 'nota_debito_boleta'
+    TIPONCFACTURA = 'nota_credito_factura'
+    TIPONDFACTURA = 'nota_debito_factura'
     TIPO_COMPROBANTE_CHOICES = [
         (TIPOFACTURA, 'factura'),
         (TIPOBOLETA, 'boleta'),
+        (TIPONCBOLETA, 'nota_credito_boleta'),
+        (TIPONDBOLETA, 'nota_debito_boleta'),
+        (TIPONCFACTURA, 'nota_credito_factura'),
+        (TIPONDFACTURA, 'nota_debito_factura'),
     ]
 
     PENDIENTE = 'pendiente'
@@ -67,4 +76,22 @@ class PedidoDetalle(models.Model):
         self.activo = False
         self.save()
 
-
+class SerieCorrelativo(models.Model):
+    TIPOFACTURA = 'factura'
+    TIPOBOLETA = 'boleta'
+    TIPONCBOLETA = 'nota_credito_boleta'
+    TIPONDBOLETA = 'nota_debito_boleta'
+    TIPONCFACTURA = 'nota_credito_factura'
+    TIPONDFACTURA = 'nota_debito_factura'
+    TIPO_COMPROBANTE_CHOICES = [
+        (TIPOFACTURA, 'factura'),
+        (TIPOBOLETA, 'boleta'),
+        (TIPONCBOLETA, 'nota_credito_boleta'),
+        (TIPONDBOLETA, 'nota_debito_boleta'),
+        (TIPONCFACTURA, 'nota_credito_factura'),
+        (TIPONDFACTURA, 'nota_debito_factura'),
+    ]
+    sede = models.ForeignKey(Sede, on_delete=models.CASCADE, related_name= "serie_correlativos")
+    tipo_comprobante = models.CharField(max_length=50, choices=TIPO_COMPROBANTE_CHOICES)
+    serie = models.CharField(max_length=10)
+    ultimo_correlativo = models.IntegerField(default=0)

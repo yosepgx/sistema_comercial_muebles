@@ -13,14 +13,3 @@ class Sede(models.Model):
     dgeneral_id = models.ForeignKey(Dgeneral, on_delete=models.CASCADE, related_name = "sedes")
     activo = models.BooleanField(default=True)
 
-class SerieCorrelativo(models.Model):
-    TIPOFACTURA = 'factura'
-    TIPOBOLETA = 'boleta'
-    TIPO_COMPROBANTE_CHOICES = [
-        (TIPOFACTURA, 'factura'),
-        (TIPOBOLETA, 'boleta'),
-    ]
-    sede_id = models.ForeignKey(Sede, on_delete=models.CASCADE, related_name= "serie-correlativos")
-    tipo_comprobante = models.CharField(max_length=50, choices=TIPO_COMPROBANTE_CHOICES)
-    serie = models.CharField(max_length=10)
-    ultimoCorrelativo = models.IntegerField(max_length=10, default=1)
