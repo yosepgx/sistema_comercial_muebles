@@ -9,10 +9,10 @@ import { TCotizacion } from "@/components/types/cotizacion";
 
 
 interface OportunidadContextType{
-    tipoEdicion: "nuevo" | "edicion" | "vista";
+    tipoEdicion: "nuevo" | "edicion" ;
     crrOportunidad: TOportunidad | null;
     setCrrOportunidad: Dispatch<SetStateAction<TOportunidad | null>>;
-    setTipoEdicion: Dispatch<SetStateAction<"nuevo" | "edicion" | "vista">>;
+    setTipoEdicion: Dispatch<SetStateAction<"nuevo" | "edicion" >>;
     crrTab: string;
     setCrrTab: Dispatch<SetStateAction<string>>;
     cliente: TCliente | null;
@@ -33,7 +33,7 @@ interface OportunidadContextType{
 const OportunidadContext = createContext<OportunidadContextType | undefined>(undefined);
 
 export const OportunidadProvider = ({children}: {children: ReactNode}) => {
-    const [tipoEdicion, setTipoEdicion] = useState<"nuevo"| "edicion" | "vista">("nuevo")
+    const [tipoEdicion, setTipoEdicion] = useState<"nuevo"| "edicion">("nuevo")
     const [crrOportunidad, setCrrOportunidad] = useState<TOportunidad | null>(null)
     const [cliente, setCliente] = useState<TCliente | null>(null);
     const [modoCotizacion, SetModoCotizacion] = useState<"muchas" | "una">("muchas")

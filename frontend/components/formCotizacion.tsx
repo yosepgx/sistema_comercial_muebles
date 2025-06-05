@@ -178,7 +178,7 @@ const handleSelectProducto = (producto: TProducto) => {
         <span> Cotización{' '}
         {crrCotizacion ? `${crrCotizacion.id} (${crrCotizacion.estado_cotizacion})` : '0 (Propuesta)'} </span>
         {edicionCotizacion === 'nuevo'&& <CustomButton type='submit'>Guardar Cotizacion</CustomButton>}
-        {crrCotizacion && tipoEdicion === "vista" && crrCotizacion.estado_cotizacion==='propuesta' 
+        {crrCotizacion && edicionCotizacion === "edicion" && crrCotizacion.estado_cotizacion==='propuesta' 
         && <div className="flex gap-8">
               <CustomButton
                 type='button'

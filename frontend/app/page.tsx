@@ -43,7 +43,7 @@ export default function HomePage() {
         return `${doc}`;
       }
     },
-    {   field: 'sede_id', 
+    {   field: 'sede', 
         headerName: 'Sede',
         resizable: false,
         flex: 1

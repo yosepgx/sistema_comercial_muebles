@@ -18,7 +18,7 @@ const cotizacion = z.object({
     fecha: z.string(),
     estado_cotizacion: z.enum(["propuesta","aceptada","rechazada"]),
     //cliente_id: z.number(),
-    //sede_id: z.number(),
+    //sede: z.number(),
     //vendedor_asignado: z.number(),
     oportunidad: z.number(),
     monto_sin_impuesto: z.number(),

@@ -20,7 +20,7 @@ import { useRouter } from "next/navigation"
 const formSchema = z.object({
   id: z.string(),
   cliente: z.string().nullable(), 
-  sede_id: z.string(),
+  sede: z.string(),
   fecha_contacto: z.string(), //manejado por back
   estado_oportunidad: z.enum(["ganado","perdido","negociacion"]),
   activo: z.string(),
@@ -31,7 +31,7 @@ const formSchemaSend = formSchema.transform(data => ({
   ...data,
   id: parseInt(data.id,10),
   cliente: data.cliente?parseInt(data.cliente,10):null,
-  sede_id: parseInt(data.sede_id,10),
+  sede: parseInt(data.sede,10),
   fecha_contacto: format(data.fecha_contacto, 'yyyy-MM-dd'),
   activo: data.activo === 'true',
   })
@@ -47,7 +47,7 @@ export default function FormOportunidad() {
     defaultValues: {
       id: crrOportunidad?`${crrOportunidad.id}`: '0',
       cliente: crrOportunidad?`${crrOportunidad.cliente}`:null, 
-      sede_id: crrOportunidad?`${crrOportunidad.sede_id}`:'',
+      sede: crrOportunidad?`${crrOportunidad.sede}`:'',
       fecha_contacto: crrOportunidad?`${format(crrOportunidad.fecha_contacto, 'yyyy-MM-dd')}`:`${format(new Date(), 'yyyy-MM-dd')}`,
       estado_oportunidad: crrOportunidad?`${crrOportunidad.estado_oportunidad}`:'negociacion',
       activo: crrOportunidad?`${crrOportunidad.activo}`:'true',
@@ -61,7 +61,7 @@ export default function FormOportunidad() {
     form.reset({
       id: `${crrOportunidad.id}`,
       cliente: `${crrOportunidad.cliente}`,
-      sede_id: `${crrOportunidad.sede_id}`,
+      sede: `${crrOportunidad.sede}`,
       fecha_contacto: format(crrOportunidad.fecha_contacto, 'yyyy-MM-dd'),
       estado_oportunidad: `${crrOportunidad.estado_oportunidad}`,
       activo: `${crrOportunidad.activo}`,
@@ -108,7 +108,7 @@ export default function FormOportunidad() {
         
         <FormField
           control = {form.control}
-          name = "sede_id"
+          name = "sede"
           render={({field}) => (
             <FormItem className='flex flex-col'>
               <FormLabel> Sede</FormLabel>

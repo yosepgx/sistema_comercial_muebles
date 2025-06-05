@@ -21,7 +21,7 @@ const userColumns: GridColDef<TOportunidad>[] = [
         resizable: false,
         flex: 1
     },
-    {   field: 'sede_id', 
+    {   field: 'sede', 
         headerName: 'Sede',
         resizable: false,
         flex: 1
