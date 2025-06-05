@@ -33,6 +33,8 @@ export default function FormPedidoStandAlone({tipo} : Props) {
   const {id} = useParams();
   const router = useRouter();
   const [listaDetalles, setListaDetalles] = useState<TPedidoDetalle[]>([])
+  const [loading, setLoading] = useState(true);
+  
   const form = useForm<z.infer<typeof formPedidoSchema>>({
     resolver: zodResolver(formPedidoSchema),
     defaultValues: {
@@ -102,7 +104,8 @@ export default function FormPedidoStandAlone({tipo} : Props) {
         const data = await fetchPedido();
         if(data)cargarPedido(data);
       }
-      cargar();
+      cargar().catch(error => console.error('no se pudo cargar el pedido, error: ', error))
+      .finally(() => setLoading(false));
     }
   },[tipo,id])
   
@@ -160,6 +163,13 @@ export default function FormPedidoStandAlone({tipo} : Props) {
     
   ]
 
+  if(!loading){
+    return <div>Cargando ...</div>
+  }
+
+  else if(!loading && !pedido){
+    return <div>No hay data </div>
+  }
 
   return (
     <div className="container mx-auto px-4 py-6">

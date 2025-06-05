@@ -28,6 +28,7 @@ export default function FormPedido() {
   const {crrTab, crrOportunidad} = useOportunidadContext()
   const [pedido, setPedido] = useState<TPedido | null>(null)
   const [listaDetalles, setListaDetalles] = useState<TPedidoDetalle[]>([])
+  const [loading, setLoading] = useState(true);
   const form = useForm<z.infer<typeof formPedidoSchema>>({
     resolver: zodResolver(formPedidoSchema),
     defaultValues: {
@@ -93,7 +94,8 @@ export default function FormPedido() {
     if(crrOportunidad && crrTab === 'pedido'){
       fetchPedido(crrOportunidad).then(
         data => {if(data)cargarPedido(data)}
-      )
+      ).catch( error => console.error('No se pudo obtener el pedido, error: ', error))
+      .finally( ()=>setLoading(false))
     }
   },[crrTab])
 
@@ -152,6 +154,13 @@ export default function FormPedido() {
     
   ]
 
+  if(!loading){
+    return <div>Cargando ...</div>
+  }
+
+  else if(!loading && !pedido){
+    return <div>No hay cotizacion aceptada aun </div>
+  }
 
   return (
     <div className="container mx-auto px-4 py-6">
