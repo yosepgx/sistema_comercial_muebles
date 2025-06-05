@@ -71,8 +71,8 @@ export default function FormPedido() {
   const cargarPedido = (pedido: TPedido) =>{
     form.setValue('id',`${pedido.id}`);
     form.setValue('fecha',format(pedido.fecha, 'yyyy-MM-dd'));
-    form.setValue('fechaentrega',format(pedido.fechaentrega, 'yyyy-MM-dd'));
-    form.setValue('fecha_pago',format(pedido.fecha_pago, 'yyyy-MM-dd'));
+    form.setValue('fechaentrega',pedido.fechaentrega? format(pedido.fechaentrega, 'yyyy-MM-dd'): '');
+    form.setValue('fecha_pago',pedido.fecha_pago? format(pedido.fecha_pago, 'yyyy-MM-dd'): '');
     form.setValue('serie',pedido.serie);
     form.setValue('correlativo',pedido.correlativo); 
     form.setValue('tipo_comprobante',pedido.tipo_comprobante); 

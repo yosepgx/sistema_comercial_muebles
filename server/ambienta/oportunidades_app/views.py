@@ -20,12 +20,12 @@ from clientes_app.models import Cliente
 #si despues de determinado tiempo (vigencia) el cliente no regresa se pasa a perdido
 #tambien el vendedor lo puede marcar como perdido
 class OportunidadViewSet(viewsets.ModelViewSet):
-    queryset = Oportunidad.objects.all()
+    queryset = Oportunidad.objects.all().order_by('-id')
     serializer_class = OportunidadSerializer
 
 
 class CotizacionViewSet(viewsets.ModelViewSet):
-    queryset = Cotizacion.objects.all()
+    queryset = Cotizacion.objects.all().order_by('-id')
     serializer_class = CotizacionSerializer
 
     def update(self, request, *args, **kwargs):
@@ -100,13 +100,18 @@ class CotizacionViewSet(viewsets.ModelViewSet):
         else:
             tipo_comprobante = Pedido.TIPOFACTURA
         
+        # Darle una Serie y un correlativo (solo facturas y boletas, la NC y ND se trabajan con las anulaciones)
+        resultado = CorrelativoService.guardar_siguiente_correlativo(sede_id=sede.id,tipo_documento=tipo_comprobante)
+        
         # Creamos el pedido con la información de la cotización
         pedido = Pedido.objects.create(
             #fecha = now_add
             fechaentrega = None,
             fecha_pago = None,
+            serie = resultado['serie'],
+            correlativo = resultado['correlativo'],
             tipo_comprobante = tipo_comprobante, #boleta/factura
-            estado_pedido='por_validar',
+            estado_pedido=Pedido.PENDIENTE,
             codigo_tipo_tributo = "1000",
             cotizacion=cotizacion,
             moneda = "PEN",
@@ -119,10 +124,8 @@ class CotizacionViewSet(viewsets.ModelViewSet):
             activo = True
         )
 
-        # Darle una Serie y un correlativo (solo facturas y boletas, la NC y ND se trabajan con las anulaciones)
-        resultado = CorrelativoService.guardar_siguiente_correlativo(sede_id=sede.id,tipo_documento=tipo_comprobante)
-        pedido.serie = resultado['serie']
-        pedido.correlativo = resultado['correlativo']
+        
+        
 
         # Copiar cada línea de detalle de la cotización al pedido
         for detalle in cotizacion.detalles.all():

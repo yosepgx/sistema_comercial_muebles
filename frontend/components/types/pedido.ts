@@ -16,8 +16,8 @@ const pedidoDetalle = z.object({
 const pedido = z.object({
     id: z.number(),
     fecha: z.string(),
-    fechaentrega: z.string(),
-    fecha_pago: z.string(),
+    fechaentrega: z.string().nullable(),
+    fecha_pago: z.string().nullable(),
     serie: z.string().optional(), //read-only
     correlativo: z.string().optional(), //read-only
     tipo_comprobante: z.enum(["boleta","factura"]),

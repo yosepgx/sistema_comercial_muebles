@@ -8,7 +8,7 @@ export const formClienteSchema = z.object({
   telefono: z.string().min(1, 'Se necesita llenar este campo o indicar ninguno'),
   naturaleza: z.enum(["Natural","Empresa"]),
   tipo_interes: z.enum(["cliente","lead"]), //manejado por back
-  fecha_conversion: z.string(), //se maneja en back
+  fecha_conversion: z.string().nullable(), //se maneja en back
   documento: z.string(),
   tipo_documento: z.string(),
   activo: z.string(), //manejado por back
@@ -45,7 +45,7 @@ export type FormClienteValues = z.infer<typeof formClienteSchema>
 export const formClienteSchemaSend = formClienteSchema.transform(data => ({
     ...data,
     id: parseInt(data.id, 10),
-    fecha_conversion: format(data.fecha_conversion, 'yyyy-MM-dd'),
+    fecha_conversion: data.fecha_conversion?format(data.fecha_conversion, 'yyyy-MM-dd'): null,
     activo: data.activo === "true",
   })
 )

@@ -33,7 +33,7 @@ export default function FormClienteStandAlone({tipo}:Props) {
     form.setValue('telefono', cliente.telefono);
     form.setValue('naturaleza', cliente.naturaleza);
     form.setValue('tipo_interes', cliente.tipo_interes); 
-    form.setValue('fecha_conversion', cliente.fecha_conversion.toString()); 
+    form.setValue('fecha_conversion', cliente.fecha_conversion?format(cliente.fecha_conversion,'dd-MM-YYYY'): ''); 
     form.setValue('documento', cliente.documento);
     form.setValue('tipo_documento', cliente.tipo_documento);
     form.setValue('activo', cliente.activo.toString());
@@ -57,7 +57,9 @@ export default function FormClienteStandAlone({tipo}:Props) {
           correo: cliente?cliente.correo: '',
           telefono: cliente?cliente.telefono:'',
           tipo_interes: cliente?cliente.tipo_interes:'lead',
-          fecha_conversion: cliente?cliente.fecha_conversion:`${format(new Date(), 'yyyy-MM-dd')}`,
+          fecha_conversion: cliente?.fecha_conversion
+            ? format(cliente.fecha_conversion, 'dd-MM-yyyy')
+            : format(new Date(), 'dd-MM-yyyy'),
           naturaleza: cliente?cliente.naturaleza:'Natural',
           documento: cliente?cliente.documento:'',
           tipo_documento: cliente?cliente.tipo_documento:'DNI',

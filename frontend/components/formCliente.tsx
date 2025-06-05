@@ -35,7 +35,7 @@ export default function FormCliente() {
     form.setValue('telefono', cliente.telefono);
     form.setValue('naturaleza', cliente.naturaleza);
     form.setValue('tipo_interes', cliente.tipo_interes); 
-    form.setValue('fecha_conversion', cliente.fecha_conversion.toString()); 
+    form.setValue('fecha_conversion', cliente.fecha_conversion?format(cliente.fecha_conversion,'dd-MM-YYYY'): null); 
     form.setValue('documento', cliente.documento);
     form.setValue('tipo_documento', cliente.tipo_documento);
     form.setValue('activo', cliente.activo.toString());
@@ -63,7 +63,9 @@ export default function FormCliente() {
           correo: cliente?cliente.correo: '',
           telefono: cliente?cliente.telefono:'',
           tipo_interes: cliente?cliente.tipo_interes:'lead',
-          fecha_conversion: cliente?cliente.fecha_conversion:`${format(new Date(), 'yyyy-MM-dd')}`,
+          fecha_conversion: cliente?.fecha_conversion
+          ? format(cliente.fecha_conversion, 'dd-MM-yyyy')
+          : null,
           naturaleza: cliente?cliente.naturaleza:'Natural',
           documento: cliente?cliente.documento:'',
           tipo_documento: cliente?cliente.tipo_documento:'DNI',
@@ -100,7 +102,6 @@ export default function FormCliente() {
       await UpdateOportunidadAPI('', crrOportunidad.id, nuevaOportunidad)
       setCrrOportunidad(nuevaOportunidad) // Esto sí actualiza el estado
       setCliente(verified)// parece poco util
-      setCrrTab('pedido') // Cambiar de tab
   }
 }
 
@@ -168,7 +169,7 @@ export default function FormCliente() {
                       <FormItem className='flex flex-col'>
                         <FormLabel> Nombres del cliente</FormLabel>
                         <FormControl>
-                          <Input type = "text" {...field}/>
+                          <Input type = "text" {...field} disabled={tipoRegistrar === 'buscado'}/>
                         </FormControl>
                         <FormMessage className="min-h-[24px]"/>
                       </FormItem>
@@ -182,7 +183,7 @@ export default function FormCliente() {
                     render={({field}) => (
                       <FormItem className='flex flex-col'>
                         <FormLabel> Tipo de cliente</FormLabel>
-                        <Select onValueChange = {field.onChange} defaultValue={field.value}> {/*aca hay un problema si quiero traer una oportunidad con cliente*/}
+                        <Select onValueChange = {field.onChange} defaultValue={field.value} disabled={tipoRegistrar === 'buscado'}> {/*aca hay un problema si quiero traer una oportunidad con cliente*/}
                           <FormControl>
                             <SelectTrigger>
                               <SelectValue placeholder="Seleccionar Tipo de Cliente"/>
@@ -211,7 +212,7 @@ export default function FormCliente() {
                       <FormItem className='flex flex-col'>
                         <FormLabel> Correo del cliente</FormLabel>
                         <FormControl>
-                          <Input type = "text" {...field}/>
+                          <Input type = "text" {...field} disabled={tipoRegistrar === 'buscado'}/>
                         </FormControl>
                         <FormMessage className="min-h-[24px]"/>
                       </FormItem>
@@ -230,7 +231,7 @@ export default function FormCliente() {
                       <FormItem className='flex flex-col'>
                         <FormLabel> Documento del cliente</FormLabel>
                         <FormControl>
-                          <Input type = "text" {...field}/>
+                          <Input type = "text" {...field} disabled={tipoRegistrar === 'buscado'}/>
                         </FormControl>
                         <FormMessage className="min-h-[24px]"/>
                       </FormItem>
@@ -245,7 +246,7 @@ export default function FormCliente() {
                       <FormItem className='flex flex-col'>
                         <FormLabel> Teléfono de contacto</FormLabel>
                         <FormControl>
-                          <Input type = "text" {...field}/>
+                          <Input type = "text" {...field} disabled={tipoRegistrar === 'buscado'}/>
                         </FormControl>
                         <FormMessage className="min-h-[24px]"/>
                       </FormItem>
@@ -267,6 +268,7 @@ export default function FormCliente() {
                         onValueChange={field.onChange}
                         defaultValue={'DNI'}
                         className="flex flex-col space-y-1"
+                        disabled={tipoRegistrar === 'buscado'}
                       >
                         <FormItem className="flex items-center space-x-3 space-y-0">
                           <FormControl>
@@ -302,7 +304,7 @@ export default function FormCliente() {
                 <CustomButton
                   variant='primary'
                   type="submit"
-                  disabled = {!registrarActivo}
+                  disabled = {!registrarActivo }
                 >
                   {tipoRegistrar === "registrar"? "Registrar Nuevo Cliente" : "Guardar y Continuar"}
                 </CustomButton>

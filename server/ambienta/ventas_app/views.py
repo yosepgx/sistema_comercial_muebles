@@ -22,7 +22,7 @@ import datetime
 #      por validar: no pasa nada con el stock
 #      si quiere editar debe de anular y crear otro, ademas en la observacion indicar que se equivoco
 class PedidoViewSet(viewsets.ModelViewSet):
-    queryset = Pedido.objects.all()
+    queryset = Pedido.objects.all().order_by('-id')
     serializer_class = PedidoSerializer
 
     def get_queryset(self):
