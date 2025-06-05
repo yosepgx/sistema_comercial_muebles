@@ -11,7 +11,7 @@ import { GetDatoGeneralDetailApi, PostDatoGeneralAPI, UpdateDatoGeneralAPI } fro
 
 const formSchema = z.object({
     id: z.string(),
-    codigoRUC: z.string(),
+    codigo_RUC: z.string(),
     razon_social: z.string(),
     nombre_comercial: z.string(),
     direccion_fiscal: z.string(),
@@ -42,7 +42,7 @@ export default function FormularioGeneral({tipo}: Props){
           resolver: zodResolver(formSchema),
           defaultValues: {
             id: '',
-            codigoRUC: '',
+            codigo_RUC: '',
             razon_social: '',
             nombre_comercial: '',
             direccion_fiscal: '',
@@ -53,7 +53,7 @@ export default function FormularioGeneral({tipo}: Props){
     const cargarGeneral = (general: TDGeneral | null) => {
         if(!general)return;
         form.setValue('id', `${general.id}`);
-        form.setValue('codigoRUC',`${general.codigoRUC}`)
+        form.setValue('codigo_RUC',`${general.codigo_RUC}`)
         form.setValue('razon_social', general.razon_social);
         form.setValue('nombre_comercial', general.nombre_comercial);
         form.setValue('direccion_fiscal', general.direccion_fiscal);
@@ -105,7 +105,7 @@ export default function FormularioGeneral({tipo}: Props){
                 />
                 <FormField
                 control = {form.control}
-                name = "codigoRUC"
+                name = "codigo_RUC"
                 render={({field}) => (
                     <FormItem className='flex flex-col'>
                     <FormLabel> RUC de la empresa</FormLabel>
@@ -118,7 +118,7 @@ export default function FormularioGeneral({tipo}: Props){
                 />
                 <FormField
                 control = {form.control}
-                name = "codigoRUC"
+                name = "razon_social"
                 render={({field}) => (
                     <FormItem className='flex flex-col'>
                     <FormLabel> Razon social</FormLabel>
@@ -131,7 +131,7 @@ export default function FormularioGeneral({tipo}: Props){
                 />
                 <FormField
                 control = {form.control}
-                name = "codigoRUC"
+                name = "nombre_comercial"
                 render={({field}) => (
                     <FormItem className='flex flex-col'>
                     <FormLabel> Nombre comercial</FormLabel>
@@ -144,7 +144,7 @@ export default function FormularioGeneral({tipo}: Props){
                 />
                 <FormField
                 control = {form.control}
-                name = "codigoRUC"
+                name = "direccion_fiscal"
                 render={({field}) => (
                     <FormItem className='flex flex-col'>
                     <FormLabel> Direccion fiscal</FormLabel>
@@ -157,7 +157,7 @@ export default function FormularioGeneral({tipo}: Props){
                 />
                 <FormField
                 control = {form.control}
-                name = "codigoRUC"
+                name = "margen_general"
                 render={({field}) => (
                     <FormItem className='flex flex-col'>
                     <FormLabel> Margen de descuento Auxiliar</FormLabel>

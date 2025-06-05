@@ -279,7 +279,7 @@ export default function FormClienteStandAlone({tipo}:Props) {
             {/* Botón de envío */}
             <div className="flex justify-end pt-4">
             <CustomButton variant="orange" type="button" 
-                onClick={()=>router.push('/clientes')}>s
+                onClick={()=>router.push('/clientes')}>
                 Salir
             </CustomButton>
             <CustomButton

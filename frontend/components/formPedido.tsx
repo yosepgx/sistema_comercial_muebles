@@ -12,7 +12,7 @@ import { useRouter } from 'next/navigation'
 import { TPedido, TPedidoDetalle } from './types/pedido'
 import { useOportunidadContext } from '@/context/oportunidadContext'
 import { GetCotizacionListApi } from '@/api/cotizacionApis'
-import { GetPedidoDetailApi, GetXMLFile, UpdatePedidoAPI } from '@/api/pedidoApis'
+import { GetPedidoPorCotizacionDetailApi, GetXMLFile, UpdatePedidoAPI } from '@/api/pedidoApis'
 import { TOportunidad } from './types/oportunidad'
 import { GetPedidoLineaListApi } from '@/api/pedidoDetalleApis'
 import {z} from 'zod'
@@ -89,7 +89,7 @@ export default function FormPedido() {
       && item.estado_cotizacion === 'aceptada' 
       && item.activo===true);
     const ultima = filtradas[filtradas.length - 1]
-    const pedidoFetch = await GetPedidoDetailApi(null, null, ultima.id)
+    const pedidoFetch = await GetPedidoPorCotizacionDetailApi(null, ultima.id)
     console.log("el pedido obtenido es: ", pedidoFetch)
     if(pedidoFetch && pedidoFetch.estado_pedido !== 'anulado' && pedidoFetch.id){
       setPedido(pedidoFetch);

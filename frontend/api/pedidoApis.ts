@@ -48,9 +48,9 @@ export async function GetPedidoListApi(token:string | null) {
     }
 }
 
-export async function GetPedidoDetailApi(token:string | null, id: number | null, idcotizacion?: number){
+export async function GetPedidoPorCotizacionDetailApi(token:string | null, idcotizacion: number){
     try {
-        const response = await customFetch(token,id?`ventas/pedido/${id}`: `ventas/pedido/?cotizacion_id=${idcotizacion}` , {
+        const response = await customFetch(token,`ventas/pedido/?cotizacion_id=${idcotizacion}` , {
             
             method: "get",
             headers:{
@@ -65,6 +65,30 @@ export async function GetPedidoDetailApi(token:string | null, id: number | null,
 
         const data = await response.json();
         return data[0] as TPedido;
+        
+    } catch (error) {
+        console.error("Error al obtener datos de detalle de pedido:", error);
+        return null;
+    }
+}
+
+export async function GetPedidoDetailApi(token:string | null, id: number | null ){
+    try {
+        const response = await customFetch(token, `ventas/pedido/${id}` , {
+            
+            method: "get",
+            headers:{
+                'Content-Type':'application/json' ,
+            }
+        });
+
+        if(!response.ok){
+            throw new Error(`Error del servidor: ${response.status} - ${response.statusText}`)
+
+        }
+
+        const data = await response.json();
+        return data as TPedido;
         
     } catch (error) {
         console.error("Error al obtener datos de detalle de pedido:", error);

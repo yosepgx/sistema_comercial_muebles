@@ -90,12 +90,12 @@ export default function UsuariosPage(){
 
     return (
         <ProtectedRoute>
-            <div className="flex justify-end mb-4">
-            <CustomButton type='button' variant='primary' onClick={()=>{router.push('/ajustes/usuarios/nuevo')}}>
-                Nueva Sede
-            </CustomButton>
-            </div>
             <MainWrap>
+                <div className="flex justify-end mb-4">
+                <CustomButton type='button' variant='primary' onClick={()=>{router.push('/ajustes/usuarios/nuevo')}}>
+                    Nueva Usuario
+                </CustomButton>
+                </div>
                 <DataGrid
                 rows = {data? data : []}
                 columns={userColumns}

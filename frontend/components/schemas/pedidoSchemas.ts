@@ -16,7 +16,7 @@ export const pedidoSchema = z. object({
   monto_igv: z.string(),
   monto_total: z.string(),
   descuento_adicional: z.string(),
-  observaciones: z.string(),
+  observaciones: z.string().nullable().transform(v => v ?? ""),
   codigo_tipo_tributo: z.string(),
   activo: z.string(),
 })

@@ -57,28 +57,28 @@ export default function DatosPage(){
             resizable: false,
             flex: 1
         },
-        {   field: 'codigoRUC', 
-            headerName: 'Descripcion', 
+        {   field: 'codigo_RUC', 
+            headerName: 'RUC de la empresa', 
             resizable: false,
             flex: 1
         },
         {   field: 'razon_social', 
-            headerName: 'Estado', 
+            headerName: 'Razon social', 
             resizable: false,
             flex: 1,
         },
         {   field: 'nombre_comercial', 
-            headerName: 'Estado', 
+            headerName: 'Nombre comercial', 
             resizable: false,
             flex: 1,
         },
         {   field: 'direccion_fiscal', 
-            headerName: 'Estado', 
+            headerName: 'Direccion fiscal', 
             resizable: false,
             flex: 1,
         },
         {   field: 'margen_general', 
-            headerName: 'Estado', 
+            headerName: 'Margen de descuento auxiliar', 
             resizable: false,
             flex: 1,
         },
@@ -157,6 +157,7 @@ export default function DatosPage(){
                     disableRowSelectionOnClick
                     disableColumnMenu
                     />
+
                 <div className="flex justify-end mb-4">
                 <CustomButton type='button' variant='primary' onClick={()=>{router.push('/ajustes/datos/sede/nuevo')}}>
                     Nueva Sede

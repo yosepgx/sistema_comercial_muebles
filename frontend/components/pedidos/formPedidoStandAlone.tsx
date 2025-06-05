@@ -12,7 +12,7 @@ import { useParams, useRouter } from 'next/navigation'
 import { TPedido, TPedidoDetalle } from '../types/pedido'
 import { useOportunidadContext } from '@/context/oportunidadContext'
 import { GetCotizacionListApi } from '@/api/cotizacionApis'
-import { GetPedidoDetailApi, GetXMLFile, UpdatePedidoAPI } from '@/api/pedidoApis'
+import { GetPedidoDetailApi, GetPedidoPorCotizacionDetailApi, GetXMLFile, UpdatePedidoAPI } from '@/api/pedidoApis'
 import { TOportunidad } from '../types/oportunidad'
 import { GetPedidoLineaListApi } from '@/api/pedidoDetalleApis'
 import {z} from 'zod'
@@ -74,7 +74,7 @@ export default function FormPedidoStandAlone({tipo} : Props) {
     form.setValue('monto_igv',`${pedido.monto_igv}`);
     form.setValue('monto_total',`${pedido.monto_total}`);
     form.setValue('descuento_adicional',`${pedido.descuento_adicional}`);
-    form.setValue('observaciones',pedido.observaciones);
+    form.setValue('observaciones',pedido.observaciones?pedido.observaciones:'' );
     form.setValue('codigo_tipo_tributo',pedido.codigo_tipo_tributo);
     form.setValue('activo',`${pedido.activo}`);
   }
@@ -82,12 +82,13 @@ export default function FormPedidoStandAlone({tipo} : Props) {
 
   const fetchPedido = async () => {
       const pedido = await GetPedidoDetailApi(null, parseInt(id as string, 10))
+      console.log("el pedigo fetch es:", pedido)
       if(pedido){
           const listado = await GetPedidoLineaListApi(null, parseInt(id as string, 10))
           setPedido(pedido)
           setListaDetalles(listado)
           const desctotal = parseFloat((
-            listado.reduce((acc, d) => acc + d.descuento, 0) + pedido.descuento_adicional
+            listado.reduce((acc, d) => acc + parseFloat(`${d.descuento}`), 0) + parseFloat(`${pedido.descuento_adicional}`)
             ).toFixed(2));
           setDescuentoTotal(desctotal)
       }
@@ -96,6 +97,7 @@ export default function FormPedidoStandAlone({tipo} : Props) {
 
   useEffect(()=>{
     if(tipo ==='edicion' && id){
+      console.log("ID obtenido de useParams:", id);  
       const cargar = async ()=>{
         const data = await fetchPedido();
         if(data)cargarPedido(data);
