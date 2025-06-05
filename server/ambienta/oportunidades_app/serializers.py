@@ -4,6 +4,7 @@ from clientes_app.serializers import ClienteSerializer
 #oportunidad -> cotizacion -> cotizacionDetalle
 class OportunidadSerializer(serializers.ModelSerializer):
     rcliente = ClienteSerializer(source='cliente', read_only = True)
+    rvalor_neto = serializers.DecimalField( read_only=True, max_digits=12, decimal_places=2)
     class Meta:
         model = Oportunidad
         fields = '__all__'

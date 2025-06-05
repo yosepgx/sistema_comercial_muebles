@@ -93,7 +93,7 @@ export default function UsuariosPage(){
             <MainWrap>
                 <div className="flex justify-end mb-4">
                 <CustomButton type='button' variant='primary' onClick={()=>{router.push('/ajustes/usuarios/nuevo')}}>
-                    Nueva Usuario
+                    Nuevo Usuario
                 </CustomButton>
                 </div>
                 <DataGrid

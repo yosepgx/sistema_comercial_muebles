@@ -59,6 +59,11 @@ export default function HomePage() {
         resizable: false,
         flex: 1
     },
+    {   field: 'rvalor_neto', 
+        headerName: 'Valor Neto',
+        resizable: false,
+        flex: 1
+    },
     
     {   field: 'activo', 
         headerName: 'Activo',
