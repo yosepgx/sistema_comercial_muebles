@@ -1,5 +1,9 @@
 import { customFetch } from "@/components/customFetch";
-import { TCotizacionDetalle } from "@/components/types/cotizacion"; 
+import { cotizacionDetalle, TCotizacionDetalle } from "@/components/types/cotizacion"; 
+import {z} from 'zod'
+
+const detalleSchema = z.array(cotizacionDetalle);
+
 
 export async function GetCotizacionLineaListApi(token:string | null, idcotizacion: number) {
     try {
@@ -18,10 +22,14 @@ export async function GetCotizacionLineaListApi(token:string | null, idcotizacio
 
         }
         const data = await response.json();
-        if (data) {
-            return data as TCotizacionDetalle[];
-        }
+
+        const parsed = detalleSchema.safeParse(data);
+        if (!parsed.success) {
+        console.error("Error de validación en cotización detalle:", parsed.error);
         return [];
+        }
+
+        return parsed.data;
         
     } catch (error) {
         console.error("Error al obtener datos de cotizacion-detalle:", error);

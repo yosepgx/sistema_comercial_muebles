@@ -1,5 +1,5 @@
 import { customFetch } from "@/components/customFetch";
-import { TCotizacion } from "@/components/types/cotizacion"; 
+import { cotizacion, cotizaciones, TCotizacion } from "@/components/types/cotizacion"; 
 
 
 export const handleDownload = async (token:string | null,cotizacionId: number) => {
@@ -38,10 +38,13 @@ export async function GetCotizacionListApi(token:string | null) {
 
         }
         const data = await response.json();
-        if (data) {
-            return data as TCotizacion[];
-        }
+        const parsed = cotizaciones.safeParse(data);
+        if (!parsed.success) {
+        console.error("Error de validación en listado de cotización:", parsed.error);
         return [];
+        }
+
+        return parsed.data as TCotizacion[];
         
     } catch (error) {
         console.error("Error al obtener datos de cotizacion:", error);
@@ -65,7 +68,12 @@ export async function GetCotizacionDetailApi(token:string | null, id: number){
         }
 
         const data = await response.json();
-        return data as TCotizacion;
+        const parsed = cotizacion.safeParse(data);
+        if (!parsed.success) {
+        console.error("Error de validación en cotización:", parsed.error);
+        return null;
+        }
+        return parsed.data as TCotizacion;
         
     } catch (error) {
         console.error("Error al obtener datos de detalle de cotizacion:", error);
@@ -89,7 +97,12 @@ export async function PostCotizacionAPI(token:string | null, data: TCotizacion){
         }
 
         const responseData = await response.json();
-        return responseData as TCotizacion;
+        const parsed = cotizacion.safeParse(responseData);
+        if (!parsed.success) {
+        console.error("Error de validación en cotización:", parsed.error);
+        return null;
+        }
+        return parsed.data as TCotizacion;
         
     } catch (error) {
         console.error("Error al guardar cotizacion:", error);
@@ -133,8 +146,13 @@ export async function UpdateCotizacionAPI(token:string | null, id: number, data:
       const responseData = await response.json();
 
       if (!response.ok) {
-        const mensaje = responseData?.detalle || `Error del servidor: ${response.status}`;
-        throw new Error(mensaje);
+        const mensaje = responseData?.detalle;
+        if (mensaje) {
+            throw new Error(mensaje);
+        } else {
+            console.warn("Error no relevante para el vendedor:", responseData);
+            return null; 
+        }
       }
   
       return responseData as TCotizacion;
@@ -142,7 +160,7 @@ export async function UpdateCotizacionAPI(token:string | null, id: number, data:
     } catch (error) {
       console.error("Error al actualizar cotizacion:", error);
       const mensaje = error instanceof Error? error.message : "Ocurrió un error inesperado.";
-    alert(mensaje);
-    return null;
+      alert(mensaje);
+      return null;
     }
   }

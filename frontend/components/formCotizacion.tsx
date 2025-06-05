@@ -7,7 +7,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/component
 import { ChevronRight, ChevronDown } from 'lucide-react'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
-import { TCotizacionDetalle } from './types/cotizacion'
+import { TCotizacion, TCotizacionDetalle } from './types/cotizacion'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from './ui/form'
 import CustomButton from './customButtom'
@@ -41,10 +41,10 @@ const formSchemaSend = formSchema.transform ( data => ({
   ...data,
   id: parseInt(data.id,10),
   oportunidad: parseInt(data.oportunidad,10),
-  monto_sin_impuesto: parseInt(data.monto_sin_impuesto,10),
-  monto_igv: parseInt(data.monto_sin_impuesto,10),
-  monto_total: parseInt(data.monto_sin_impuesto,10),
-  descuento_adicional: parseInt(data.monto_sin_impuesto,10),
+  monto_sin_impuesto: parseFloat(data.monto_sin_impuesto),
+  monto_igv: parseFloat(data.monto_igv),
+  monto_total: parseFloat(data.monto_total),
+  descuento_adicional: parseFloat(data.descuento_adicional),
   activo: data.activo==='true',
   //vendedor_asignado = 1, //TODO: funcionalidades de asignar vendedor
   
@@ -75,8 +75,28 @@ export default function FormCotizacionDetalle() {
     }
   })
 
+  const descuento = form.watch('descuento_adicional', '0.00');
+
+  const cargarCotizacion = (cotizacion: TCotizacion | null) => {
+    if(!cotizacion) return;
+    console.log("la cotizacion a cargar es:", cotizacion)
+    form.setValue('id', `${cotizacion.id}`);
+    form.setValue('fecha', cotizacion.fecha);
+    form.setValue('estado_cotizacion', cotizacion.estado_cotizacion);
+    form.setValue('oportunidad', `${cotizacion.oportunidad}`);
+    form.setValue('monto_sin_impuesto', cotizacion.monto_sin_impuesto.toFixed(2));
+    form.setValue('monto_igv', cotizacion.monto_igv.toFixed(2));
+    form.setValue('monto_total', cotizacion.monto_total.toFixed(2));
+    form.setValue('descuento_adicional', cotizacion.descuento_adicional.toFixed(2));
+    form.setValue('observaciones', cotizacion.observaciones || '');
+    form.setValue('direccion_entrega', cotizacion.direccion_entrega || '');
+    form.setValue('activo', cotizacion.activo ? 'true' : 'false');
+  };
+
   useEffect(()=>{
     if(crrCotizacion && crrTab === 'cotizaciones'){
+      console.log("cotizacion actual: ", crrCotizacion)
+      cargarCotizacion(crrCotizacion)
       GetCotizacionLineaListApi(null, crrCotizacion.id).then(
         data => setListaDetalles(data)
       )
@@ -84,18 +104,26 @@ export default function FormCotizacionDetalle() {
   },[crrTab])
 
 useEffect(() => {
-  const totalConIGV = listaDetalles.reduce((acc, item) => acc + (item.subtotal || 0), 0);
-  const totalSinIGV = totalConIGV / 1.18;
+  if (!listaDetalles.length) return;
 
-  const descuentoFormValue = Number(form.watch('descuento_adicional') || 0);
-  const descuentoBase = descuentoFormValue / 1.18;
-  const igvCalculado = (totalSinIGV - descuentoBase) * 0.18;
-  const totalFinal = (totalSinIGV - descuentoBase) + igvCalculado;
+  if(form && crrCotizacion && crrCotizacion.monto_igv && crrCotizacion.monto_sin_impuesto && crrCotizacion.monto_total && crrCotizacion.descuento_adicional && descuento){
+    const totalConIGV = listaDetalles.reduce((acc, item) => {
+        const sub = Number(item.subtotal);
+        return acc + (isNaN(sub) ? 0 : sub);
+      }, 0);
+    const totalSinIGV = totalConIGV / 1.18;
 
-  form.setValue('monto_sin_impuesto', (totalSinIGV - descuentoBase).toFixed(2));
-  form.setValue('monto_igv', igvCalculado.toFixed(2));
-  form.setValue('monto_total', totalFinal.toFixed(2));
-}, [listaDetalles, form.watch('descuento_adicional')]);
+    const descuentoFormValue = Number(descuento || 0);
+    const descuentoBase = descuentoFormValue / 1.18;
+    const igvCalculado = (totalSinIGV - descuentoBase) * 0.18;
+    const totalFinal = (totalSinIGV - descuentoBase) + igvCalculado;
+
+    form.setValue('monto_sin_impuesto', (totalSinIGV - descuentoBase).toFixed(2));
+    form.setValue('monto_igv', igvCalculado.toFixed(2));
+    form.setValue('monto_total', totalFinal.toFixed(2));
+  }
+  
+}, [listaDetalles, descuento]);
 
 const onSubmit = async (rawdata: FormValues) => {
   console.log('Datos del formulario:', rawdata)
@@ -116,7 +144,8 @@ const onSubmit = async (rawdata: FormValues) => {
         // Ejecutar todas las creaciones en paralelo 
         await Promise.all(
         detallesConReferencia.map(det => PostCotizacionLineaAPI(null, det))
-        )
+        ).finally(()=>SetModoCotizacion('muchas'))
+
       console.log("Cotización y detalles guardados correctamente")
     } else {
       // no hay edicion solo creacion de nuevas
@@ -298,14 +327,20 @@ const handleSelectProducto = (producto: TProducto) => {
             
             <div>
               <div className="space-y-2">
-              <Label>
-                Valor Total
-              </Label>
-              <Input
-                id="valorTotal"
-                value={form.watch('monto_total')}
-                disabled = {true}
-              />
+              <FormField
+                  control = {form.control}
+                  name = "monto_total"
+                  render={({field}) => (
+                    <FormItem className='flex flex-col'>
+                      <FormLabel> Monto Total</FormLabel>
+                      <FormControl>
+                        <Input type = "number" {...field} disabled={true}/>
+                      </FormControl>
+                      <FormMessage className="min-h-[24px]"/>
+                    </FormItem>
+                  )}
+                />  
+              
               </div>
 
               <div className="space-y-2">

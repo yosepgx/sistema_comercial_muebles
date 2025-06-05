@@ -23,7 +23,6 @@ class Pedido(models.Model):
     PAGADO = 'pagado'
     DESPACHADO ='despachado'
     ANULADO = 'anulado'
-
     ESTADOS_PEDIDO = [
         (PENDIENTE, 'Pendiente'),
         (PAGADO, 'Pagado'),
@@ -50,7 +49,15 @@ class Pedido(models.Model):
     direccion = models.CharField(max_length=255)
     activo = models.BooleanField(default=True)
 
-
+    # documento_referencia = models.ForeignKey(
+    #     'self',
+    #     on_delete=models.CASCADE,
+    #     null=True,
+    #     blank=True,
+    #     related_name='notas_asociadas',
+    #     help_text="Pedido original al que se asocia esta nota de crédito o débito"
+    # )
+    
     def __str__(self):
         return f"Pedido {self.id} - {self.estado_pedido}"
     

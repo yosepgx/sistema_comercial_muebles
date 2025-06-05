@@ -129,7 +129,6 @@ class CotizacionViewSet(viewsets.ModelViewSet):
             activo = detalle.activo,
         )
         
-        return Response({"pedido": pedido}, status=status.HTTP_200_OK)
 
 class CotizacionDetalleViewSet(viewsets.ModelViewSet):
     queryset = CotizacionDetalle.objects.all() 
