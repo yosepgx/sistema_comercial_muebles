@@ -106,26 +106,7 @@ export default function FormCotizaciones() {
           {/* Breadcrumb */}
           <div className="flex items-center gap-2 mb-6 text-sm text-gray-600">
             <ChevronRight size={16} />
-            <span>lista cotizaciones</span>
-          </div>
-
-          {/* Sección de dirección de entrega */}
-          <div className="mb-6">
-            <h3 className="text-sm font-medium mb-4">Dirección de entrega</h3>
-            <RadioGroup
-              value={tipoDireccion}
-              onValueChange={(value: 'tienda' | 'otro') => setTipoDireccion(value)}
-              className="flex gap-6"
-            >
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem value="tienda" id="tienda" />
-                <Label htmlFor="tienda" className="text-sm">Tienda</Label>
-              </div>
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem value="otro" id="otro" />
-                <Label htmlFor="otro" className="text-sm">Otro</Label>
-              </div>
-            </RadioGroup>
+            <span>Lista cotizaciones</span>
           </div>
 
           {/* Botón Nueva Cotización */}

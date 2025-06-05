@@ -62,7 +62,22 @@ class CotizacionViewSet(viewsets.ModelViewSet):
                             "detalle": f"No hay stock suficiente para el producto '{detalle.producto.nombre}'. "
                                        f"Requiere {detalle.cantidad}, disponible {stock_disponible}."
                         })
-                
+                    
+#               Validar cliente y sede 
+                cliente = instance.oportunidad.cliente
+                if not cliente:
+                    raise ValidationError({
+                        "codigo": "SIN_CLIENTE",
+                        "detalle": "La cotización no tiene un cliente asociado."
+                        })
+
+                sede = instance.oportunidad.sede
+                if not sede or not sede.id:
+                    raise ValidationError({
+                        "codigo": "SIN_SEDE",
+                        "detalle": "La cotización no tiene una sede asociada."
+                        })
+
 #               1. Actualizar la oportunidad a estado 'ganada'
                 if instance.oportunidad:
                     oportunidad = instance.oportunidad
@@ -70,27 +85,20 @@ class CotizacionViewSet(viewsets.ModelViewSet):
                     oportunidad.save()
                     
 #               2. Crear un pedido con la información de la cotización
-                self.crear_pedido_desde_cotizacion(instance)
+                self.crear_pedido_desde_cotizacion(instance, cliente, sede)
             
             self.perform_update(serializer)
         
         return Response(serializer.data, status=status.HTTP_200_OK)
     
-    def crear_pedido_desde_cotizacion(self, cotizacion : Cotizacion):
+    def crear_pedido_desde_cotizacion(self, cotizacion : Cotizacion, cliente, sede):
         """
         Crea un pedido a partir de una cotización aceptada
         """
-        cliente = cotizacion.oportunidad.cliente
-        if not cliente:
-            raise ValueError("La cotización no tiene un cliente asociado.")
         if cliente.tipo_documento == Cliente.TIPODNI:
-            tipo_comprobante = Pedido.TIPOBOLETA
+                    tipo_comprobante = Pedido.TIPOBOLETA
         else:
             tipo_comprobante = Pedido.TIPOFACTURA
-
-        sede = cotizacion.oportunidad.sede
-        if not sede or not sede.id:
-            raise ValueError("La cotización no tiene una sede asociada.")
         
         # Creamos el pedido con la información de la cotización
         pedido = Pedido.objects.create(

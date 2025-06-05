@@ -146,21 +146,19 @@ export async function UpdateCotizacionAPI(token:string | null, id: number, data:
       const responseData = await response.json();
 
       if (!response.ok) {
-        const mensaje = responseData?.detalle;
-        if (mensaje) {
-            throw new Error(mensaje);
-        } else {
-            console.warn("Error no relevante para el vendedor:", responseData);
-            return null; 
-        }
+      const mensaje = responseData?.detalle;
+      if (typeof mensaje === "string" && mensaje.trim() !== "") {
+        alert(mensaje);
+      } else {
+        console.error("Error sin detalle para mostrar:", responseData);
       }
+      return null;
+    }
   
       return responseData as TCotizacion;
   
     } catch (error) {
       console.error("Error al actualizar cotizacion:", error);
-      const mensaje = error instanceof Error? error.message : "Ocurrió un error inesperado.";
-      alert(mensaje);
       return null;
     }
   }

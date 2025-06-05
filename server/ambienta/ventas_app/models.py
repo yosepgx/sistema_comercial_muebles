@@ -102,3 +102,4 @@ class SerieCorrelativo(models.Model):
     tipo_comprobante = models.CharField(max_length=50, choices=TIPO_COMPROBANTE_CHOICES)
     serie = models.CharField(max_length=10)
     ultimo_correlativo = models.IntegerField(default=0)
+    activo = models.BooleanField(default=True)

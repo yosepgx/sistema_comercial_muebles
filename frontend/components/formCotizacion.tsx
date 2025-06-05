@@ -64,7 +64,7 @@ export default function FormCotizacionDetalle() {
   };
 
   useEffect(()=>{
-    if(crrCotizacion && crrTab === 'cotizaciones'){
+    if(crrCotizacion && crrTab === 'cotizaciones' &&edicionCotizacion!== 'nuevo'){
       console.log("cotizacion actual: ", crrCotizacion)
       cargarCotizacion(crrCotizacion)
       GetCotizacionLineaListApi(null, crrCotizacion.id).then(
@@ -77,7 +77,7 @@ useCalculosCotizacion({listaDetalles, descuento, form, crrCotizacion})
 
 const onSubmit = async (rawdata: FormCotizacionValues) => {
   console.log('Datos del formulario:', rawdata)
-  console.log('Datos del listado:', listaDetalles)
+  
   try {
     rawdata.oportunidad = `${crrOportunidad?.id}`
     if(tipoDireccion === 'tienda')rawdata.direccion_entrega = 'tienda';
@@ -95,7 +95,7 @@ const onSubmit = async (rawdata: FormCotizacionValues) => {
         await Promise.all(
         detallesConReferencia.map(det => PostCotizacionLineaAPI(null, det))
         ).finally(()=>SetModoCotizacion('muchas'))
-
+        console.log('Datos del listado:', listaDetalles)
       console.log("Cotización y detalles guardados correctamente")
     } else {
       // no hay edicion solo creacion de nuevas
@@ -125,8 +125,8 @@ const handleSelectProducto = (producto: TProducto) => {
         subtotal: producto.rprecio_actual?producto.rprecio_actual * 1: 0,
         nrolinea: old.length + 1,
         activo: true,
-        rnombre: '',
-        rum: '',
+        rnombre: producto.nombre,
+        rum: producto.umedida_sunat,
       };
       console.log("ATENCION detalle:",detalle)
       return [...old, detalle];
@@ -181,7 +181,7 @@ const handleSelectProducto = (producto: TProducto) => {
                   const nueva = { ...crrCotizacion, estado_cotizacion: 'aceptada' as const}
                   const respuesta = await UpdateCotizacionAPI(null, crrCotizacion.id, nueva)
                   //el manejo de la alerta se hace dentro de UpdateCotizacionAPI
-                  setCrrTab('pedido')
+                  if(respuesta)setCrrTab('pedido')
                 }
               }}
             >

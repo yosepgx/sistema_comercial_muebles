@@ -22,14 +22,6 @@ export const useCalculosCotizacion = ({
     // Si no hay detalles, no calcular
     if (!listaDetalles.length) return;
 
-    // Verificar que existan los datos necesarios
-    if (!(form && crrCotizacion?.monto_igv !== undefined && 
-          crrCotizacion?.monto_sin_impuesto !== undefined && 
-          crrCotizacion?.monto_total !== undefined && 
-          crrCotizacion?.descuento_adicional !== undefined && 
-          descuento)) {
-      return;
-    }
 
     // Calcular total con IGV sumando todos los subtotales
     const totalConIGV = listaDetalles.reduce((acc, item) => {
@@ -55,5 +47,5 @@ export const useCalculosCotizacion = ({
     form.setValue('monto_igv', igvCalculado.toFixed(2));
     form.setValue('monto_total', totalFinal.toFixed(2));
     
-  }, [listaDetalles, descuento, form, crrCotizacion]);
+  }, [listaDetalles, descuento, form]);
 };
