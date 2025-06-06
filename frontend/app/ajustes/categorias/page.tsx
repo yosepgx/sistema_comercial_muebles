@@ -1,17 +1,15 @@
 "use client"
 
 
-import { GetCategoriaListApi } from "@/api/categoriaApis";
-import { GetRolListApi } from "@/api/rolesApis";
+import { GetCategoriaListApi, UpdateCategoriaAPI } from "@/api/categoriaApis";
 import { TCategoria } from "@/app/inventario/producto/types/productoTypes";
 import CustomButton from "@/components/customButtom";
-import MainWrap from "@/components/mainwrap"
-import { ProtectedRoute } from "@/components/protectedRoute"
-import { Trol } from "@/components/types/rolType";
+import MainWrap from "@/components/mainwrap";
+import { ProtectedRoute } from "@/components/protectedRoute";
 import { useAuth } from "@/context/authContext";
 import { IconButton } from "@mui/material";
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
-import { Edit, EyeIcon, Trash2 } from "lucide-react";
+import { Edit, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
@@ -71,7 +69,13 @@ export default function CategoriasPage(){
             <IconButton onClick={() => router.push(`/ajustes/categorias/${params.row.id}`)}>
             <Edit />
             </IconButton>
-            <IconButton onClick={() => console.log("borrar rol:", params.row)}>
+            <IconButton onClick={() => {
+                const confirmDelete = window.confirm('¿Estás seguro de que deseas eliminar esta categoría?');
+                if (confirmDelete) {
+                    const nuevo = { ...params.row, activo: false };
+                    UpdateCategoriaAPI(null, params.row.id, nuevo);
+                }
+            }}>
             <Trash2 />
             </IconButton>
         </div>

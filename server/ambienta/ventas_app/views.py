@@ -9,7 +9,7 @@ from .models import Pedido, PedidoDetalle
 from .serializers import PedidoSerializer, PedidoDetalleSerializer
 from oportunidades_app.services import ServiceCargarDatosOportunidades
 import openpyxl
-from oportunidades_app.models import Oportunidad
+from oportunidades_app.models import Oportunidad, Cotizacion
 from django.db import transaction
 from django.utils import timezone
 from rest_framework.exceptions import ValidationError
@@ -59,7 +59,7 @@ class PedidoViewSet(viewsets.ModelViewSet):
                     registro.cantidad_comprometida += cantidad
                     registro.save()
             
-    #      pagado -> anulado: se tiene que desbloquear los compromisos 
+    #      pagado -> anulado: se tiene que desbloquear los compromisos y se anula cotizacion
             if estado_anterior == Pedido.PAGADO and nuevo_estado == Pedido.ANULADO:
                 lineas = instance.detalles.all()
                 for linea in lineas:
@@ -70,6 +70,10 @@ class PedidoViewSet(viewsets.ModelViewSet):
                     registro.cantidad_disponible += cantidad
                     registro.cantidad_comprometida -= cantidad
                     registro.save()
+
+                cotizacion = instance.cotizacion
+                cotizacion.estado_cotizacion = Cotizacion.RECHAZADA
+                cotizacion.save()
 
     #      pagado -> despachado: se descuenta el stock ( se quita de stock comprometido)
             if estado_anterior == Pedido.PAGADO and nuevo_estado == Pedido.DESPACHADO:
@@ -88,7 +92,7 @@ class PedidoViewSet(viewsets.ModelViewSet):
                     oportunidad.estado_oportunidad = Oportunidad.GANADO
                     oportunidad.save()
 
-    #      despachado -> anulado: se tiene que volver a agregar los productos a stock disponible 
+    #      despachado -> anulado: se tiene que volver a agregar los productos a stock disponible y se anula cotizacion
     #                           -> si se cancela el codigo del comprobante sigue, no se modifica el comprobante
             if estado_anterior == Pedido.DESPACHADO and nuevo_estado == Pedido.ANULADO:
                 #TODO: seria bueno tener fecha de anulacion
@@ -102,6 +106,10 @@ class PedidoViewSet(viewsets.ModelViewSet):
                     registro.cantidad_disponible += cantidad
                     registro.save()
 
+                cotizacion = instance.cotizacion
+                cotizacion.estado_cotizacion = Cotizacion.RECHAZADA
+                cotizacion.save()
+                
                 oportunidad = instance.cotizacion.oportunidad
                 if oportunidad:
                     oportunidad.estado_oportunidad = Oportunidad.EN_NEGOCIACION

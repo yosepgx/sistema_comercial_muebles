@@ -1,7 +1,7 @@
 "use client"
 
 import { GetDatoGeneralListApi } from "@/api/datogeneralApis"
-import { GetSedeListApi } from "@/api/sedeApis"
+import { GetSedeListApi, UpdateSedeAPI } from "@/api/sedeApis"
 import CustomButton from "@/components/customButtom"
 import MainWrap from "@/components/mainwrap"
 import { ProtectedRoute } from "@/components/protectedRoute"
@@ -130,7 +130,13 @@ export default function DatosPage(){
             <IconButton onClick={() => router.push(`/ajustes/datos/sede/${params.row.id}`)}>
             <Edit />
             </IconButton>
-            <IconButton onClick={() => console.log("borrar sede:", params.row)}>
+            <IconButton onClick={() => {
+            const confirmDelete = window.confirm('¿Estás seguro de que deseas eliminar esta sede?');
+            if (confirmDelete) {
+                const nuevo = { ...params.row, activo: false };
+                UpdateSedeAPI(null, params.row.id, nuevo);
+            }
+            }}>
             <Trash2 />
             </IconButton>
         </div>

@@ -5,10 +5,10 @@ import { ProtectedRoute } from "@/components/protectedRoute";
 import { useAuth } from "@/context/authContext";
 import { IconButton } from "@mui/material";
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
-import { Edit, EyeIcon, Trash2 } from "lucide-react";
+import { Edit, Printer, Trash2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { TCotizacion } from "@/components/types/cotizacion";
-import { GetCotizacionListApi } from "@/api/cotizacionApis";
+import { GetCotizacionListApi, handleDownload, UpdateCotizacionAPI } from "@/api/cotizacionApis";
 import { useRouter } from "next/navigation";
 
 export default function CotizacionesPage(){
@@ -93,8 +93,17 @@ export default function CotizacionesPage(){
             <IconButton onClick={() => router.push(`cotizaciones/${params.row.id}`)}>
             <Edit />
             </IconButton>
-            <IconButton onClick={() => console.log("borrar:", params.row)}>
+            {/* <IconButton onClick={() => {
+            const confirmDelete = window.confirm('¿Estás seguro de que deseas eliminar esta cotizacion?');
+            if (confirmDelete) {
+                const nuevo = { ...params.row, activo: false };
+                UpdateCotizacionAPI(null, params.row.id, nuevo);
+            }
+            }}>
             <Trash2 />
+            </IconButton> */}
+            <IconButton>
+                <Printer onClick={()=>{handleDownload(null,params.row.id)}}/>
             </IconButton>
         </div>
         ),

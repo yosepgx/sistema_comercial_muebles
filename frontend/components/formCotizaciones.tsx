@@ -13,6 +13,7 @@ import CustomButton from './customButtom'
 import { useRouter } from 'next/navigation'
 import { useOportunidadContext } from '@/context/oportunidadContext'
 import { GetCotizacionListApi, handleDownload } from '@/api/cotizacionApis'
+import { IconButton } from '@mui/material'
 
 
 export default function FormCotizaciones() {
@@ -77,15 +78,19 @@ export default function FormCotizaciones() {
       width: 120,
       renderCell: (params) => (
         <div className="flex gap-1">
-          <button className="p-1 rounded hover:bg-gray-100">
-            <Eye onClick={()=>{setCrrCotizacion(params.row as TCotizacion); SetModoCotizacion('una'); setEdicionCotizacion('edicion');}}/>
-          </button>
-          <button className="p-1 rounded hover:bg-gray-100">
+          <IconButton onClick={()=>{
+            setCrrCotizacion(params.row as TCotizacion); 
+            SetModoCotizacion('una'); 
+            setEdicionCotizacion('edicion');
+            }}>
+            <Eye />
+          </IconButton>
+          <IconButton>
             <Trash2 />
-          </button>
-          <button className="p-1 rounded hover:bg-gray-100">
+          </IconButton>
+          <IconButton>
             <Printer onClick={()=>{handleDownload(null,params.row.id)}}/>
-          </button>
+          </IconButton>
         </div>
       )
     }

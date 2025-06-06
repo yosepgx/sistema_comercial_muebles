@@ -3,12 +3,12 @@
 import MainWrap from "@/components/mainwrap"
 import { ProtectedRoute } from "@/components/protectedRoute"
 import { useEffect, useState } from "react"
-import { GetUsuarioListApi } from "../../../api/usuarioApis"
+import { GetUsuarioListApi, UpdateUsuarioAPI } from "../../../api/usuarioApis"
 import { Tusuario } from "@/components/types/usuarioType"
 import { useAuth } from "@/context/authContext"
 import { DataGrid, GridColDef } from '@mui/x-data-grid';
 import { IconButton } from "@mui/material"
-import { Edit, EyeIcon, Trash2 } from "lucide-react"
+import { Edit, Trash2 } from "lucide-react"
 import { useRouter } from "next/navigation"
 import CustomButton from "@/components/customButtom"
 
@@ -75,7 +75,13 @@ export default function UsuariosPage(){
         <IconButton onClick={() => router.push(`/ajustes/usuarios/${params.row.id}`)}>
           <Edit />
         </IconButton>
-        <IconButton >
+        <IconButton onClick={() => {
+        const confirmDelete = window.confirm('¿Estás seguro de que deseas eliminar este usuario?');
+        if (confirmDelete) {
+            const nuevo = { ...params.row, activo: false };
+            UpdateUsuarioAPI(null, params.row.id, nuevo);
+        }
+        }}>
           <Trash2 />
         </IconButton>
       </div>

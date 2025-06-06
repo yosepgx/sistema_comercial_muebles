@@ -1,6 +1,6 @@
 "use client"
 
-import { GetClienteListApi } from "@/api/clienteApis";
+import { GetClienteListApi, UpdateClienteAPI } from "@/api/clienteApis";
 import CustomButton from "@/components/customButtom";
 import MainWrap from "@/components/mainwrap";
 import { ProtectedRoute } from "@/components/protectedRoute";
@@ -9,7 +9,7 @@ import { TCliente } from "@/components/types/clienteType";
 import { useAuth } from "@/context/authContext";
 import { IconButton } from "@mui/material";
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
-import { Edit, EyeIcon, Trash2 } from "lucide-react";
+import { Edit, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
@@ -102,7 +102,13 @@ export default function ClientePage(){
             <IconButton onClick={() => router.push(`/clientes/${params.row.id}`)}>
             <Edit />
             </IconButton>
-            <IconButton onClick={() => console.log("borrar:", params.row)}>
+            <IconButton onClick={() => {
+            const confirmDelete = window.confirm('¿Estás seguro de que deseas eliminar este cliente?');
+            if (confirmDelete) {
+                const nuevo = { ...params.row, activo: false };
+                UpdateClienteAPI(null, params.row.id, nuevo);
+            }
+            }}>
             <Trash2 />
             </IconButton>
         </div>

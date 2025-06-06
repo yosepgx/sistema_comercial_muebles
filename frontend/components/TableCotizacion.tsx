@@ -7,9 +7,10 @@ import {
   flexRender,
   ColumnDef,
 } from '@tanstack/react-table'
-import { Edit, Save, Trash2 } from 'lucide-react'
+import { Edit, Pencil, Save, Trash2 } from 'lucide-react'
 import { TCotizacionDetalle } from './types/cotizacion';
 import { UNIDADES_MEDIDA_BUSCA } from '@/constants/unidadesMedidaConstants';
+import { IconButton } from '@mui/material';
 
 interface CotizacionTableProps {
   detalles: TCotizacionDetalle[];
@@ -145,27 +146,27 @@ export const CotizacionTable : React.FC<CotizacionTableProps>  = ({detalles, set
         return (
           <div className="flex gap-2">
             {isEditing ? (
-              <button
+              <IconButton
                 onClick={() => handleSave(id)}
-                className="p-1 hover:bg-gray-100 rounded disabled:opacity-50"
+                //className="p-1 hover:bg-gray-100 rounded disabled:opacity-50"
                 disabled={!!errors[id]}
               >
                 <Save size={16} />
-              </button>
+              </IconButton>
             ) : (
-              <button
+              <IconButton
                 onClick={() => setEditRowId(id)}
-                className="p-1 hover:bg-gray-100 rounded"
+                //className="p-1 hover:bg-gray-100 rounded"
               >
-                <Edit size={16} />
-              </button>
+                <Pencil size={16} />
+              </IconButton>
             )}
-            <button
+            <IconButton
               onClick={() => handleDelete(id)}
-              className="p-1 hover:bg-gray-100 rounded"
+              //className="p-1 hover:bg-gray-100 rounded"
             >
               <Trash2 size={16} />
-            </button>
+            </IconButton>
           </div>
         )
       }

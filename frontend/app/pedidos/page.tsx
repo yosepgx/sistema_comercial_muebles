@@ -10,7 +10,7 @@ import { useAuth } from "@/context/authContext";
 import { ProtectedRoute } from "@/components/protectedRoute";
 import MainWrap from "@/components/mainwrap";
 import { TPedido } from "@/components/types/pedido";
-import { Edit, EyeIcon, Trash2 } from "lucide-react";
+import { Edit, Trash2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { transformDateUTCHourToUserTime } from "@/components/transformDate";
@@ -176,9 +176,6 @@ export default function PedidosPage(){
         <div>
           <IconButton onClick={() => router.push(`/pedidos/${params.row.id}`)}>
             <Edit />
-          </IconButton>
-          <IconButton onClick={() => console.log("borrar:", params.row)}>
-            <Trash2 />
           </IconButton>
         </div>
       ),

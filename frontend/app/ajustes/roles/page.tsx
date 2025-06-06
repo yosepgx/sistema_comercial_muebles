@@ -7,7 +7,7 @@ import { Trol } from "@/components/types/rolType";
 import { useAuth } from "@/context/authContext";
 import { IconButton } from "@mui/material";
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
-import { Edit, EyeIcon } from "lucide-react";
+import { Edit } from "lucide-react";
 import { useEffect, useState } from "react";
 
 const userColumns: GridColDef<Trol>[] = [
