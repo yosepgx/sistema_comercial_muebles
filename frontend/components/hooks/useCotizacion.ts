@@ -6,7 +6,7 @@ import { FormCotizacionValues, formCotizacionSchemaSend } from '../schemas/formC
 import { GetCotizacionLineaListApi, PostCotizacionLineaAPI } from  '@/api/cotizacionDetalleApis';
 import { PostCotizacionAPI, UpdateCotizacionAPI } from '@/api/cotizacionApis';
 import { useOportunidadContext } from '@/context/oportunidadContext'
-import { TProducto } from '@/app/inventario/producto/types/productoTypes';
+import { TProducto } from '@/components/types/productoTypes';
 
 interface UseCotizacionProps {
   form: UseFormReturn<FormCotizacionValues>

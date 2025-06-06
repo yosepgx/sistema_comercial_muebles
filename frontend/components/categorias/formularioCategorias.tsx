@@ -7,7 +7,7 @@ import { useParams, useRouter } from 'next/navigation';
 import { Form, FormControl, FormField, FormItem, FormMessage, FormLabel } from '../ui/form';
 import { Input } from '../ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
-import { TCategoria } from '@/app/inventario/producto/types/productoTypes';
+import { TCategoria } from '@/components/types/productoTypes';
 import { GetCategoriaDetailApi, PostCategoriaAPI, UpdateCategoriaAPI } from '@/api/categoriaApis';
 import { BotonesFinales } from '../botonesFinales';
 

@@ -2,7 +2,7 @@
 
 
 import { GetCategoriaListApi, UpdateCategoriaAPI } from "@/api/categoriaApis";
-import { TCategoria } from "@/app/inventario/producto/types/productoTypes";
+import { TCategoria } from "@/components/types/productoTypes";
 import CustomButton from "@/components/customButtom";
 import MainWrap from "@/components/mainwrap";
 import { ProtectedRoute } from "@/components/protectedRoute";

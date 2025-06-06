@@ -1,5 +1,5 @@
 import { customFetch } from "@/components/customFetch";
-import { TCategoria } from "@/app/inventario/producto/types/productoTypes"; 
+import { TCategoria } from "@/components/types/productoTypes"; 
 
 export async function GetCategoriaListApi(token:string | null) {
     try {

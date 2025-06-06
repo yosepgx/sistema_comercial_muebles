@@ -3,7 +3,7 @@
 import { ColumnDef } from "@tanstack/react-table"
 import { Edit, Eye, Trash2 } from 'lucide-react';
 import React from "react";
-import { TProducto } from "../../app/inventario/producto/types/productoTypes";
+import { TProducto } from "../types/productoTypes";
 import { useProductoContext } from "@/context/productoContext";
 import { UNIDADES_MEDIDA_BUSCA } from "@/constants/unidadesMedidaConstants";
 import { IconButton } from "@mui/material";

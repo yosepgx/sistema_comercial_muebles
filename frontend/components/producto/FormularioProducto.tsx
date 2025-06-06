@@ -20,7 +20,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { UNIDADES_MEDIDA, UNIDADES_MEDIDA_BUSCA } from '@/constants/unidadesMedidaConstants';
 import { PostProductoAPI, UpdateProductoAPI } from '@/api/productoApis';
-import { TProducto } from '../../app/inventario/producto/types/productoTypes';
+import { TProducto } from '../types/productoTypes';
 const formSchema = z.object({
   id: z.string().min(1),
   nombre: z.string().min(1, {message: "El nombre es obligatorio"}),
