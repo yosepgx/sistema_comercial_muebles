@@ -15,10 +15,11 @@ import { IconButton } from '@mui/material';
 interface CotizacionTableProps {
   detalles: TCotizacionDetalle[];
   setDetalles: Dispatch<SetStateAction<TCotizacionDetalle[]>>;
+  isDisabled: boolean;
 }
 
 
-export const CotizacionTable : React.FC<CotizacionTableProps>  = ({detalles, setDetalles}) => {
+export const CotizacionTable : React.FC<CotizacionTableProps>  = ({detalles, setDetalles, isDisabled}) => {
   const [editRowId, setEditRowId] = useState<string | null>(null)
   const [errors, setErrors] = useState<Record<string, string>>({})
 
@@ -110,6 +111,7 @@ export const CotizacionTable : React.FC<CotizacionTableProps>  = ({detalles, set
                     textOverflow: 'ellipsis',
                   }}
                   value={row.cantidad}
+                  disabled={isDisabled}
                   onChange={(e) => handleCantidadChange(id, Number(e.target.value))}
                   min={1}
                 />
@@ -149,7 +151,7 @@ export const CotizacionTable : React.FC<CotizacionTableProps>  = ({detalles, set
               <IconButton
                 onClick={() => handleSave(id)}
                 //className="p-1 hover:bg-gray-100 rounded disabled:opacity-50"
-                disabled={!!errors[id]}
+                disabled={!!errors[id] || isDisabled}
               >
                 <Save size={16} />
               </IconButton>
@@ -157,6 +159,7 @@ export const CotizacionTable : React.FC<CotizacionTableProps>  = ({detalles, set
               <IconButton
                 onClick={() => setEditRowId(id)}
                 //className="p-1 hover:bg-gray-100 rounded"
+                disabled ={isDisabled}
               >
                 <Pencil size={16} />
               </IconButton>
@@ -164,6 +167,7 @@ export const CotizacionTable : React.FC<CotizacionTableProps>  = ({detalles, set
             <IconButton
               onClick={() => handleDelete(id)}
               //className="p-1 hover:bg-gray-100 rounded"
+              disabled = {isDisabled}
             >
               <Trash2 size={16} />
             </IconButton>

@@ -308,7 +308,7 @@ export default function FormCliente() {
                 <CustomButton
                   variant='primary'
                   type="submit"
-                  disabled = {!registrarActivo }
+                  
                 >
                   {tipoRegistrar === "registrar"? "Registrar Nuevo Cliente" : "Guardar y Continuar"}
                 </CustomButton>

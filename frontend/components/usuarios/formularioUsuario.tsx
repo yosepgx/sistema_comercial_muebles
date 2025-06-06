@@ -108,7 +108,7 @@ export default function FormularioUsuario({tipo}: Props){
                     <FormItem className='flex flex-col'>
                     <FormLabel> Codigo del usuario</FormLabel>
                     <FormControl>
-                        <Input type = "text" {...field} hidden = {tipo === 'nuevo'}/>
+                        <Input type = "text" {...field} hidden = {tipo === 'nuevo'} disabled={true}/>
                     </FormControl>
                     <FormMessage className="min-h-[24px]"/>
                     </FormItem>

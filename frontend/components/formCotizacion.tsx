@@ -208,6 +208,7 @@ const handleSelectProducto = (producto: TProducto) => {
                 value={tipoDireccion}
                 onValueChange={(value: 'tienda' | 'otro') => setTipoDireccion(value)}
                 className="flex flex-col "
+                disabled={edicionCotizacion === 'edicion'}
               >
                 <div className="flex items-center space-x-2">
                   <RadioGroupItem value="tienda" id="tienda" />
@@ -226,7 +227,7 @@ const handleSelectProducto = (producto: TProducto) => {
                   <FormItem className='flex flex-col'>
                     <FormLabel> Direccion de Entrega</FormLabel>
                     <FormControl>
-                      <Input type = "text" {...field} disabled={tipoDireccion==="tienda"}/>
+                      <Input type = "text" {...field} disabled={tipoDireccion==="tienda" || edicionCotizacion === 'edicion'}/>
                     </FormControl>
                     <FormMessage className="min-h-[24px]"/>
                   </FormItem>
@@ -241,7 +242,7 @@ const handleSelectProducto = (producto: TProducto) => {
                     <FormItem className='flex flex-col'>
                       <FormLabel> Monto de Descuento Auxiliar</FormLabel>
                       <FormControl>
-                        <Input type = "number" step={"0.1"}{...field} className='flex'/>
+                        <Input type = "number" step={"0.1"}{...field} className='flex' disabled={edicionCotizacion === 'edicion'}/>
                       </FormControl>
                       <FormMessage className="min-h-[24px]"/>
                     </FormItem>
@@ -333,6 +334,7 @@ const handleSelectProducto = (producto: TProducto) => {
         <div className="flex justify-between items-center mb-4">
           <CustomButton variant='primary'
           type='button'
+          disabled={edicionCotizacion === 'edicion'}
           onClick={()=>setIsSearchPopupOpen(true)}>
             Agregar Línea
           </CustomButton>
@@ -345,6 +347,7 @@ const handleSelectProducto = (producto: TProducto) => {
           <CotizacionTable
             detalles={listaDetalles}
             setDetalles={setListaDetalles}
+            isDisabled = { edicionCotizacion === 'edicion'}
           />
         </div>)
 }
