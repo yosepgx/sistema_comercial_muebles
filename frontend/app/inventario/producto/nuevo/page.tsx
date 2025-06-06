@@ -3,7 +3,7 @@
 import { ProtectedRoute } from '@/components/protectedRoute';
 import MainWrap from '@/components/mainwrap';
 
-import FormularioProducto from '../FormularioProducto';
+import FormularioProducto from '@/components/producto/FormularioProducto';
 
 export default function NuevoProductoPage(){
     return (

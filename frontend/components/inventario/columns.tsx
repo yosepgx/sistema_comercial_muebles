@@ -3,7 +3,7 @@
 import { ColumnDef } from "@tanstack/react-table";
 import { Pencil, Save } from 'lucide-react';
 import React from "react";
-import { Inventario, UpdateInventarioAPI } from "../../../api/InventarioApis";
+import { Inventario, UpdateInventarioAPI } from "@/api/InventarioApis";
 
 
 // Componente separado

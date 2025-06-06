@@ -1,10 +1,10 @@
 "use client"
 
 import { createContext, Dispatch, ReactNode, SetStateAction, useContext, useEffect, useState } from "react";
-import { TCategoria, TProducto } from "./types/productoTypes";
+import { TCategoria, TProducto } from "../app/inventario/producto/types/productoTypes";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/authContext";
-import { GetCategoriaListApi } from "../../../api/categoriaApis";
+import { GetCategoriaListApi } from "../api/categoriaApis";
 
 
 interface ProductoContextType{

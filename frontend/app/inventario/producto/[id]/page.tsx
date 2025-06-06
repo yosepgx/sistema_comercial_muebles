@@ -4,9 +4,9 @@ import { ProtectedRoute } from '@/components/protectedRoute';
 import MainWrap from '@/components/mainwrap';
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import HistorialPrecio from './HistorialPrecio';
-import FormularioProducto from '../FormularioProducto';
-import { useProductoContext } from '../productoContext';
+import HistorialPrecio from '@/components/producto/HistorialPrecio';
+import FormularioProducto from '@/components/producto/FormularioProducto';
+import { useProductoContext } from '@/context/productoContext';
 
 export default function ProductoDetailPage() {
   const {crrProduct} = useProductoContext()

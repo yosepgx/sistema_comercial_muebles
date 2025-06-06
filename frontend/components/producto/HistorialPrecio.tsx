@@ -1,5 +1,5 @@
 "use client"
-import { useProductoContext } from "../productoContext";
+import { useProductoContext } from "../../context/productoContext";
 import { Column, DataTableMUI } from "@/components/table/tableMUI";
 import { useMemo, useState } from "react";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";

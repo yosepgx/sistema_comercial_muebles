@@ -3,9 +3,9 @@ import MainWrap from "@/components/mainwrap";
 import { ProtectedRoute } from "@/components/protectedRoute";
 import { DataTable } from "@/components/table/dataTable";
 import { useEffect, useState } from "react";
-import { columns } from "./columns";
+import { columns } from "@/components/producto/columns";
 import { useAuth } from "@/context/authContext";
-import { GetProductoListApi } from "../../../api/productoApis";
+import { GetProductoListApi } from "@/api/productoApis";
 import { TProducto } from "./types/productoTypes";
 
 export default function ProductoPage(){

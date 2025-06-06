@@ -1,6 +1,6 @@
 "use client"
 
-import { ProductoProvider } from "./productoContext"
+import { ProductoProvider } from "@/context/productoContext"
 
 export default function ProductoLayout({
     children,
