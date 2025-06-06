@@ -1,15 +1,16 @@
 'use client'
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
-import {string, z} from 'zod';
-import { Tusuario, usuario } from '../types/usuarioType';
+import { string, z } from 'zod';
+import { Tusuario } from '../types/usuarioType';
 import { useEffect, useState } from 'react';
 import { GetUsuarioDetailApi, PostUsuarioAPI, UpdateUsuarioAPI } from '@/api/usuarioApis';
 import { useParams, useRouter } from 'next/navigation';
-import { Form, FormControl, FormField, FormItem, FormMessage, FormLabel } from '../ui/form'
+import { Form, FormControl, FormField, FormItem, FormMessage, FormLabel } from '../ui/form';
 import { Input } from '../ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 import { GetRolListApi } from '@/api/rolesApis';
+import { BotonesFinales } from '../botonesFinales';
 
 const formSchema = z.object({
     id: z.string(),
@@ -178,6 +179,7 @@ export default function FormularioUsuario({tipo}: Props){
                     </FormItem>
                 )}
                 />
+                <BotonesFinales ruteo={()=>router.push('/ajustes/usuarios')}></BotonesFinales>
            </form>
           </Form>
             

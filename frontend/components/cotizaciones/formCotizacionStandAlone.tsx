@@ -19,7 +19,7 @@ import ProductSearchPopup from '../popsearchproducto'
 import { CotizacionTable } from '../tablecotizacion'
 import { GetCotizacionDetailApi, PostCotizacionAPI, UpdateCotizacionAPI } from '@/api/cotizacionApis'
 import { TCotizacion } from '../types/cotizacion'
-import { useParams } from 'next/navigation'
+import { useParams, useRouter } from 'next/navigation'
 import { formCotizacionSchema, formCotizacionSchemaSend, FormCotizacionValues } from '../schemas/formCotizacionSchema'
 import { useCalculosCotizacion } from '../hooks/useCalculosCotizacion'
 
@@ -30,6 +30,7 @@ type Props = {
 
 
 export default function FormCotizacionStandAlone({edicionCotizacion}: Props) {
+  const router = useRouter()
   const [maximoPermisible, setMaximoPermisible] = useState('0.00')
   const {id} = useParams()
   const [tipoDireccion, setTipoDireccion] = useState<'tienda' | 'otro'>('tienda')
@@ -167,7 +168,8 @@ if(!crrCotizacion)return (<div>Cargando...</div>)
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
       <div className="flex items-center gap-2 mb-6 text-sm text-gray-600">
         <ChevronRight size={16} />
-        <span> 
+        <span onClick={()=>router.push('/cotizaciones')} 
+        className="text-blue-600 hover:underline cursor-pointer">
           Lista cotizaciones /
           </span>
         <span> Cotización{' '}

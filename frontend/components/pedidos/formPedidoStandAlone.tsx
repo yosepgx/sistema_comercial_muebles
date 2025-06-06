@@ -467,7 +467,7 @@ export default function FormPedidoStandAlone({tipo} : Props) {
       </div>
 
       <CustomButton variant="orange" type="button" 
-        onClick={()=>{router.push('/'); localStorage.removeItem('nueva-oportunidad')}}>
+        onClick={()=>{router.push('/pedidos'); localStorage.removeItem('nueva-oportunidad')}}>
         Salir
       </CustomButton>
     </div>

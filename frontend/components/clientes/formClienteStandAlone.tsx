@@ -9,11 +9,11 @@ import { TCliente } from '../types/clienteType'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm } from 'react-hook-form'
 import { Form, FormControl, FormField, FormItem, FormMessage, FormLabel } from '../ui/form'
-import CustomButton from '../customButtom'
 import { GetClienteDetailApi, PostClienteAPI, UpdateClienteAPI } from '@/api/clienteApis'
 import { format } from 'date-fns'
 import { useParams, useRouter } from 'next/navigation'
 import { formClienteSchema, formClienteSchemaSend, FormClienteValues } from '../schemas/formClienteSchema'
+import { BotonesFinales } from '../botonesFinales'
 
 
 type Props = {
@@ -232,18 +232,8 @@ export default function FormClienteStandAlone({tipo}:Props) {
             </div>
 
             {/* Botón de envío */}
-            <div className="flex justify-end pt-4">
-            <CustomButton variant="orange" type="button" 
-                onClick={()=>router.push('/clientes')}>
-                Salir
-            </CustomButton>
-            <CustomButton
-                variant='primary'
-                type="submit"
-            >
-                Guardar
-            </CustomButton>
-            </div>
+            <BotonesFinales ruteo={()=>router.push('/clientes')}></BotonesFinales>
+            
         </div>
         </form>
     </Form>

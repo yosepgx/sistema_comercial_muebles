@@ -8,6 +8,7 @@ import { Form, FormControl, FormField, FormItem, FormMessage, FormLabel } from '
 import { Input } from '../ui/input';
 import { TDGeneral } from '../types/dgeneralType';
 import { GetDatoGeneralDetailApi, PostDatoGeneralAPI, UpdateDatoGeneralAPI } from '@/api/datogeneralApis';
+import { BotonesFinales } from '../botonesFinales';
 
 const formSchema = z.object({
     id: z.string(),
@@ -190,6 +191,7 @@ export default function FormularioGeneral({tipo}: Props){
                     </FormItem>
                 )}
                 /> */}
+                <BotonesFinales ruteo={()=>router.push('/ajustes/datos')}></BotonesFinales>
            </form>
           </Form>
             
