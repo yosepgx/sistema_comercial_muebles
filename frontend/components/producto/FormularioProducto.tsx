@@ -21,6 +21,7 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { UNIDADES_MEDIDA, UNIDADES_MEDIDA_BUSCA } from '@/constants/unidadesMedidaConstants';
 import { PostProductoAPI, UpdateProductoAPI } from '@/api/productoApis';
 import { TProducto } from '../types/productoTypes';
+import { BotonesFinales } from '../botonesFinales';
 const formSchema = z.object({
   id: z.string().min(1),
   nombre: z.string().min(1, {message: "El nombre es obligatorio"}),
@@ -278,11 +279,8 @@ export default function FormularioProducto({
             />
             
           </div>
-
-          <div className="flex justify-end gap-4 mt-4">
-            <button type="button" className="bg-orange-400 px-4 py-2 rounded" onClick={()=> router.push('/inventario/producto')}>Cancelar</button>
-            <button type="submit" className="bg-blue-600 text-white px-4 py-2 rounded">Guardar</button>
-          </div>
+          
+          <BotonesFinales ruteo={()=> router.push('/inventario/producto')}></BotonesFinales>
         </form>
         </Form>
     )

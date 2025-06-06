@@ -24,12 +24,12 @@ class Command(BaseCommand):
 
         sede1, creada1 = Sede.objects.get_or_create(
             nombre="Sede A",
-            dgeneral_id=empresa,
+            dgeneral=empresa,
             defaults={'activo': True}
         )
         sede2, creada2 = Sede.objects.get_or_create(
             nombre="Sede B",
-            dgeneral_id=empresa,
+            dgeneral=empresa,
             defaults={'activo': True}
         )
 

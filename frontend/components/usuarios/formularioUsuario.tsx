@@ -11,12 +11,16 @@ import { Input } from '../ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 import { GetRolListApi } from '@/api/rolesApis';
 import { BotonesFinales } from '../botonesFinales';
+const usernameRegex = /^[a-zA-Z0-9@.+\-_]+$/;
 
 const formSchema = z.object({
     id: z.string(),
-    username: z.string(),
-    email: z.string(),
-    rol: string(),//ver como usarlo -> mandar un arreglo de nombre groups con un solo valor 
+    username: z.string().regex(
+    usernameRegex,
+    'El nombre de usuario solo puede contener letras, números y los caracteres @ . + - _ sin espacios intermedios.'
+    ),
+    email: z.string().email({ message: 'Correo electrónico inválido' }),
+    rol: string(),
     is_active: z.string(),
 })
 
@@ -115,7 +119,7 @@ export default function FormularioUsuario({tipo}: Props){
                 name = "username"
                 render={({field}) => (
                     <FormItem className='flex flex-col'>
-                    <FormLabel> Nombre del usuario</FormLabel>
+                    <FormLabel> Nombres del usuario</FormLabel>
                     <FormControl>
                         <Input type = "text" {...field}/>
                     </FormControl>
@@ -123,6 +127,8 @@ export default function FormularioUsuario({tipo}: Props){
                     </FormItem>
                 )}
                 />
+                
+                
                 <FormField
                 control = {form.control}
                 name = "email"

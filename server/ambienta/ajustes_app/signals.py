@@ -2,8 +2,6 @@
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from .models import Sede
-from ventas_app.models import SerieCorrelativo, Pedido
-
 
 @receiver(post_save, sender=Sede)
 def crear_series_default(sender, instance, created, **kwargs):
@@ -11,6 +9,8 @@ def crear_series_default(sender, instance, created, **kwargs):
     Crear series por defecto cuando se crea una nueva sede
     """
     if created:
+        from ventas_app.models import SerieCorrelativo, Pedido
+
         tipos_documento = [
             {'tipo': Pedido.TIPOFACTURA, 'serie': 'F00'},
             {'tipo': Pedido.TIPOBOLETA, 'serie': 'B00'},

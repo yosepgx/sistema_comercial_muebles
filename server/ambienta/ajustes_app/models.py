@@ -10,6 +10,6 @@ class Dgeneral (models.Model):
 
 class Sede(models.Model):
     nombre = models.CharField(max_length=255)
-    dgeneral_id = models.ForeignKey(Dgeneral, on_delete=models.CASCADE, related_name = "sedes")
+    dgeneral = models.ForeignKey(Dgeneral, on_delete=models.CASCADE, related_name = "sedes")
     activo = models.BooleanField(default=True)
 

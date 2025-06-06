@@ -6,7 +6,7 @@ interface Props {
 
 export const BotonesFinales = ({ruteo}: Props) => {
     return(
-    <div className='flex flex-row gap-8'>
+    <div className='flex flex-row gap-8 mt-8'>
         <CustomButton type='button' variant='orange' 
         onClick= {ruteo}>
             Salir

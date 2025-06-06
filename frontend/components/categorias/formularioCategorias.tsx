@@ -33,8 +33,8 @@ type Props = {
 
 export default function FormularioCategorias({tipo}: Props){
     const [loading, setLoading] = useState(true);
-    const {id} = useParams()
     const router = useRouter()
+    const {id} = useParams()
     const form = useForm<z.infer<typeof formSchema>>({
           resolver: zodResolver(formSchema),
           defaultValues: {
@@ -124,7 +124,7 @@ export default function FormularioCategorias({tipo}: Props){
                     </FormItem>
                 )}
                 />
-                <BotonesFinales ruteo={()=>router.push('ajustes/categorias')}></BotonesFinales>
+                <BotonesFinales ruteo={()=>router.push('/ajustes/categorias')}></BotonesFinales>
            </form>
           </Form>
             

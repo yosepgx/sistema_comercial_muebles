@@ -24,7 +24,7 @@ type FormValues = z.infer<typeof formSchema>
 const formSchemaSend = formSchema.transform(data => ({
     ...data,
     id: parseInt(data.id, 10),
-    dgeneral: parseInt(data.id, 10),
+    dgeneral: parseInt(data.dgeneral, 10),
     activo: data.activo === "true",
   })
 )
@@ -49,7 +49,7 @@ export default function FormularioSede({tipo}: Props){
     const cargarCategoria = (sede: TSede | null) => {
         if(!sede)return;
         form.setValue('id', `${sede.id}`);
-        form.setValue('dgeneral',`${sede.id}`)
+        form.setValue('dgeneral',`${sede.dgeneral}`)
         form.setValue('nombre', sede.nombre);
         form.setValue('activo', `${sede.activo}`);
       }
