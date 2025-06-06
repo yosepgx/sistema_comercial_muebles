@@ -12,11 +12,14 @@ import { BotonesFinales } from '../botonesFinales';
 
 const formSchema = z.object({
     id: z.string(),
-    codigo_RUC: z.string(),
-    razon_social: z.string(),
-    nombre_comercial: z.string(),
-    direccion_fiscal: z.string(),
-    margen_general: z.string(),
+    codigo_RUC: z.string().min(11,"Es necesario llenar este campo").regex(/^\d+$/, "El RUC solo debe contener números"),
+    razon_social: z.string().min(1,"Es necesario llenar este campo"),
+    nombre_comercial: z.string().min(1,"Es necesario llenar este campo"),
+    direccion_fiscal: z.string().min(1,"Es necesario llenar este campo"),
+    margen_general: z.string().refine(
+    val => !isNaN(parseFloat(val)) && parseFloat(val) > 0, {
+        message: "El precio debe ser un número mayor a 0"
+    }),
     activo: z.string(),
 })
 
@@ -163,7 +166,7 @@ export default function FormularioGeneral({tipo}: Props){
                     <FormItem className='flex flex-col'>
                     <FormLabel> Margen de descuento Auxiliar</FormLabel>
                     <FormControl>
-                        <Input type = "text" {...field}/>
+                        <Input type = "number" {...field}/>
                     </FormControl>
                     <FormMessage className="min-h-[24px]"/>
                     </FormItem>

@@ -13,7 +13,7 @@ import { BotonesFinales } from '../botonesFinales';
 
 const formSchema = z.object({
     id: z.string(),
-    descripcion: z.string(),
+    descripcion: z.string().min(1,"Es necesario llenar este campo"),
     activo: z.string()
 })
 

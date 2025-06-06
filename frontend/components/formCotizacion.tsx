@@ -59,8 +59,8 @@ export default function FormCotizacionDetalle() {
     form.setValue('monto_igv', cotizacion.monto_igv.toFixed(2));
     form.setValue('monto_total', cotizacion.monto_total.toFixed(2));
     form.setValue('descuento_adicional', cotizacion.descuento_adicional.toFixed(2));
-    form.setValue('observaciones', cotizacion.observaciones || '');
-    form.setValue('direccion_entrega', cotizacion.direccion_entrega || '');
+    form.setValue('observaciones', cotizacion.observaciones?? '');
+    form.setValue('direccion_entrega', cotizacion.direccion_entrega ?? '');
     form.setValue('activo', cotizacion.activo ? 'true' : 'false');
   };
 
