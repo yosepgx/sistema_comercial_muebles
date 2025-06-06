@@ -9,7 +9,8 @@ export const formOportunidadSchema = z.object({
   fecha_contacto: z.string(), //manejado por back
   estado_oportunidad: z.enum(["ganado","perdido","negociacion"]),
   activo: z.string(),
-  rcliente: cliente.optional().nullable(),
+  rcliente: z.string().optional().nullable(),
+  rvalorneto: z.string().optional().nullable(),
 })
 
 export const formOportunidadSchemaSend = formOportunidadSchema.transform(data => ({
@@ -19,6 +20,7 @@ export const formOportunidadSchemaSend = formOportunidadSchema.transform(data =>
   sede: parseInt(data.sede,10),
   fecha_contacto: format(data.fecha_contacto, 'yyyy-MM-dd'),
   activo: data.activo === 'true',
+  rvalorneto: null,
   })
 )
 export type FormOportunidadValues = z.infer<typeof formOportunidadSchema>

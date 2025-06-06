@@ -6,7 +6,7 @@ const oportunidad = z.object({
     sede: z.number(),
     fecha_contacto: z.string(),
     estado_oportunidad: z.enum(["ganado","perdido","negociacion"]),
-    rcliente: cliente.optional().nullable(),
+    rcliente: z.string().optional().nullable(),
     activo: z.boolean(),
     rvalorneto: z.number().optional().nullable()
 })

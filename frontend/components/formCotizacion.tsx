@@ -22,6 +22,7 @@ import { formCotizacionSchema, formCotizacionSchemaSend, FormCotizacionValues } 
 import { useCalculosCotizacion } from './hooks/useCalculosCotizacion'
 
 export default function FormCotizacionDetalle() {
+  const [loading, setLoading] = useState(true)
   const [maximoPermisible, setMaximoPermisible] = useState('0.00')
   const [tipoDireccion, setTipoDireccion] = useState<'tienda' | 'otro'>('tienda')
   const [isDescuentoOpen, setIsDescuentoOpen] = useState(true)
@@ -66,10 +67,12 @@ export default function FormCotizacionDetalle() {
   useEffect(()=>{
     if(crrCotizacion && crrTab === 'cotizaciones' &&edicionCotizacion!== 'nuevo'){
       console.log("cotizacion actual: ", crrCotizacion)
+      setLoading(true);
       cargarCotizacion(crrCotizacion)
       GetCotizacionLineaListApi(null, crrCotizacion.id).then(
         data => setListaDetalles(data)
-      )
+      ).catch(error => console.error('error al obtener lineas de cotizacion, error: ', error))
+      .finally(()=>setLoading(false))
     }
   },[crrTab])
 
@@ -337,12 +340,14 @@ const handleSelectProducto = (producto: TProducto) => {
         </div>
       
         {/* Tabla de detalles */}
-        <div className="bg-white rounded-lg border">
+        {(loading && edicionCotizacion !== 'nuevo')? (<div>Cargando ...</div>) : 
+        (<div className="bg-white rounded-lg border">
           <CotizacionTable
             detalles={listaDetalles}
             setDetalles={setListaDetalles}
           />
-        </div>
+        </div>)
+}
       </div>
          
     </div>

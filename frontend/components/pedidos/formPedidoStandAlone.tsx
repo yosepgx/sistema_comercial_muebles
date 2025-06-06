@@ -163,7 +163,7 @@ export default function FormPedidoStandAlone({tipo} : Props) {
     
   ]
 
-  if(!loading){
+  if(loading){
     return <div>Cargando ...</div>
   }
 

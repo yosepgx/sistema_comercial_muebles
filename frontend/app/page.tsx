@@ -37,11 +37,6 @@ export default function HomePage() {
         headerName: 'Documento de Cliente',
         resizable: false,
         flex: 1,
-        renderCell: (params) => {
-        const cliente = params.row?.rcliente;
-        const doc = cliente?.documento || '';
-        return `${doc}`;
-      }
     },
     {   field: 'sede', 
         headerName: 'Sede',
@@ -96,7 +91,7 @@ export default function HomePage() {
 
   const cargarDatos = async () => {
         try {
-        const res = await GetOportunidadListApi(ct)
+        const res = await GetOportunidadListApi(null)
         console.log("Datos cargados:", res)
         setData(res)
         } catch (error) {

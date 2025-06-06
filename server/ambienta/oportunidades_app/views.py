@@ -20,7 +20,7 @@ from clientes_app.models import Cliente
 #si despues de determinado tiempo (vigencia) el cliente no regresa se pasa a perdido
 #tambien el vendedor lo puede marcar como perdido
 class OportunidadViewSet(viewsets.ModelViewSet):
-    queryset = Oportunidad.objects.all().order_by('-id')
+    queryset = Oportunidad.objects.select_related('cliente').all().order_by('-id')
     serializer_class = OportunidadSerializer
 
 

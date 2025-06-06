@@ -18,6 +18,7 @@ import { GetCotizacionListApi, handleDownload } from '@/api/cotizacionApis'
 export default function FormCotizaciones() {
   const [tipoDireccion, setTipoDireccion] = useState<'tienda' | 'otro'>('tienda')
   const [direccion, setDireccion] = useState("")
+  const [loading, setLoading] = useState(true);
   const [listaCotizaciones, setListaCotizaciones] =useState<TCotizacion[]>([])
   const {setCrrCotizacion, SetModoCotizacion, crrTab, crrOportunidad, setEdicionCotizacion} = useOportunidadContext()
   const router = useRouter();
@@ -92,12 +93,14 @@ export default function FormCotizaciones() {
 
   useEffect(()=>{
     if(crrOportunidad && crrTab === 'cotizaciones'){
+      setLoading(true);
       GetCotizacionListApi(null).then(
         data => {
           const filtradas = data.filter(item => item.oportunidad === crrOportunidad.id);
           setListaCotizaciones(filtradas);
         }
-      )
+      ).catch(error => console.error('error al obtener cotizaciones, error: ',error))
+      .finally(()=> setLoading(false))
     }
   },[crrTab])
 
@@ -121,6 +124,7 @@ export default function FormCotizaciones() {
             <DataGrid
               rows={listaCotizaciones}
               columns={columns}
+              loading = {loading}
               initialState={{
                 pagination: {
                   paginationModel: { pageSize: 10 }

@@ -17,10 +17,12 @@ import { UpdateOportunidadAPI } from '@/api/oportunidadApis'
 import { useOportunidadContext } from '@/context/oportunidadContext'
 import { useRouter } from 'next/navigation'
 import { formClienteSchema, formClienteSchemaSend, FormClienteValues } from './schemas/formClienteSchema'
+import { error } from 'console'
 
 
 
 export default function FormCliente() {
+  const [loading, setLoading] = useState(false);
   const [registrarActivo, setRegistrarActivo] = useState(false);
   const [tipoRegistrar, setTipoRegistrar] = useState<"registrar" | "buscado">("buscado");
   const [isSearchPopupOpen, setIsSearchPopupOpen] = useState(false);
@@ -35,7 +37,7 @@ export default function FormCliente() {
     form.setValue('telefono', cliente.telefono);
     form.setValue('naturaleza', cliente.naturaleza);
     form.setValue('tipo_interes', cliente.tipo_interes); 
-    form.setValue('fecha_conversion', cliente.fecha_conversion?format(cliente.fecha_conversion,'dd-MM-YYYY'): null); 
+    form.setValue('fecha_conversion', cliente.fecha_conversion?format(cliente.fecha_conversion,'dd-MM-yyyy'): null); 
     form.setValue('documento', cliente.documento);
     form.setValue('tipo_documento', cliente.tipo_documento);
     form.setValue('activo', cliente.activo.toString());
@@ -44,12 +46,13 @@ export default function FormCliente() {
   useEffect(()=>{
       if(crrOportunidad && crrTab === 'cliente'){
         if(crrOportunidad.cliente){
+          setLoading(true);
           GetClienteDetailApi('',crrOportunidad.cliente)
         .then(data => {
           setCliente(data)
           cargarCliente(data)
-        })
-
+        }).catch(error => console.error('error al obtener cliente, error: ', error))
+        .finally(()=>setLoading(false))
       }
     }
   },[crrTab])
@@ -125,6 +128,7 @@ export default function FormCliente() {
 
   }
 
+  if(loading) return (<div>Cargando...</div>)
 
   return (
     <div className="container mx-auto px-4 py-6">

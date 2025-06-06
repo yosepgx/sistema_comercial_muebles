@@ -53,22 +53,7 @@ export default function FormPedido() {
     }
   })
 
-  const fetchPedido = async (crrOportunidad: TOportunidad) => {
-    const data = await GetCotizacionListApi(null);
-    const filtradas = data.filter(item => item.oportunidad === crrOportunidad.id 
-      && item.estado_cotizacion === 'aceptada' 
-      && item.activo===true);
-    const ultima = filtradas[filtradas.length - 1]
-    const pedidoFetch = await GetPedidoPorCotizacionDetailApi(null, ultima.id)
-    console.log("el pedido obtenido es: ", pedidoFetch)
-    if(pedidoFetch && pedidoFetch.estado_pedido !== 'anulado' && pedidoFetch.id){
-      setPedido(pedidoFetch);
-      const listado = await GetPedidoLineaListApi(null, pedidoFetch.id)
-      setListaDetalles(listado)
-      return pedidoFetch 
-    }
-  }
-
+  
   const cargarPedido = (pedido: TPedido) =>{
     form.setValue('id',`${pedido.id}`);
     form.setValue('fecha',format(pedido.fecha, 'yyyy-MM-dd'));
@@ -89,11 +74,30 @@ export default function FormPedido() {
     form.setValue('codigo_tipo_tributo',pedido.codigo_tipo_tributo);
     form.setValue('activo',`${pedido.activo}`);
   }
+  
+  const fetchPedido = async (crrOportunidad: TOportunidad) => {
+    const data = await GetCotizacionListApi(null);
+    const filtradas = data.filter(item => item.oportunidad === crrOportunidad.id 
+      && item.estado_cotizacion === 'aceptada' 
+      && item.activo===true);
+    const ultima = filtradas[filtradas.length - 1]
+    if(ultima && ultima.id) {
+      const pedidoFetch = await GetPedidoPorCotizacionDetailApi(null, ultima.id)
+      console.log("el pedido obtenido es: ", pedidoFetch)
+      if(pedidoFetch && pedidoFetch.estado_pedido !== 'anulado' && pedidoFetch.id){
+        setPedido(pedidoFetch);
+        const listado = await GetPedidoLineaListApi(null, pedidoFetch.id)
+        setListaDetalles(listado)
+        return pedidoFetch 
+      }
+    }
+  }
 
   useEffect(()=>{
     if(crrOportunidad && crrTab === 'pedido'){
+      setLoading(true); 
       fetchPedido(crrOportunidad).then(
-        data => {if(data)cargarPedido(data)}
+        data => {if(data)cargarPedido(data); }
       ).catch( error => console.error('No se pudo obtener el pedido, error: ', error))
       .finally( ()=>setLoading(false))
     }
@@ -154,14 +158,14 @@ export default function FormPedido() {
     
   ]
 
-  if(!loading){
+  if(loading){
     return <div>Cargando ...</div>
   }
 
   else if(!loading && !pedido){
     return <div>No hay cotizacion aceptada aun </div>
   }
-
+  //y este es el caso dejo de cargar y hay pedido
   return (
     <div className="container mx-auto px-4 py-6">
       {/* Información del pedido en grid */}

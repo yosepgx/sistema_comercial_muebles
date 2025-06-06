@@ -67,10 +67,9 @@ const userColumns: GridColDef<TOportunidad>[] = [
 export default function OportunidadesPage(){
     const [data, setData] = useState<TOportunidad[]>([])
     const [loading, setLoading] = useState(true)
-    const {ct} = useAuth();
     const cargarDatos = async () => {
         try {
-        const res = await GetOportunidadListApi(ct)
+        const res = await GetOportunidadListApi(null)
         console.log("Datos cargados:", res)
         setData(res)
         } catch (error) {
