@@ -43,7 +43,6 @@ export default function InnerPageOportunidad({tipo} : Props) {
           <TabsTrigger value="cotizaciones">Cotizaciones</TabsTrigger>
           <TabsTrigger value="cliente">Cliente</TabsTrigger>
           <TabsTrigger value="pedido">Pedido</TabsTrigger>
-          <TabsTrigger value="despacho">Despacho</TabsTrigger>
         </TabsList>
 
         <TabsContent value="oportunidad">

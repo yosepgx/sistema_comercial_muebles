@@ -24,19 +24,19 @@ class GroupSerializer(serializers.ModelSerializer):
 class PerfilUsuarioSerializer(serializers.ModelSerializer):
     class Meta:
         model = PerfilUsuario
-        fields = ['dni', 'telefono']
+        fields = ['nombres', 'dni', 'telefono']
 
 #La creacion de los campos de perfil solo se hace por front, no hay signal para hacerlo en back
 class UserGroupSerializer(serializers.ModelSerializer):
     """serializador de usuario"""
     groups = serializers.SlugRelatedField(slug_field='name', queryset=Group.objects.all(), many=True, required=False)
-    perfil = PerfilUsuarioSerializer()
+    #perfil = PerfilUsuarioSerializer()
     class Meta:
         model = User
-        fields = ['id', 'username', 'email', 'groups', 'perfil', 'is_active']
+        fields = ['id', 'username', 'email', 'groups', 'is_active']
 
     def update(self, instance, validated_data):
-        perfil_data = validated_data.pop('perfil', {})
+        #perfil_data = validated_data.pop('perfil', {})
         # Actualiza el User
         instance.username = validated_data.get('username', instance.username)
         instance.email = validated_data.get('email', instance.email)
@@ -47,19 +47,19 @@ class UserGroupSerializer(serializers.ModelSerializer):
 
 
         # Actualiza el Perfil
-        perfil = instance.perfil
-        perfil.dni = perfil_data.get('dni', perfil.dni)
-        perfil.telefono = perfil_data.get('telefono', perfil.telefono)
-        perfil.save()
+        # perfil = instance.perfil
+        # perfil.dni = perfil_data.get('dni', perfil.dni)
+        # perfil.telefono = perfil_data.get('telefono', perfil.telefono)
+        # perfil.save()
 
         return instance
 
     def create(self, validated_data):
-        perfil_data = validated_data.pop('perfil')
+        #perfil_data = validated_data.pop('perfil')
         groups_data = validated_data.pop('groups', [])
 
         user = User.objects.create(**validated_data)
-        PerfilUsuario.objects.create(user=user, **perfil_data)
+        #PerfilUsuario.objects.create(user=user, **perfil_data)
         user.groups.set(groups_data) 
         return user
     

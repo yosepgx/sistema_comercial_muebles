@@ -1,5 +1,5 @@
 import { customFetch } from "@/components/customFetch";
-import { TProducto } from "@/app/inventario/producto/types/productoTypes"; 
+import { TProducto } from "@/components/types/productoTypes"; 
 
 export async function GetProductoListApi(token:string | null) {
     try {
@@ -122,3 +122,35 @@ export async function UpdateProductoAPI(token:string | null, id: number, data: T
       return null;
     }
   }
+
+export const descargarProductoAPI = async (token: string | null) => {
+    try {
+      const response = await customFetch(token,'inventario/descargar-productos/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({}),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        alert('Error al generar el archivo.');
+        return;
+      }
+
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', 'productos.xlsx');
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      alert('Error al intentar descargar el archivo.');
+      console.error(error);
+    }
+};

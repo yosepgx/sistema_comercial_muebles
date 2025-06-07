@@ -12,5 +12,7 @@ router.register(r'inventario', views.InventarioViewSet)
 urlpatterns = [
     path('', include(router.urls)),
     path('cargar-inventario/', views.CargarInventariosView.as_view(), name='cargar-inventario'),
+    path('descargar-productos/', views.DescargarProductos.as_view(), name='descargar-productos'),
+    path('descargar-inventario/', views.DescargarStock.as_view(), name='descargar-inventario'),
 ]
 

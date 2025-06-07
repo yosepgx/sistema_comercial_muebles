@@ -12,7 +12,7 @@ import { useRouter } from 'next/navigation'
 import { TPedido, TPedidoDetalle } from './types/pedido'
 import { useOportunidadContext } from '@/context/oportunidadContext'
 import { GetCotizacionListApi } from '@/api/cotizacionApis'
-import { GetPedidoDetailApi, GetXMLFile, UpdatePedidoAPI } from '@/api/pedidoApis'
+import { GetPedidoPorCotizacionDetailApi, GetXMLFile, UpdatePedidoAPI } from '@/api/pedidoApis'
 import { TOportunidad } from './types/oportunidad'
 import { GetPedidoLineaListApi } from '@/api/pedidoDetalleApis'
 import {z} from 'zod'
@@ -20,47 +20,17 @@ import { Form, FormControl, FormField, FormItem, FormMessage, FormLabel } from '
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import {format} from  'date-fns'
+import { formPedidoSchema, FormPedidoValues } from './schemas/pedidoSchemas'
 import { UNIDADES_MEDIDA_BUSCA } from '@/constants/unidadesMedidaConstants'
-const formSchema = z. object({
-  id: z.string(),     //manejado por back
-  fecha: z.string(), //manejado por back
-  fechaentrega: z.string(),
-  fecha_pago: z.string(),
-  serie: z.string().optional(), //debe de ser manejado por back
-  correlativo: z.string().optional(), //debe de ser manejado por back
-  tipo_comprobante: z.enum(["boleta","factura"]),
-  direccion: z.string(),
-  cotizacion: z.string(),
-  moneda: z.enum(['PEN']),
-  estado_pedido: z.enum(["pendiente","pagado","despachado", "anulado"]), 
-  monto_sin_impuesto: z.string(), //suma ingresada al final
-  monto_igv: z.string(),
-  monto_total: z.string(),
-  descuento_adicional: z.string(),
-  observaciones: z.string(),
-  codigo_tipo_tributo: z.string(),
-  activo: z.string(),
-})
 
-type FormValues = z.infer<typeof formSchema>
-
-const formSchemaSend = formSchema.transform ( data => ({
-  ...data,
-  id: parseInt(data.id,10),
-  tipo_comprobante: parseInt(data.tipo_comprobante,10),
-  cotizacion: parseInt(data.id, 10),
-  monto_sin_impuesto: parseFloat(data.monto_sin_impuesto),
-  monto_igv: parseFloat(data.monto_igv),
-  monto_total: parseFloat(data.monto_total),
-  descuento_adicional: parseFloat(data.descuento_adicional),
-}))
 
 export default function FormPedido() {
   const {crrTab, crrOportunidad} = useOportunidadContext()
   const [pedido, setPedido] = useState<TPedido | null>(null)
   const [listaDetalles, setListaDetalles] = useState<TPedidoDetalle[]>([])
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
+  const [loading, setLoading] = useState(true);
+  const form = useForm<z.infer<typeof formPedidoSchema>>({
+    resolver: zodResolver(formPedidoSchema),
     defaultValues: {
       id: '',     
       fecha: '', 
@@ -83,27 +53,12 @@ export default function FormPedido() {
     }
   })
 
-  const fetchPedido = async (crrOportunidad: TOportunidad) => {
-    const data = await GetCotizacionListApi(null);
-    const filtradas = data.filter(item => item.oportunidad === crrOportunidad.id 
-      && item.estado_cotizacion === 'aceptada' 
-      && item.activo===true);
-    const ultima = filtradas[filtradas.length - 1]
-    const pedidoFetch = await GetPedidoDetailApi(null, null, ultima.id)
-    console.log("el pedido obtenido es: ", pedidoFetch)
-    if(pedidoFetch && pedidoFetch.estado_pedido !== 'anulado' && pedidoFetch.id){
-      setPedido(pedidoFetch);
-      const listado = await GetPedidoLineaListApi(null, pedidoFetch.id)
-      setListaDetalles(listado)
-      return pedidoFetch 
-    }
-  }
-
+  
   const cargarPedido = (pedido: TPedido) =>{
     form.setValue('id',`${pedido.id}`);
     form.setValue('fecha',format(pedido.fecha, 'yyyy-MM-dd'));
-    form.setValue('fechaentrega',format(pedido.fechaentrega, 'yyyy-MM-dd'));
-    form.setValue('fecha_pago',format(pedido.fecha_pago, 'yyyy-MM-dd'));
+    form.setValue('fechaentrega',pedido.fechaentrega? format(pedido.fechaentrega, 'yyyy-MM-dd'): '');
+    form.setValue('fecha_pago',pedido.fecha_pago? format(pedido.fecha_pago, 'yyyy-MM-dd'): '');
     form.setValue('serie',pedido.serie);
     form.setValue('correlativo',pedido.correlativo); 
     form.setValue('tipo_comprobante',pedido.tipo_comprobante); 
@@ -119,17 +74,37 @@ export default function FormPedido() {
     form.setValue('codigo_tipo_tributo',pedido.codigo_tipo_tributo);
     form.setValue('activo',`${pedido.activo}`);
   }
+  
+  const fetchPedido = async (crrOportunidad: TOportunidad) => {
+    const data = await GetCotizacionListApi(null);
+    const filtradas = data.filter(item => item.oportunidad === crrOportunidad.id 
+      && item.estado_cotizacion === 'aceptada' 
+      && item.activo===true);
+    const ultima = filtradas[filtradas.length - 1]
+    if(ultima && ultima.id) {
+      const pedidoFetch = await GetPedidoPorCotizacionDetailApi(null, ultima.id)
+      console.log("el pedido obtenido es: ", pedidoFetch)
+      if(pedidoFetch && pedidoFetch.estado_pedido !== 'anulado' && pedidoFetch.id){
+        setPedido(pedidoFetch);
+        const listado = await GetPedidoLineaListApi(null, pedidoFetch.id)
+        setListaDetalles(listado)
+        return pedidoFetch 
+      }
+    }
+  }
 
   useEffect(()=>{
     if(crrOportunidad && crrTab === 'pedido'){
+      setLoading(true); 
       fetchPedido(crrOportunidad).then(
-        data => {if(data)cargarPedido(data)}
-      )
+        data => {if(data)cargarPedido(data); }
+      ).catch( error => console.error('No se pudo obtener el pedido, error: ', error))
+      .finally( ()=>setLoading(false))
     }
   },[crrTab])
 
   //no hay boton de submit y no necesita de uno
-  const onSubmit = async (data: FormValues) => {
+  const onSubmit = async (data: FormPedidoValues) => {
     console.log('Datos del formulario:', data)
   }
 
@@ -183,7 +158,14 @@ export default function FormPedido() {
     
   ]
 
+  if(loading){
+    return <div>Cargando ...</div>
+  }
 
+  else if(!loading && !pedido){
+    return <div>No hay cotizacion aceptada aun </div>
+  }
+  //y este es el caso dejo de cargar y hay pedido
   return (
     <div className="container mx-auto px-4 py-6">
       {/* Información del pedido en grid */}

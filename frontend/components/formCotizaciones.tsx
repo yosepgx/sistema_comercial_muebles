@@ -13,11 +13,13 @@ import CustomButton from './customButtom'
 import { useRouter } from 'next/navigation'
 import { useOportunidadContext } from '@/context/oportunidadContext'
 import { GetCotizacionListApi, handleDownload } from '@/api/cotizacionApis'
+import { IconButton } from '@mui/material'
 
 
 export default function FormCotizaciones() {
   const [tipoDireccion, setTipoDireccion] = useState<'tienda' | 'otro'>('tienda')
   const [direccion, setDireccion] = useState("")
+  const [loading, setLoading] = useState(true);
   const [listaCotizaciones, setListaCotizaciones] =useState<TCotizacion[]>([])
   const {setCrrCotizacion, SetModoCotizacion, crrTab, crrOportunidad, setEdicionCotizacion} = useOportunidadContext()
   const router = useRouter();
@@ -76,15 +78,19 @@ export default function FormCotizaciones() {
       width: 120,
       renderCell: (params) => (
         <div className="flex gap-1">
-          <button className="p-1 rounded hover:bg-gray-100">
-            <Eye onClick={()=>{setCrrCotizacion(params.row as TCotizacion); SetModoCotizacion('una'); setEdicionCotizacion('edicion');}}/>
-          </button>
-          <button className="p-1 rounded hover:bg-gray-100">
+          <IconButton onClick={()=>{
+            setCrrCotizacion(params.row as TCotizacion); 
+            SetModoCotizacion('una'); 
+            setEdicionCotizacion('edicion');
+            }}>
+            <Eye />
+          </IconButton>
+          <IconButton>
             <Trash2 />
-          </button>
-          <button className="p-1 rounded hover:bg-gray-100">
+          </IconButton>
+          <IconButton>
             <Printer onClick={()=>{handleDownload(null,params.row.id)}}/>
-          </button>
+          </IconButton>
         </div>
       )
     }
@@ -92,12 +98,14 @@ export default function FormCotizaciones() {
 
   useEffect(()=>{
     if(crrOportunidad && crrTab === 'cotizaciones'){
+      setLoading(true);
       GetCotizacionListApi(null).then(
         data => {
           const filtradas = data.filter(item => item.oportunidad === crrOportunidad.id);
           setListaCotizaciones(filtradas);
         }
-      )
+      ).catch(error => console.error('error al obtener cotizaciones, error: ',error))
+      .finally(()=> setLoading(false))
     }
   },[crrTab])
 
@@ -106,26 +114,7 @@ export default function FormCotizaciones() {
           {/* Breadcrumb */}
           <div className="flex items-center gap-2 mb-6 text-sm text-gray-600">
             <ChevronRight size={16} />
-            <span>lista cotizaciones</span>
-          </div>
-
-          {/* Sección de dirección de entrega */}
-          <div className="mb-6">
-            <h3 className="text-sm font-medium mb-4">Dirección de entrega</h3>
-            <RadioGroup
-              value={tipoDireccion}
-              onValueChange={(value: 'tienda' | 'otro') => setTipoDireccion(value)}
-              className="flex gap-6"
-            >
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem value="tienda" id="tienda" />
-                <Label htmlFor="tienda" className="text-sm">Tienda</Label>
-              </div>
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem value="otro" id="otro" />
-                <Label htmlFor="otro" className="text-sm">Otro</Label>
-              </div>
-            </RadioGroup>
+            <span>Lista cotizaciones</span>
           </div>
 
           {/* Botón Nueva Cotización */}
@@ -140,6 +129,7 @@ export default function FormCotizaciones() {
             <DataGrid
               rows={listaCotizaciones}
               columns={columns}
+              loading = {loading}
               initialState={{
                 pagination: {
                   paginationModel: { pageSize: 10 }

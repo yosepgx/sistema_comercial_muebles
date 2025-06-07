@@ -12,6 +12,123 @@ import openpyxl
 from rest_framework.decorators import action
 from django.utils import timezone
 from dateutil.relativedelta import relativedelta
+from io import BytesIO
+import pandas as pd
+
+class DescargarStock(APIView):
+    def post(self, request):
+        try:
+            # Consulta filtrada
+            queryset = Inventario.objects.filter(producto__activo=True, almacen__activo=True)
+
+            # Validación: ¿hay datos?
+            if not queryset.exists():
+                return Response(
+                    {"detail": "No hay inventario disponible para exportar."},
+                    status=status.HTTP_204_NO_CONTENT
+                )
+
+            # Extraer datos
+            data = []
+            for item in queryset:
+                data.append({
+                    'Codigo del Producto': item.producto.id,
+                    'Nombre del Producto': item.producto.nombre,
+                    'Stock': item.cantidad_disponible,
+                    'Stock Comprometido': item.cantidad_comprometida,
+                })
+
+            df = pd.DataFrame(data)
+
+            # Validación: ¿el DataFrame está vacío?
+            if df.empty:
+                return Response(
+                    {"detail": "No hay datos para exportar."},
+                    status=status.HTTP_204_NO_CONTENT
+                )
+
+            # Generar Excel en memoria
+            buffer = BytesIO()
+            with pd.ExcelWriter(buffer, engine='openpyxl') as writer:
+                df.to_excel(writer, index=False, sheet_name='Stock')
+
+            buffer.seek(0)
+
+            # Enviar archivo
+            response = HttpResponse(
+                buffer.read(),
+                content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+            )
+            response['Content-Disposition'] = 'attachment; filename="stock.xlsx"'
+            return response
+
+        except Exception as e:
+            # Loguear en logger
+            return Response(
+                {"detail": "Error al generar el archivo Excel.", "error": str(e)},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+        
+class DescargarProductos(APIView):
+    def post(self, request):
+        try:
+            # Consulta filtrada
+            queryset = Producto.objects.all().order_by('id')
+
+            # Validación: ¿hay datos?
+            if not queryset.exists():
+                return Response(
+                    {"detail": "No hay productos disponibles para exportar."},
+                    status=status.HTTP_204_NO_CONTENT
+                )
+
+            # Extraer datos
+            data = []
+            for p in queryset:
+                data.append({
+                    'codigo': p.id,
+                    'nombre': p.nombre,
+                    'precio': p.precio,
+                    'categoria': p.categoria.descripcion,
+                    'igv': p.igv,
+                    'afecto_igv': p.afecto_igv,
+                    'codigo_afecion_igv': p.codigo_afecion_igv,
+                    'es_servicio': p.es_servicio,
+                    'umedida': p.umedida_sunat,
+                    'activo': p.activo,
+                })
+
+
+            df = pd.DataFrame(data)
+
+            # Validación: ¿el DataFrame está vacío?
+            if df.empty:
+                return Response(
+                    {"detail": "No hay datos para exportar."},
+                    status=status.HTTP_204_NO_CONTENT
+                )
+
+            # Generar Excel en memoria
+            buffer = BytesIO()
+            with pd.ExcelWriter(buffer, engine='openpyxl') as writer:
+                df.to_excel(writer, index=False, sheet_name='Productos')
+
+            buffer.seek(0)
+
+            # Enviar archivo
+            response = HttpResponse(
+                buffer.read(),
+                content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+            )
+            response['Content-Disposition'] = 'attachment; filename="productos.xlsx"'
+            return response
+
+        except Exception as e:
+            # Loguear en logger
+            return Response(
+                {"detail": "Error al generar el archivo Excel.", "error": str(e)},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
 
 
 class AlmacenViewSet(viewsets.ModelViewSet):

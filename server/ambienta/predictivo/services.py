@@ -35,6 +35,7 @@ class ServicePrediccion:
         historico_filtrado = self.queryset.select_related('pedido', 'producto').filter(
             #pedido__fechaentrega__gte=fecha_corte,
             pedido__estado_pedido = Pedido.DESPACHADO,
+            pedido__tipo_comprobante__in=[Pedido.TIPOBOLETA, Pedido.TIPOFACTURA],
             producto__es_servicio =  False
         )
         

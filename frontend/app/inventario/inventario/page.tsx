@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { DataTable } from "@/components/table/dataTable";
-import { columns, defaultColumnCell } from "./columns";
+import { columns, defaultColumnCell } from "@/components/inventario/columns";
 import { GetInventarioListApi, Inventario } from "@/api/InventarioApis";
 import { ProtectedRoute } from "@/components/protectedRoute";
 import { useAuth } from "@/context/authContext";
@@ -47,7 +47,7 @@ export default function InventarioPage() {
                 defaultColumn={defaultColumnCell}
                 placeholder={"Buscar por codigo de producto"}
                 canFilterActivo = {false}
-                
+                canExport = {true}
             >
             
             </DataTable>

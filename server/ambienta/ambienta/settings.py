@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     'oportunidades_app',
     'clientes_app',
     'usuarios_app',
+    'ajustes_app',
 
 ]
 

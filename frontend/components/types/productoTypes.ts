@@ -31,7 +31,7 @@ const Producto = z.object({
     id: z.number(),
     nombre : z.string(),
     umedida_sunat : z.string(),
-    descripcion : z.string(),
+    descripcion : z.string().nullable(),
     categoria : z.number(),
     igv : z.number(),
     afecto_igv : z.boolean(),

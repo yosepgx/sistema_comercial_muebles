@@ -15,43 +15,27 @@ import { TOportunidad } from "./types/oportunidad"
 import CustomButton from "./customButtom"
 import { useOportunidadContext } from "@/context/oportunidadContext"
 import { GetOportunidadDetailApi, PostOportunidadAPI, UpdateOportunidadAPI } from "@/api/oportunidadApis"
-import { cliente } from "./types/clienteType"
 import { useRouter } from "next/navigation"
-const formSchema = z.object({
-  id: z.string(),
-  cliente: z.string().nullable(), 
-  sede_id: z.string(),
-  fecha_contacto: z.string(), //manejado por back
-  estado_oportunidad: z.enum(["ganado","perdido","negociacion"]),
-  activo: z.string(),
-  rcliente: cliente.optional().nullable(),
-})
-
-const formSchemaSend = formSchema.transform(data => ({
-  ...data,
-  id: parseInt(data.id,10),
-  cliente: data.cliente?parseInt(data.cliente,10):null,
-  sede_id: parseInt(data.sede_id,10),
-  fecha_contacto: format(data.fecha_contacto, 'yyyy-MM-dd'),
-  activo: data.activo === 'true',
-  })
-)
-type FormValues = z.infer<typeof formSchema>
+import { formOportunidadSchema, formOportunidadSchemaSend, FormOportunidadValues } from "./schemas/formOportunidadSchema"
+import { GetSedeListApi } from "@/api/sedeApis"
+import { TSede } from "./types/sede"
 
 
 export default function FormOportunidad() {
   const {tipoEdicion, setCrrTab, setCrrOportunidad, crrOportunidad} = useOportunidadContext()
-
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
+  const [sedes, setSedes] = useState<TSede[]>([])
+  const [loading, setLoading] = useState(true)
+  const form = useForm<z.infer<typeof formOportunidadSchema>>({
+    resolver: zodResolver(formOportunidadSchema),
     defaultValues: {
       id: crrOportunidad?`${crrOportunidad.id}`: '0',
       cliente: crrOportunidad?`${crrOportunidad.cliente}`:null, 
-      sede_id: crrOportunidad?`${crrOportunidad.sede_id}`:'',
+      sede: crrOportunidad?`${crrOportunidad.sede}`:'',
       fecha_contacto: crrOportunidad?`${format(crrOportunidad.fecha_contacto, 'yyyy-MM-dd')}`:`${format(new Date(), 'yyyy-MM-dd')}`,
       estado_oportunidad: crrOportunidad?`${crrOportunidad.estado_oportunidad}`:'negociacion',
       activo: crrOportunidad?`${crrOportunidad.activo}`:'true',
       rcliente: null,
+      rvalorneto: '0.00'
     }
   })
   const router = useRouter()
@@ -61,19 +45,30 @@ export default function FormOportunidad() {
     form.reset({
       id: `${crrOportunidad.id}`,
       cliente: `${crrOportunidad.cliente}`,
-      sede_id: `${crrOportunidad.sede_id}`,
+      sede: `${crrOportunidad.sede}`,
       fecha_contacto: format(crrOportunidad.fecha_contacto, 'yyyy-MM-dd'),
       estado_oportunidad: `${crrOportunidad.estado_oportunidad}`,
       activo: `${crrOportunidad.activo}`,
       rcliente: null,
+      rvalorneto: crrOportunidad.rvalorneto?crrOportunidad.rvalorneto.toFixed(2): "0.00"
     });
   }
 }, [crrOportunidad]);
 
+useEffect(()=>{
+  const obtenerSedes = async () =>{
+    setLoading(true)
+    const dataSedes = await GetSedeListApi(null)
+    setSedes(dataSedes)
+  }
+  obtenerSedes().catch(error => console.error('no se pudo cargar las sedes, error: ', error))
+  .finally(()=> setLoading(false))
+},[])
 
-   const onSubmit = async (rawdata: FormValues) => {
+
+   const onSubmit = async (rawdata: FormOportunidadValues) => {
     console.log('Datos del formulario:', rawdata)
-    const data = formSchemaSend.parse(rawdata)
+    const data = formOportunidadSchemaSend.parse(rawdata)
     let nuevaOportunidad = null
     if(tipoEdicion === 'nuevo' && !crrOportunidad){
       nuevaOportunidad = await PostOportunidadAPI('',data)
@@ -91,6 +86,7 @@ export default function FormOportunidad() {
     }
     
   }
+  if(loading)return (<div>Cargando...</div>);
 
     return (
       <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -108,7 +104,7 @@ export default function FormOportunidad() {
         
         <FormField
           control = {form.control}
-          name = "sede_id"
+          name = "sede"
           render={({field}) => (
             <FormItem className='flex flex-col'>
               <FormLabel> Sede</FormLabel>
@@ -119,8 +115,13 @@ export default function FormOportunidad() {
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
-                  <SelectItem value="1">Tienda A</SelectItem>
-                  <SelectItem value="2">Tienda B</SelectItem>
+                  {sedes
+                    .filter(sede => sede.activo) // opcional: solo mostrar sedes activas
+                    .map((sede) => (
+                      <SelectItem key={sede.id} value={String(sede.id)}>
+                        {sede.nombre}
+                      </SelectItem>
+                    ))}
                 </SelectContent>
               </Select>
               <FormMessage className="min-h-[24px]"/>
@@ -193,20 +194,27 @@ export default function FormOportunidad() {
       </div>
 
       {/* Valor Neto */}
-        {/* <FormField
+         <FormField
           control = {form.control}
           name = "rvalorneto"
           render = {({field}) => (
             <FormItem className="flex flex-col">
               <FormLabel>Valor Neto</FormLabel>
               <FormControl>
-                <Input type="number" disabled={true} {...field}/>
+                <Input
+                type="number"
+                disabled={true}
+                value={field.value ?? ""}
+                onChange={(e) => field.onChange(e.target.value)} // fuerza string
+                name={field.name}
+                ref={field.ref}
+              />
               </FormControl>
               <FormMessage className="min-h-[24px]"/>
             </FormItem>
           )}
         /> 
-        */}
+        
         <CustomButton variant="orange" type="button" 
         onClick={()=>{router.push('/'); localStorage.removeItem('nueva-oportunidad')}}>
           Salir

@@ -13,7 +13,7 @@ import { DataGrid, GridColDef } from '@mui/x-data-grid';
 import { Close as CloseIcon } from '@mui/icons-material';
 import { GetProductoListApi } from '@/api/productoApis'; // asegúrate de tener esta API
 import CustomButton from './customButtom';
-import { TProducto } from '@/app/inventario/producto/types/productoTypes';
+import { TProducto } from '@/components/types/productoTypes';
 
 interface ProductSearchPopupProps {
   open: boolean;

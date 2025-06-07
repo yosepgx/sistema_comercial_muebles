@@ -1,11 +1,12 @@
 "use client"
  
 import { ColumnDef } from "@tanstack/react-table"
-import { Eye, Trash2 } from 'lucide-react';
+import { Edit, Eye, Trash2 } from 'lucide-react';
 import React from "react";
-import { TProducto } from "./types/productoTypes";
-import { useProductoContext } from "./productoContext";
+import { TProducto } from "../types/productoTypes";
+import { useProductoContext } from "@/context/productoContext";
 import { UNIDADES_MEDIDA_BUSCA } from "@/constants/unidadesMedidaConstants";
+import { IconButton } from "@mui/material";
 
 const ActionCell: React.FC<{ row: any; table: any }> = ({ row, table }) => {
   const rowData = row.original;
@@ -13,20 +14,18 @@ const ActionCell: React.FC<{ row: any; table: any }> = ({ row, table }) => {
 
   return (
     <div className="flex gap-2">
-      <Eye 
-        className="cursor-pointer hover:text-blue-600 transition-colors duration-200 active:scale-90"
-        onClick={() => viewRedirect(rowData)}
-      />
-      <Trash2
-        className="cursor-pointer hover:text-red-500 transition"
-        onClick={() => {
+      <IconButton onClick={() => viewRedirect(rowData)}>
+      <Edit />
+      </IconButton>
+      <IconButton onClick={() => {
           const setter = table.options.meta?.setData;
           const rowIndex = row.index;
           if (window.confirm("¿Está seguro que desea borrar?")) {
             setter && setter((prev: any[]) => prev.filter((_, i) => i !== rowIndex));
           }
-        }}
-      />
+        }}>
+      <Trash2/>
+      </IconButton>
     </div>
   );
 };

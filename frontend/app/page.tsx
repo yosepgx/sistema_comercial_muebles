@@ -7,11 +7,11 @@ import { DatePicker } from '@mui/x-date-pickers';
 import { FormControl, IconButton } from "@mui/material";
 
 import { useAuth } from "@/context/authContext";
-import { Edit, EyeIcon } from "lucide-react";
+import { Edit, Trash2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { TOportunidad } from "@/components/types/oportunidad";
-import { GetOportunidadListApi } from "@/api/oportunidadApis";
+import { GetOportunidadListApi, UpdateOportunidadAPI } from "@/api/oportunidadApis";
 import CustomButton from "@/components/customButtom";
 import { useRouter } from "next/navigation";
 
@@ -37,13 +37,8 @@ export default function HomePage() {
         headerName: 'Documento de Cliente',
         resizable: false,
         flex: 1,
-        renderCell: (params) => {
-        const cliente = params.row?.rcliente;
-        const doc = cliente?.documento || '';
-        return `${doc}`;
-      }
     },
-    {   field: 'sede_id', 
+    {   field: 'sede', 
         headerName: 'Sede',
         resizable: false,
         flex: 1
@@ -56,6 +51,11 @@ export default function HomePage() {
     
     {   field: 'estado_oportunidad', 
         headerName: 'Estado',
+        resizable: false,
+        flex: 1
+    },
+    {   field: 'rvalor_neto', 
+        headerName: 'Valor Neto',
         resizable: false,
         flex: 1
     },
@@ -79,10 +79,16 @@ export default function HomePage() {
        <div>
         <IconButton onClick={() => {router.push(`/${params.row.id}`); 
         localStorage.removeItem('nueva-oportunidad');}}>
-          <EyeIcon />
-        </IconButton>
-        <IconButton onClick={() => console.log("edit rol:", params.row)}>
           <Edit />
+        </IconButton>
+        <IconButton onClick={() => {
+          const confirmDelete = window.confirm('¿Estás seguro de que deseas eliminar esta oportunidad de venta?');
+          if (confirmDelete) {
+              const nuevo = { ...params.row, activo: false };
+              UpdateOportunidadAPI(null, params.row.id, nuevo);
+            }
+          }}>
+          <Trash2 />
         </IconButton>
       </div>
     ),
@@ -91,7 +97,7 @@ export default function HomePage() {
 
   const cargarDatos = async () => {
         try {
-        const res = await GetOportunidadListApi(ct)
+        const res = await GetOportunidadListApi(null)
         console.log("Datos cargados:", res)
         setData(res)
         } catch (error) {

@@ -48,9 +48,9 @@ export async function GetPedidoListApi(token:string | null) {
     }
 }
 
-export async function GetPedidoDetailApi(token:string | null, id: number | null, idcotizacion?: number){
+export async function GetPedidoPorCotizacionDetailApi(token:string | null, idcotizacion: number){
     try {
-        const response = await customFetch(token,id?`ventas/pedido/${id}`: `ventas/pedido/?cotizacion_id=${idcotizacion}` , {
+        const response = await customFetch(token,`ventas/pedido/?cotizacion_id=${idcotizacion}` , {
             
             method: "get",
             headers:{
@@ -65,6 +65,30 @@ export async function GetPedidoDetailApi(token:string | null, id: number | null,
 
         const data = await response.json();
         return data[0] as TPedido;
+        
+    } catch (error) {
+        console.error("Error al obtener datos de detalle de pedido:", error);
+        return null;
+    }
+}
+
+export async function GetPedidoDetailApi(token:string | null, id: number | null ){
+    try {
+        const response = await customFetch(token, `ventas/pedido/${id}` , {
+            
+            method: "get",
+            headers:{
+                'Content-Type':'application/json' ,
+            }
+        });
+
+        if(!response.ok){
+            throw new Error(`Error del servidor: ${response.status} - ${response.statusText}`)
+
+        }
+
+        const data = await response.json();
+        return data as TPedido;
         
     } catch (error) {
         console.error("Error al obtener datos de detalle de pedido:", error);
@@ -143,3 +167,38 @@ export async function UpdatePedidoAPI(token:string | null, id: number, data: TPe
       return null;
     }
   }
+
+export const descargarPedidosAPI = async (token: string | null,fechaInicio: string, fechaFin: string) => {
+    try {
+      const response = await customFetch(token,'ventas/descargar-pedidos/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          fecha_inicio: fechaInicio,
+          fecha_fin: fechaFin,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        alert('Error al generar el archivo.');
+        return;
+      }
+
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', 'pedidos.xlsx');
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      alert('Error al intentar descargar el archivo.');
+      console.error(error);
+    }
+};

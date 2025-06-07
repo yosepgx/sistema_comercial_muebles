@@ -1,6 +1,6 @@
 "use client"
 import { useRouter } from 'next/navigation';
-import { useProductoContext } from './productoContext';
+import { useProductoContext } from '../../context/productoContext';
 import { useAuth } from '@/context/authContext';
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -19,11 +19,12 @@ import {
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { UNIDADES_MEDIDA, UNIDADES_MEDIDA_BUSCA } from '@/constants/unidadesMedidaConstants';
-import { PostProductoAPI, UpdateProductoAPI } from '../../../api/productoApis';
-import { TProducto } from './types/productoTypes';
+import { PostProductoAPI, UpdateProductoAPI } from '@/api/productoApis';
+import { TProducto } from '../types/productoTypes';
+import { BotonesFinales } from '../botonesFinales';
 const formSchema = z.object({
   id: z.string().min(1),
-  nombre: z.string().min(1, {message: "El nombre es obligatorio"}),
+  nombre: z.string().min(1, "El nombre es obligatorio"),
   umedida_sunat: z.string(),
   descripcion: z.string(),
   categoria: z.string(),
@@ -76,7 +77,7 @@ export default function FormularioProducto({
         afecto_igv: crrProduct?crrProduct.afecto_igv:true,
         codigo_afecion_igv: crrProduct?`${crrProduct.codigo_afecion_igv}`:"10", //10 es afecto
         es_servicio: crrProduct?crrProduct.es_servicio: false,
-        descripcion: crrProduct?`${crrProduct.descripcion}`:""
+        descripcion: crrProduct?`${crrProduct.descripcion??''}`:""
     },
     });
     const router = useRouter()
@@ -278,11 +279,8 @@ export default function FormularioProducto({
             />
             
           </div>
-
-          <div className="flex justify-end gap-4 mt-4">
-            <button type="button" className="bg-orange-400 px-4 py-2 rounded" onClick={()=> router.push('/inventario/producto')}>Cancelar</button>
-            <button type="submit" className="bg-blue-600 text-white px-4 py-2 rounded">Guardar</button>
-          </div>
+          
+          <BotonesFinales ruteo={()=> router.push('/inventario/producto')}></BotonesFinales>
         </form>
         </Form>
     )

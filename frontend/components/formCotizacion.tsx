@@ -7,59 +7,30 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/component
 import { ChevronRight, ChevronDown } from 'lucide-react'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
-import { TCotizacionDetalle } from './types/cotizacion'
+import { TCotizacion, TCotizacionDetalle } from './types/cotizacion'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from './ui/form'
 import CustomButton from './customButtom'
 import { useOportunidadContext } from '@/context/oportunidadContext'
 import { RadioGroup, RadioGroupItem } from './ui/radio-group'
 import { GetCotizacionLineaListApi, PostCotizacionLineaAPI } from '@/api/cotizacionDetalleApis'
-import { TProducto } from '@/app/inventario/producto/types/productoTypes'
+import { TProducto } from '@/components/types/productoTypes'
 import ProductSearchPopup from './popsearchproducto'
 import { CotizacionTable } from './tablecotizacion'
 import { PostCotizacionAPI, UpdateCotizacionAPI } from '@/api/cotizacionApis'
-
-//TODO: falta agregar nro de linea a cada detalle
-
-const formSchema = z. object({
-  id: z.string(),     //manejado por back
-  fecha: z.string(), //manejado por back 
-  estado_cotizacion: z.enum(["propuesta","aceptada","rechazada"]), // si usa el boton de aceptar o rechazar 
-  //vendedor_asignado: z.number(),
-  oportunidad: z.string(),
-  monto_sin_impuesto: z.string(), //suma ingresada al final
-  monto_igv: z.string(),
-  monto_total: z.string(),
-  descuento_adicional: z.string(),
-  observaciones: z.string(),
-  direccion_entrega: z.string(),
-  activo: z.string(),
-
-})
-
-const formSchemaSend = formSchema.transform ( data => ({
-  ...data,
-  id: parseInt(data.id,10),
-  oportunidad: parseInt(data.oportunidad,10),
-  monto_sin_impuesto: parseInt(data.monto_sin_impuesto,10),
-  monto_igv: parseInt(data.monto_sin_impuesto,10),
-  monto_total: parseInt(data.monto_sin_impuesto,10),
-  descuento_adicional: parseInt(data.monto_sin_impuesto,10),
-  activo: data.activo==='true',
-  //vendedor_asignado = 1, //TODO: funcionalidades de asignar vendedor
-  
-}))
-type FormValues = z.infer<typeof formSchema>
+import { formCotizacionSchema, formCotizacionSchemaSend, FormCotizacionValues } from './schemas/formCotizacionSchema'
+import { useCalculosCotizacion } from './hooks/useCalculosCotizacion'
 
 export default function FormCotizacionDetalle() {
+  const [loading, setLoading] = useState(true)
   const [maximoPermisible, setMaximoPermisible] = useState('0.00')
   const [tipoDireccion, setTipoDireccion] = useState<'tienda' | 'otro'>('tienda')
   const [isDescuentoOpen, setIsDescuentoOpen] = useState(true)
   const [isSearchPopupOpen, setIsSearchPopupOpen] = useState(false);
   const {crrCotizacion, crrTab, SetModoCotizacion, tipoEdicion, crrOportunidad, setCrrTab,edicionCotizacion} = useOportunidadContext()
   const [listaDetalles, setListaDetalles] = useState<TCotizacionDetalle[]>([])
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
+  const form = useForm<z.infer<typeof formCotizacionSchema>>({
+    resolver: zodResolver(formCotizacionSchema),
     defaultValues:{
       id: '',
       fecha: '',
@@ -75,35 +46,45 @@ export default function FormCotizacionDetalle() {
     }
   })
 
+  const descuento = form.watch('descuento_adicional', '0.00');
+
+  const cargarCotizacion = (cotizacion: TCotizacion | null) => {
+    if(!cotizacion) return;
+    console.log("la cotizacion a cargar es:", cotizacion)
+    form.setValue('id', `${cotizacion.id}`);
+    form.setValue('fecha', cotizacion.fecha);
+    form.setValue('estado_cotizacion', cotizacion.estado_cotizacion);
+    form.setValue('oportunidad', `${cotizacion.oportunidad}`);
+    form.setValue('monto_sin_impuesto', cotizacion.monto_sin_impuesto.toFixed(2));
+    form.setValue('monto_igv', cotizacion.monto_igv.toFixed(2));
+    form.setValue('monto_total', cotizacion.monto_total.toFixed(2));
+    form.setValue('descuento_adicional', cotizacion.descuento_adicional.toFixed(2));
+    form.setValue('observaciones', cotizacion.observaciones?? '');
+    form.setValue('direccion_entrega', cotizacion.direccion_entrega ?? '');
+    form.setValue('activo', cotizacion.activo ? 'true' : 'false');
+  };
+
   useEffect(()=>{
-    if(crrCotizacion && crrTab === 'cotizaciones'){
+    if(crrCotizacion && crrTab === 'cotizaciones' &&edicionCotizacion!== 'nuevo'){
+      console.log("cotizacion actual: ", crrCotizacion)
+      setLoading(true);
+      cargarCotizacion(crrCotizacion)
       GetCotizacionLineaListApi(null, crrCotizacion.id).then(
         data => setListaDetalles(data)
-      )
+      ).catch(error => console.error('error al obtener lineas de cotizacion, error: ', error))
+      .finally(()=>setLoading(false))
     }
   },[crrTab])
 
-useEffect(() => {
-  const totalConIGV = listaDetalles.reduce((acc, item) => acc + (item.subtotal || 0), 0);
-  const totalSinIGV = totalConIGV / 1.18;
+useCalculosCotizacion({listaDetalles, descuento, form, crrCotizacion})
 
-  const descuentoFormValue = Number(form.watch('descuento_adicional') || 0);
-  const descuentoBase = descuentoFormValue / 1.18;
-  const igvCalculado = (totalSinIGV - descuentoBase) * 0.18;
-  const totalFinal = (totalSinIGV - descuentoBase) + igvCalculado;
-
-  form.setValue('monto_sin_impuesto', (totalSinIGV - descuentoBase).toFixed(2));
-  form.setValue('monto_igv', igvCalculado.toFixed(2));
-  form.setValue('monto_total', totalFinal.toFixed(2));
-}, [listaDetalles, form.watch('descuento_adicional')]);
-
-const onSubmit = async (rawdata: FormValues) => {
+const onSubmit = async (rawdata: FormCotizacionValues) => {
   console.log('Datos del formulario:', rawdata)
-  console.log('Datos del listado:', listaDetalles)
+  
   try {
     rawdata.oportunidad = `${crrOportunidad?.id}`
     if(tipoDireccion === 'tienda')rawdata.direccion_entrega = 'tienda';
-    const data = formSchemaSend.parse(rawdata)
+    const data = formCotizacionSchemaSend.parse(rawdata)
     if(!crrCotizacion && edicionCotizacion === 'nuevo'){
       //creacion de cotizacion
       const nuevaCotizacion = await PostCotizacionAPI(null, data)
@@ -116,7 +97,8 @@ const onSubmit = async (rawdata: FormValues) => {
         // Ejecutar todas las creaciones en paralelo 
         await Promise.all(
         detallesConReferencia.map(det => PostCotizacionLineaAPI(null, det))
-        )
+        ).finally(()=>SetModoCotizacion('muchas'))
+        console.log('Datos del listado:', listaDetalles)
       console.log("Cotización y detalles guardados correctamente")
     } else {
       // no hay edicion solo creacion de nuevas
@@ -146,8 +128,8 @@ const handleSelectProducto = (producto: TProducto) => {
         subtotal: producto.rprecio_actual?producto.rprecio_actual * 1: 0,
         nrolinea: old.length + 1,
         activo: true,
-        rnombre: '',
-        rum: '',
+        rnombre: producto.nombre,
+        rum: producto.umedida_sunat,
       };
       console.log("ATENCION detalle:",detalle)
       return [...old, detalle];
@@ -178,7 +160,7 @@ const handleSelectProducto = (producto: TProducto) => {
         <span> Cotización{' '}
         {crrCotizacion ? `${crrCotizacion.id} (${crrCotizacion.estado_cotizacion})` : '0 (Propuesta)'} </span>
         {edicionCotizacion === 'nuevo'&& <CustomButton type='submit'>Guardar Cotizacion</CustomButton>}
-        {crrCotizacion && tipoEdicion === "vista" && crrCotizacion.estado_cotizacion==='propuesta' 
+        {crrCotizacion && edicionCotizacion === "edicion" && crrCotizacion.estado_cotizacion==='propuesta' 
         && <div className="flex gap-8">
               <CustomButton
                 type='button'
@@ -202,7 +184,7 @@ const handleSelectProducto = (producto: TProducto) => {
                   const nueva = { ...crrCotizacion, estado_cotizacion: 'aceptada' as const}
                   const respuesta = await UpdateCotizacionAPI(null, crrCotizacion.id, nueva)
                   //el manejo de la alerta se hace dentro de UpdateCotizacionAPI
-                  setCrrTab('pedido')
+                  if(respuesta)setCrrTab('pedido')
                 }
               }}
             >
@@ -226,6 +208,7 @@ const handleSelectProducto = (producto: TProducto) => {
                 value={tipoDireccion}
                 onValueChange={(value: 'tienda' | 'otro') => setTipoDireccion(value)}
                 className="flex flex-col "
+                disabled={edicionCotizacion === 'edicion'}
               >
                 <div className="flex items-center space-x-2">
                   <RadioGroupItem value="tienda" id="tienda" />
@@ -244,7 +227,7 @@ const handleSelectProducto = (producto: TProducto) => {
                   <FormItem className='flex flex-col'>
                     <FormLabel> Direccion de Entrega</FormLabel>
                     <FormControl>
-                      <Input type = "text" {...field} disabled={tipoDireccion==="tienda"}/>
+                      <Input type = "text" {...field} disabled={tipoDireccion==="tienda" || edicionCotizacion === 'edicion'}/>
                     </FormControl>
                     <FormMessage className="min-h-[24px]"/>
                   </FormItem>
@@ -259,7 +242,7 @@ const handleSelectProducto = (producto: TProducto) => {
                     <FormItem className='flex flex-col'>
                       <FormLabel> Monto de Descuento Auxiliar</FormLabel>
                       <FormControl>
-                        <Input type = "number" step={"0.1"}{...field} className='flex'/>
+                        <Input type = "number" step={"0.1"}{...field} className='flex' disabled={edicionCotizacion === 'edicion'}/>
                       </FormControl>
                       <FormMessage className="min-h-[24px]"/>
                     </FormItem>
@@ -298,14 +281,20 @@ const handleSelectProducto = (producto: TProducto) => {
             
             <div>
               <div className="space-y-2">
-              <Label>
-                Valor Total
-              </Label>
-              <Input
-                id="valorTotal"
-                value={form.watch('monto_total')}
-                disabled = {true}
-              />
+              <FormField
+                  control = {form.control}
+                  name = "monto_total"
+                  render={({field}) => (
+                    <FormItem className='flex flex-col'>
+                      <FormLabel> Monto Total</FormLabel>
+                      <FormControl>
+                        <Input type = "number" {...field} disabled={true}/>
+                      </FormControl>
+                      <FormMessage className="min-h-[24px]"/>
+                    </FormItem>
+                  )}
+                />  
+              
               </div>
 
               <div className="space-y-2">
@@ -345,6 +334,7 @@ const handleSelectProducto = (producto: TProducto) => {
         <div className="flex justify-between items-center mb-4">
           <CustomButton variant='primary'
           type='button'
+          disabled={edicionCotizacion === 'edicion'}
           onClick={()=>setIsSearchPopupOpen(true)}>
             Agregar Línea
           </CustomButton>
@@ -352,12 +342,15 @@ const handleSelectProducto = (producto: TProducto) => {
         </div>
       
         {/* Tabla de detalles */}
-        <div className="bg-white rounded-lg border">
+        {(loading && edicionCotizacion !== 'nuevo')? (<div>Cargando ...</div>) : 
+        (<div className="bg-white rounded-lg border">
           <CotizacionTable
             detalles={listaDetalles}
             setDetalles={setListaDetalles}
+            isDisabled = { edicionCotizacion === 'edicion'}
           />
-        </div>
+        </div>)
+}
       </div>
          
     </div>

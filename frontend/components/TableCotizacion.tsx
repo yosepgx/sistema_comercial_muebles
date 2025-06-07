@@ -7,17 +7,19 @@ import {
   flexRender,
   ColumnDef,
 } from '@tanstack/react-table'
-import { Edit, Save, Trash2 } from 'lucide-react'
+import { Edit, Pencil, Save, Trash2 } from 'lucide-react'
 import { TCotizacionDetalle } from './types/cotizacion';
 import { UNIDADES_MEDIDA_BUSCA } from '@/constants/unidadesMedidaConstants';
+import { IconButton } from '@mui/material';
 
 interface CotizacionTableProps {
   detalles: TCotizacionDetalle[];
   setDetalles: Dispatch<SetStateAction<TCotizacionDetalle[]>>;
+  isDisabled: boolean;
 }
 
 
-export const CotizacionTable : React.FC<CotizacionTableProps>  = ({detalles, setDetalles}) => {
+export const CotizacionTable : React.FC<CotizacionTableProps>  = ({detalles, setDetalles, isDisabled}) => {
   const [editRowId, setEditRowId] = useState<string | null>(null)
   const [errors, setErrors] = useState<Record<string, string>>({})
 
@@ -109,6 +111,7 @@ export const CotizacionTable : React.FC<CotizacionTableProps>  = ({detalles, set
                     textOverflow: 'ellipsis',
                   }}
                   value={row.cantidad}
+                  disabled={isDisabled}
                   onChange={(e) => handleCantidadChange(id, Number(e.target.value))}
                   min={1}
                 />
@@ -145,27 +148,29 @@ export const CotizacionTable : React.FC<CotizacionTableProps>  = ({detalles, set
         return (
           <div className="flex gap-2">
             {isEditing ? (
-              <button
+              <IconButton
                 onClick={() => handleSave(id)}
-                className="p-1 hover:bg-gray-100 rounded disabled:opacity-50"
-                disabled={!!errors[id]}
+                //className="p-1 hover:bg-gray-100 rounded disabled:opacity-50"
+                disabled={!!errors[id] || isDisabled}
               >
                 <Save size={16} />
-              </button>
+              </IconButton>
             ) : (
-              <button
+              <IconButton
                 onClick={() => setEditRowId(id)}
-                className="p-1 hover:bg-gray-100 rounded"
+                //className="p-1 hover:bg-gray-100 rounded"
+                disabled ={isDisabled}
               >
-                <Edit size={16} />
-              </button>
+                <Pencil size={16} />
+              </IconButton>
             )}
-            <button
+            <IconButton
               onClick={() => handleDelete(id)}
-              className="p-1 hover:bg-gray-100 rounded"
+              //className="p-1 hover:bg-gray-100 rounded"
+              disabled = {isDisabled}
             >
               <Trash2 size={16} />
-            </button>
+            </IconButton>
           </div>
         )
       }

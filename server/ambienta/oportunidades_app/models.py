@@ -1,6 +1,8 @@
 from django.db import models
 from inventario_app.models import Producto
 from clientes_app.models import Cliente
+from ajustes_app.models import Sede
+from decimal import Decimal
 
 #modelos: oportunidad, cotizacion, cotizacionDetalle
 
@@ -17,13 +19,32 @@ class Oportunidad(models.Model):
     ]
 
     cliente = models.ForeignKey(Cliente, on_delete=models.CASCADE,null=True)
-    #sede = models.ForeignKey(Sede, on_delete=models.CASCADE) #TODO: agregar model Sedez
+    sede = models.ForeignKey(Sede, on_delete=models.CASCADE)
     fecha_contacto = models.DateField(auto_now_add=True)
     
     estado_oportunidad = models.CharField(
         max_length=20, choices=ESTADO_OPORTUNIDAD_CHOICES, default=EN_NEGOCIACION
     )
     activo = models.BooleanField(default=True)
+
+
+    @property
+    def rvalor_neto(self):
+        cot_aceptada = self.cotizaciones.filter(
+            estado_cotizacion='aceptada', activo=True
+        ).first()
+
+        if cot_aceptada:
+            return cot_aceptada.monto_total
+
+        cot_propuesta = self.cotizaciones.filter(
+            estado_cotizacion='propuesta', activo=True
+        ).order_by('-fecha').first()
+
+        if cot_propuesta:
+            return cot_propuesta.monto_total
+
+        return Decimal('0.00')
 
     def __str__(self):
         return f"Oportunidad {self.id} - {self.estado_oportunidad}"

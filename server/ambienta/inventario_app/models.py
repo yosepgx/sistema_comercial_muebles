@@ -151,7 +151,6 @@ class Almacen(models.Model):
 
     nombre = models.CharField(max_length=255)
     tipo = models.CharField(max_length=50, choices=TIPO_ALMACEN_CHOICES)
-    #sede_id = models.OneToOneField(Sede) TODO: INGRESAR SEDE
     activo = models.BooleanField(default=True)
     def __str__(self):
         return self.nombre

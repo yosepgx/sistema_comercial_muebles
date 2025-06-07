@@ -11,6 +11,11 @@ from django.http import HttpResponse
 from django.template.loader import render_to_string
 from weasyprint import HTML
 import tempfile
+from ventas_app.services import CorrelativoService
+from clientes_app.models import Cliente
+import pandas as pd
+from io import BytesIO
+from datetime import datetime
 
 #oportunidad -> cotizacion -> cotizacionDetalle -> pedido -> pedidoDetalle
 #TODO: agregar vigencia a las oportunidades
@@ -18,12 +23,12 @@ import tempfile
 #si despues de determinado tiempo (vigencia) el cliente no regresa se pasa a perdido
 #tambien el vendedor lo puede marcar como perdido
 class OportunidadViewSet(viewsets.ModelViewSet):
-    queryset = Oportunidad.objects.all()
+    queryset = Oportunidad.objects.select_related('cliente').all().order_by('-id')
     serializer_class = OportunidadSerializer
 
 
 class CotizacionViewSet(viewsets.ModelViewSet):
-    queryset = Cotizacion.objects.all()
+    queryset = Cotizacion.objects.all().order_by('-id')
     serializer_class = CotizacionSerializer
 
     def update(self, request, *args, **kwargs):
@@ -60,7 +65,22 @@ class CotizacionViewSet(viewsets.ModelViewSet):
                             "detalle": f"No hay stock suficiente para el producto '{detalle.producto.nombre}'. "
                                        f"Requiere {detalle.cantidad}, disponible {stock_disponible}."
                         })
-                
+                    
+#               Validar cliente y sede 
+                cliente = instance.oportunidad.cliente
+                if not cliente:
+                    raise ValidationError({
+                        "codigo": "SIN_CLIENTE",
+                        "detalle": "La cotización no tiene un cliente asociado."
+                        })
+
+                sede = instance.oportunidad.sede
+                if not sede or not sede.id:
+                    raise ValidationError({
+                        "codigo": "SIN_SEDE",
+                        "detalle": "La cotización no tiene una sede asociada."
+                        })
+
 #               1. Actualizar la oportunidad a estado 'ganada'
                 if instance.oportunidad:
                     oportunidad = instance.oportunidad
@@ -68,23 +88,33 @@ class CotizacionViewSet(viewsets.ModelViewSet):
                     oportunidad.save()
                     
 #               2. Crear un pedido con la información de la cotización
-                self.crear_pedido_desde_cotizacion(instance)
+                self.crear_pedido_desde_cotizacion(instance, cliente, sede)
             
             self.perform_update(serializer)
         
         return Response(serializer.data, status=status.HTTP_200_OK)
     
-    def crear_pedido_desde_cotizacion(self, cotizacion):
+    def crear_pedido_desde_cotizacion(self, cotizacion : Cotizacion, cliente, sede):
         """
         Crea un pedido a partir de una cotización aceptada
         """
+        if cliente.tipo_documento == Cliente.TIPODNI:
+                    tipo_comprobante = Pedido.TIPOBOLETA
+        else:
+            tipo_comprobante = Pedido.TIPOFACTURA
+        
+        # Darle una Serie y un correlativo (solo facturas y boletas, la NC y ND se trabajan con las anulaciones)
+        resultado = CorrelativoService.guardar_siguiente_correlativo(sede_id=sede.id,tipo_documento=tipo_comprobante)
+        
         # Creamos el pedido con la información de la cotización
         pedido = Pedido.objects.create(
             #fecha = now_add
             fechaentrega = None,
             fecha_pago = None,
-            #TODO: agregar serie, correlativo, tipo_comprobante(boleta, factura)
-            estado_pedido='por_validar',
+            serie = resultado['serie'],
+            correlativo = resultado['correlativo'],
+            tipo_comprobante = tipo_comprobante, #boleta/factura
+            estado_pedido=Pedido.PENDIENTE,
             codigo_tipo_tributo = "1000",
             cotizacion=cotizacion,
             moneda = "PEN",
@@ -96,6 +126,9 @@ class CotizacionViewSet(viewsets.ModelViewSet):
             direccion = cotizacion.direccion_entrega,
             activo = True
         )
+
+        
+        
 
         # Copiar cada línea de detalle de la cotización al pedido
         for detalle in cotizacion.detalles.all():
@@ -110,7 +143,6 @@ class CotizacionViewSet(viewsets.ModelViewSet):
             activo = detalle.activo,
         )
         
-        return Response({"pedido": pedido}, status=status.HTTP_200_OK)
 
 class CotizacionDetalleViewSet(viewsets.ModelViewSet):
     queryset = CotizacionDetalle.objects.all() 
@@ -144,3 +176,71 @@ class GenerarPDFCotizacionView(APIView):
     #    response['Content-Disposition'] = f'inline; filename="Cotizacion_{cotizacion.id}.pdf"'
         response['Content-Disposition'] = f'attachment; filename="Cotizacion_{cotizacion.id}.pdf"'
         return response
+    
+class DescargarCotizaciones(APIView):
+    def post(self, request):
+        try:
+            # Leer fechas del request
+            fecha_inicio_str = request.data.get('fecha_inicio')
+            fecha_fin_str = request.data.get('fecha_fin')
+
+            if not fecha_inicio_str or not fecha_fin_str:
+                return Response({"detail": "Debe proporcionar fecha_inicio y fecha_fin."},
+                                status=status.HTTP_400_BAD_REQUEST)
+
+            try:
+                fecha_inicio = datetime.strptime(fecha_inicio_str, '%Y-%m-%d').date()
+                fecha_fin = datetime.strptime(fecha_fin_str, '%Y-%m-%d').date()
+            except ValueError:
+                return Response({"detail": "Formato de fecha inválido. Use 'YYYY-MM-DD'."},
+                                status=status.HTTP_400_BAD_REQUEST)
+
+            # Validación de rango lógico
+            if fecha_inicio > fecha_fin:
+                return Response({"detail": "La fecha de inicio no puede ser mayor que la fecha de fin."},
+                                status=status.HTTP_400_BAD_REQUEST)
+            
+            queryset = CotizacionDetalle.objects.select_related(
+                'cotizacion', 'producto'
+            ).filter(cotizacion__fecha__range=(fecha_inicio, fecha_fin)).order_by('-id')
+
+            if not queryset.exists():
+                return Response({"detail": "No hay cotizaciones disponibles para exportar."}, status=status.HTTP_204_NO_CONTENT)
+
+            data = []
+            for detalle in queryset:
+                cot = detalle.cotizacion
+                data.append({
+                    'Codigo Cotizacion': cot.id,
+                    'Fecha': cot.fecha.strftime('%Y-%m-%d'),
+                    'CodProducto': detalle.producto.id,
+                    'Producto': detalle.producto.nombre,
+                    'Cantidad': detalle.cantidad,
+                    'Precio Unitario': detalle.precio_unitario,
+                    'Descuento Linea': detalle.descuento,
+                    'Subtotal': detalle.subtotal,
+                    'Activo': detalle.activo,
+                })
+
+            df = pd.DataFrame(data)
+            if df.empty:
+                return Response({"detail": "No hay datos para exportar."}, status=status.HTTP_204_NO_CONTENT)
+
+            buffer = BytesIO()
+            with pd.ExcelWriter(buffer, engine='openpyxl') as writer:
+                df.to_excel(writer, index=False, sheet_name='Cotizaciones')
+
+            buffer.seek(0)
+            response = HttpResponse(
+                buffer.read(),
+                content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+            )
+            response['Content-Disposition'] = 'attachment; filename="cotizaciones.xlsx"'
+            return response
+        
+        except Exception as e:
+            # Loguear en logger
+            return Response(
+                {"detail": "Error al generar el archivo Excel.", "error": str(e)},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )

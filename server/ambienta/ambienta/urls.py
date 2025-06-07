@@ -5,6 +5,7 @@ from rest_framework import routers
 from . import views
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('ajustes/', include('ajustes_app.urls')),
     path('clientes/', include('clientes_app.urls')),
     path('inventario/', include('inventario_app.urls')),
     path('oportunidades/', include('oportunidades_app.urls')),
