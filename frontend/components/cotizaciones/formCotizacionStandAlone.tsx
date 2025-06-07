@@ -143,6 +143,7 @@ const handleSelectProducto = (producto: TProducto) => {
         activo: true,
         rnombre: '',
         rum: '',
+        rigv: (producto.igv ?? 0.18).toFixed(2)
       };
       console.log("ATENCION detalle:",detalle)
       return [...old, detalle];

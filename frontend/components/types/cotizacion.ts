@@ -10,7 +10,8 @@ export const cotizacionDetalle = z.object({
     nrolinea: z.number(),
     activo: z.boolean(),
     rnombre: z.string(),
-    rum: z.string()
+    rum: z.string(),
+    rigv: z.string().nullable().optional(),
 })
 
 export const cotizacion = z.object({
