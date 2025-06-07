@@ -5,7 +5,7 @@ import { DataGrid, GridColDef } from "@mui/x-data-grid";
 import { DatePicker } from '@mui/x-date-pickers';
 import { FormControl, IconButton, InputLabel, MenuItem, Select } from "@mui/material";
 
-import { GetPedidoListApi } from "@/api/pedidoApis"; 
+import { descargarPedidosAPI, GetPedidoListApi } from "@/api/pedidoApis"; 
 import { useAuth } from "@/context/authContext"; 
 import { ProtectedRoute } from "@/components/protectedRoute";
 import MainWrap from "@/components/mainwrap";
@@ -15,6 +15,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { transformDateUTCHourToUserTime } from "@/components/transformDate";
 import { useRouter } from "next/navigation";
+import {format} from 'date-fns'
+import CustomButton from "@/components/customButtom";
 
 export default function PedidosPage(){
     const [data, setData] = useState<TPedido[]>([])
@@ -188,7 +190,7 @@ export default function PedidosPage(){
         <ProtectedRoute>
             <MainWrap>
                 
-                <div className="flex grid-cols-3 gap-8">
+                <div className="flex grid-cols-4 gap-8">
                   <div>
                   <Label>Buscador</Label>
                   <Input
@@ -219,6 +221,12 @@ export default function PedidosPage(){
                   value={fechaFin}
                   onChange={(newValue) => setFechaFin(newValue)}
                 />
+                <CustomButton type="button" onClick={()=>descargarPedidosAPI(null, 
+                  format(fechaInicio?? '01/01/2012', 'yyyy-MM-dd'), 
+                  format(fechaFin ?? '01/01/2040', 'yyyy-MM-dd'))
+                  }>
+                  Exportar
+                </CustomButton>
                 </div>
                 <DataGrid
                 rows = {filteredData? filteredData : []}

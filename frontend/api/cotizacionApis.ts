@@ -162,3 +162,38 @@ export async function UpdateCotizacionAPI(token:string | null, id: number, data:
       return null;
     }
   }
+
+export const descargarCotizacionesAPI = async (token: string | null,fechaInicio: string, fechaFin: string) => {
+    try {
+      const response = await customFetch(token,'oportunidades/descargar-cotizaciones/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          fecha_inicio: fechaInicio,
+          fecha_fin: fechaFin,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        alert('Error al generar el archivo.');
+        return;
+      }
+
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', 'cotizaciones.xlsx');
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      alert('Error al intentar descargar el archivo.');
+      console.error(error);
+    }
+};

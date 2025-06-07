@@ -13,6 +13,9 @@ from weasyprint import HTML
 import tempfile
 from ventas_app.services import CorrelativoService
 from clientes_app.models import Cliente
+import pandas as pd
+from io import BytesIO
+from datetime import datetime
 
 #oportunidad -> cotizacion -> cotizacionDetalle -> pedido -> pedidoDetalle
 #TODO: agregar vigencia a las oportunidades
@@ -173,3 +176,71 @@ class GenerarPDFCotizacionView(APIView):
     #    response['Content-Disposition'] = f'inline; filename="Cotizacion_{cotizacion.id}.pdf"'
         response['Content-Disposition'] = f'attachment; filename="Cotizacion_{cotizacion.id}.pdf"'
         return response
+    
+class DescargarCotizaciones(APIView):
+    def post(self, request):
+        try:
+            # Leer fechas del request
+            fecha_inicio_str = request.data.get('fecha_inicio')
+            fecha_fin_str = request.data.get('fecha_fin')
+
+            if not fecha_inicio_str or not fecha_fin_str:
+                return Response({"detail": "Debe proporcionar fecha_inicio y fecha_fin."},
+                                status=status.HTTP_400_BAD_REQUEST)
+
+            try:
+                fecha_inicio = datetime.strptime(fecha_inicio_str, '%Y-%m-%d').date()
+                fecha_fin = datetime.strptime(fecha_fin_str, '%Y-%m-%d').date()
+            except ValueError:
+                return Response({"detail": "Formato de fecha inválido. Use 'YYYY-MM-DD'."},
+                                status=status.HTTP_400_BAD_REQUEST)
+
+            # Validación de rango lógico
+            if fecha_inicio > fecha_fin:
+                return Response({"detail": "La fecha de inicio no puede ser mayor que la fecha de fin."},
+                                status=status.HTTP_400_BAD_REQUEST)
+            
+            queryset = CotizacionDetalle.objects.select_related(
+                'cotizacion', 'producto'
+            ).filter(cotizacion__fecha__range=(fecha_inicio, fecha_fin)).order_by('-id')
+
+            if not queryset.exists():
+                return Response({"detail": "No hay cotizaciones disponibles para exportar."}, status=status.HTTP_204_NO_CONTENT)
+
+            data = []
+            for detalle in queryset:
+                cot = detalle.cotizacion
+                data.append({
+                    'Codigo Cotizacion': cot.id,
+                    'Fecha': cot.fecha.strftime('%Y-%m-%d'),
+                    'CodProducto': detalle.producto.id,
+                    'Producto': detalle.producto.nombre,
+                    'Cantidad': detalle.cantidad,
+                    'Precio Unitario': detalle.precio_unitario,
+                    'Descuento Linea': detalle.descuento,
+                    'Subtotal': detalle.subtotal,
+                    'Activo': detalle.activo,
+                })
+
+            df = pd.DataFrame(data)
+            if df.empty:
+                return Response({"detail": "No hay datos para exportar."}, status=status.HTTP_204_NO_CONTENT)
+
+            buffer = BytesIO()
+            with pd.ExcelWriter(buffer, engine='openpyxl') as writer:
+                df.to_excel(writer, index=False, sheet_name='Cotizaciones')
+
+            buffer.seek(0)
+            response = HttpResponse(
+                buffer.read(),
+                content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+            )
+            response['Content-Disposition'] = 'attachment; filename="cotizaciones.xlsx"'
+            return response
+        
+        except Exception as e:
+            # Loguear en logger
+            return Response(
+                {"detail": "Error al generar el archivo Excel.", "error": str(e)},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )

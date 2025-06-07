@@ -47,7 +47,7 @@ export default function InventarioPage() {
                 defaultColumn={defaultColumnCell}
                 placeholder={"Buscar por codigo de producto"}
                 canFilterActivo = {false}
-                
+                canExport = {true}
             >
             
             </DataTable>

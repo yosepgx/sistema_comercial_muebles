@@ -14,8 +14,9 @@ from django.db import transaction
 from django.utils import timezone
 from rest_framework.exceptions import ValidationError
 import xml.etree.ElementTree as ET
-import datetime
-
+from datetime import datetime
+import pandas as pd
+from io import BytesIO
 #cuando un pedido se anula si estaba:
 
 
@@ -222,3 +223,72 @@ class GenerarXMLUBLView(APIView):
         response = HttpResponse(xml_bytes, content_type='application/xml')
         response['Content-Disposition'] = f'attachment; filename=Factura_{pedido.id}.xml'
         return response
+
+
+class DescargarPedidos(APIView):
+    def post(self, request):
+        try:
+            # Leer fechas del request
+            fecha_inicio_str = request.data.get('fecha_inicio')
+            fecha_fin_str = request.data.get('fecha_fin')
+
+            if not fecha_inicio_str or not fecha_fin_str:
+                return Response({"detail": "Debe proporcionar fecha_inicio y fecha_fin."},
+                                status=status.HTTP_400_BAD_REQUEST)
+
+            try:
+                fecha_inicio = datetime.strptime(fecha_inicio_str, '%Y-%m-%d').date()
+                fecha_fin = datetime.strptime(fecha_fin_str, '%Y-%m-%d').date()
+            except ValueError:
+                return Response({"detail": "Formato de fecha inválido. Use 'YYYY-MM-DD'."},
+                                status=status.HTTP_400_BAD_REQUEST)
+
+            # Validación de rango lógico
+            if fecha_inicio > fecha_fin:
+                return Response({"detail": "La fecha de inicio no puede ser mayor que la fecha de fin."},
+                                status=status.HTTP_400_BAD_REQUEST)
+            
+            queryset = PedidoDetalle.objects.select_related(
+                'pedido', 'producto'
+            ).filter(pedido__fecha__range=(fecha_inicio, fecha_fin)).order_by('-id')
+
+            if not queryset.exists():
+                return Response({"detail": "No hay pedidos disponibles para exportar."}, status=status.HTTP_204_NO_CONTENT)
+
+            data = []
+            for detalle in queryset:
+                ped = detalle.pedido
+                data.append({
+                    'Codigo pedido': ped.id,
+                    'Fecha': ped.fecha.strftime('%Y-%m-%d'),
+                    'CodProducto': detalle.producto.id,
+                    'Producto': detalle.producto.nombre,
+                    'Cantidad': detalle.cantidad,
+                    'Precio Unitario': detalle.precio_unitario,
+                    'Descuento Linea': detalle.descuento,
+                    'Subtotal': detalle.subtotal,
+                    'Activo': detalle.activo,
+                })
+
+            df = pd.DataFrame(data)
+            if df.empty:
+                return Response({"detail": "No hay datos para exportar."}, status=status.HTTP_204_NO_CONTENT)
+
+            buffer = BytesIO()
+            with pd.ExcelWriter(buffer, engine='openpyxl') as writer:
+                df.to_excel(writer, index=False, sheet_name='Pedidos')
+
+            buffer.seek(0)
+            response = HttpResponse(
+                buffer.read(),
+                content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+            )
+            response['Content-Disposition'] = 'attachment; filename="pedidos.xlsx"'
+            return response
+        
+        except Exception as e:
+            # Loguear en logger
+            return Response(
+                {"detail": "Error al generar el archivo Excel.", "error": str(e)},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )

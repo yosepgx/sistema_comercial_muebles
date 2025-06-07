@@ -130,3 +130,35 @@ export async function UpdateInventarioAPI(token:string | null, id: number, data:
       return null;
     }
   }
+
+export const descargarInventarioAPI = async (token: string | null) => {
+    try {
+      const response = await customFetch(token,'inventario/descargar-inventario/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({}),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        alert('Error al generar el archivo.');
+        return;
+      }
+
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', 'stock.xlsx');
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      alert('Error al intentar descargar el archivo.');
+      console.error(error);
+    }
+};

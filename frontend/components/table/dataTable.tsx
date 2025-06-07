@@ -27,6 +27,8 @@ import { useSkipper } from "./useSkipper"
 import CustomButton from "../customButtom"
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { useRouter } from "next/navigation"
+import { descargarInventarioAPI } from "@/api/InventarioApis"
+import { descargarProductoAPI } from "@/api/productoApis"
 
 declare module '@tanstack/react-table' {
   interface TableMeta<TData extends RowData> {
@@ -179,29 +181,8 @@ export function DataTable<TData, TValue>({
         onClick={()=>{
         const exportData = table.getFilteredRowModel().rows.map(row => row.original)
         console.log("data a exportar:", exportData)
-        
-        /*fetch('/api/exportar', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(exportData),
-        })
-        .then(res => {
-          if (!res.ok) throw new Error("Error exportando")
-          return res.blob() // o .json() según tu API
-        })
-        .then(blob => {
-          // Por ejemplo, descargar un archivo
-          const url = window.URL.createObjectURL(blob)
-          const a = document.createElement('a')
-          a.href = url
-          a.download = 'exportacion.xlsx'
-          a.click()
-          window.URL.revokeObjectURL(url)
-        })
-        .catch(err => console.error(err))
-        */
+        if(!!defaultColumn)descargarInventarioAPI(null) //inventario
+        else if (!defaultColumn)descargarProductoAPI(null) //producto
       }}
       >Exportar</CustomButton>}
       {canFilterDate && (<div>
