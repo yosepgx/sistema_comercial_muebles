@@ -15,7 +15,7 @@ export const formCotizacionSchema = z. object({
     message: "El descuento debe ser un número mayor a 0"
   }),
   observaciones: z.string(),
-  direccion_entrega: z.string().min(1,"Es necesaria direccion de entrega"), //deberia de funcionar ya que se asigna la direccion despues
+  direccion_entrega: z.string(), //deberia de funcionar ya que se asigna la direccion despues
   activo: z.string(),
 
 })

@@ -22,6 +22,7 @@ import { TCotizacion } from '../types/cotizacion'
 import { useParams, useRouter } from 'next/navigation'
 import { formCotizacionSchema, formCotizacionSchemaSend, FormCotizacionValues } from '../schemas/formCotizacionSchema'
 import { useCalculosCotizacion } from '../hooks/useCalculosCotizacion'
+import { GetDatoGeneralDetailApi } from '@/api/datogeneralApis'
 
 
 type Props = {
@@ -31,7 +32,8 @@ type Props = {
 
 export default function FormCotizacionStandAlone({edicionCotizacion}: Props) {
   const router = useRouter()
-  const [maximoPermisible, setMaximoPermisible] = useState('0.00')
+  const [porcentajePermisible, setPorcentajePermisible] = useState(0.05)
+  const [maximoPermisible, setMaximoPermisible] = useState(0.00)
   const {id} = useParams()
   const [tipoDireccion, setTipoDireccion] = useState<'tienda' | 'otro'>('tienda')
   const [isDescuentoOpen, setIsDescuentoOpen] = useState(true)
@@ -61,6 +63,10 @@ const fetchCotizacion = async () => {
     const cotizacion = await GetCotizacionDetailApi(null, parseInt(id as string, 10))
     if(cotizacion){
         const listado = await GetCotizacionLineaListApi(null, parseInt(id as string, 10))
+        const data = await GetDatoGeneralDetailApi(null, 1)
+        const margen = data?.margen_general??0.05
+        setPorcentajePermisible(margen)
+        setMaximoPermisible((margen*cotizacion.monto_total))
         setCrrCotizacion(cotizacion)
         setListaDetalles(listado)
     }
@@ -92,7 +98,7 @@ useEffect(()=>{
     }
   },[edicionCotizacion, id])
 
-useCalculosCotizacion({listaDetalles, descuento, form, crrCotizacion})
+useCalculosCotizacion({listaDetalles, descuento, form, crrCotizacion, porcentajePermisible, setMaximoPermisible})
 
 const onSubmit = async (rawdata: FormCotizacionValues) => {
   console.log('Datos del formulario:', rawdata)
@@ -270,6 +276,7 @@ if(!crrCotizacion)return (<div>Cargando...</div>)
                 </Label>
                 <Input
                   id="maximoPermisible"
+                  type = "number"
                   value={maximoPermisible}
                   disabled = {true}
                 />

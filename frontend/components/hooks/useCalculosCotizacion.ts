@@ -1,5 +1,5 @@
 // hooks/useCotizacionCalculations.ts
-import { useEffect } from 'react';
+import { Dispatch, SetStateAction, useEffect } from 'react';
 import { UseFormReturn } from 'react-hook-form';
 import { TCotizacionDetalle, TCotizacion } from '../types/cotizacion';
 import { FormCotizacionValues } from '../schemas/formCotizacionSchema';
@@ -9,13 +9,17 @@ interface UseCotizacionCalculationsProps {
   descuento: string;
   form: UseFormReturn<FormCotizacionValues>;
   crrCotizacion: TCotizacion | null;
+  porcentajePermisible: number,
+  setMaximoPermisible: Dispatch<SetStateAction<number>>,
 }
 
 export const useCalculosCotizacion = ({
   listaDetalles,
   descuento,
   form,
-  crrCotizacion
+  crrCotizacion,
+  porcentajePermisible,
+  setMaximoPermisible
 }: UseCotizacionCalculationsProps) => {
   
   useEffect(() => {
@@ -52,6 +56,7 @@ export const useCalculosCotizacion = ({
     });
 
     const totalFinal = totalBase + totalIGV;
+    setMaximoPermisible(totalConIGV*porcentajePermisible)
     //console.log("rawtotal descontado: ",totalConIGV - descuentoConIGV)
     //console.log("total procesado: ",totalFinal)
 
@@ -60,5 +65,5 @@ export const useCalculosCotizacion = ({
     form.setValue('monto_total', totalFinal.toFixed(2));
     
     
-  }, [listaDetalles, descuento, form]);
+  }, [listaDetalles, descuento, form, porcentajePermisible]);
 };

@@ -29,7 +29,7 @@ type FormValues = z.infer<typeof formSchema>
 const formSchemaSend = formSchema.transform(data => ({
     ...data,
     id: parseInt(data.id, 10),
-    margen_general: parseInt(data.margen_general, 10),
+    margen_general: parseFloat(data.margen_general),
     activo: data.activo === "true",
   })
 )

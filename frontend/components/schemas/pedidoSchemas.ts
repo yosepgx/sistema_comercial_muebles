@@ -26,7 +26,6 @@ export type FormPedidoValues = z.infer<typeof formPedidoSchema>
 export const formPedidoSchemaSend = formPedidoSchema.transform ( data => ({
   ...data,
   id: parseInt(data.id,10),
-  tipo_comprobante: parseInt(data.tipo_comprobante,10),
   cotizacion: parseInt(data.id, 10),
   monto_sin_impuesto: parseFloat(data.monto_sin_impuesto),
   monto_igv: parseFloat(data.monto_igv),
