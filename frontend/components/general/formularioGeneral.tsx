@@ -9,30 +9,7 @@ import { Input } from '../ui/input';
 import { TDGeneral } from '../types/dgeneralType';
 import { GetDatoGeneralDetailApi, PostDatoGeneralAPI, UpdateDatoGeneralAPI } from '@/api/datogeneralApis';
 import { BotonesFinales } from '../botonesFinales';
-
-const formSchema = z.object({
-    id: z.string(),
-    codigo_RUC: z.string().min(11,"Es necesario llenar este campo").regex(/^\d+$/, "El RUC solo debe contener números"),
-    razon_social: z.string().min(1,"Es necesario llenar este campo"),
-    nombre_comercial: z.string().min(1,"Es necesario llenar este campo"),
-    direccion_fiscal: z.string().min(1,"Es necesario llenar este campo"),
-    margen_general: z.string().refine(
-    val => !isNaN(parseFloat(val)) && parseFloat(val) > 0, {
-        message: "El precio debe ser un número mayor a 0"
-    }),
-    activo: z.string(),
-})
-
-type FormValues = z.infer<typeof formSchema>
-
-
-const formSchemaSend = formSchema.transform(data => ({
-    ...data,
-    id: parseInt(data.id, 10),
-    margen_general: parseFloat(data.margen_general),
-    activo: data.activo === "true",
-  })
-)
+import { formGeneralSchema, formGeneralSchemaSend, FormGeneralValues } from '../schemas/formGeneralSchema';
 
 type Props = {
   tipo: 'nuevo' | 'edicion'
@@ -42,8 +19,8 @@ export default function FormularioGeneral({tipo}: Props){
     const [loading, setLoading] = useState(true);
     const {id} = useParams()
     const router = useRouter()
-    const form = useForm<z.infer<typeof formSchema>>({
-          resolver: zodResolver(formSchema),
+    const form = useForm<z.infer<typeof formGeneralSchema>>({
+          resolver: zodResolver(formGeneralSchema),
           defaultValues: {
             id: '',
             codigo_RUC: '',
@@ -69,14 +46,16 @@ export default function FormularioGeneral({tipo}: Props){
         if(tipo ==='edicion' && id){
             GetDatoGeneralDetailApi(null, parseInt(id as string, 10)).then(
                 data => cargarGeneral(data)
-            ).finally(() => setLoading(false))
+            )
+            .catch(error => console.error('no se pudo obtener los datos de configuracion general, error: ', error))
+            .finally(() => setLoading(false))
         }
         
       },[tipo,id])
       
-    const onSubmit = async (rawdata: FormValues) => {
+    const onSubmit = async (rawdata: FormGeneralValues) => {
         
-        const data = formSchemaSend.parse(rawdata)
+        const data = formGeneralSchemaSend.parse(rawdata)
         if(data && data.activo) data.activo = true
         if(tipo === 'nuevo'){
             await PostDatoGeneralAPI(null,data);
