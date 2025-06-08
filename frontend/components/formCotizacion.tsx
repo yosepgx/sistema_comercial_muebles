@@ -21,6 +21,7 @@ import { PostCotizacionAPI, UpdateCotizacionAPI } from '@/api/cotizacionApis'
 import { formCotizacionSchema, formCotizacionSchemaSend, FormCotizacionValues } from './schemas/formCotizacionSchema'
 import { useCalculosCotizacion } from './hooks/useCalculosCotizacion'
 import { GetDatoGeneralDetailApi } from '@/api/datogeneralApis'
+import { useDescuentosAutomaticos } from './descuentos/useDescuentosAutomaticos'
 
 export default function FormCotizacionDetalle() {
   const [loading, setLoading] = useState(true)
@@ -30,6 +31,8 @@ export default function FormCotizacionDetalle() {
   const [isDescuentoOpen, setIsDescuentoOpen] = useState(true)
   const [isSearchPopupOpen, setIsSearchPopupOpen] = useState(false);
   const {crrCotizacion, crrTab, SetModoCotizacion, tipoEdicion, crrOportunidad, setCrrTab,edicionCotizacion} = useOportunidadContext()
+  const { aplicarDescuentosADetalle, recalcularDescuentosLista, loading: descuentosLoading } = useDescuentosAutomaticos()
+
   const [listaDetalles, setListaDetalles] = useState<TCotizacionDetalle[]>([])
   const form = useForm<z.infer<typeof formCotizacionSchema>>({
     resolver: zodResolver(formCotizacionSchema),
@@ -167,6 +170,12 @@ const handleSelectProducto = (producto: TProducto) => {
         rigv: Number(producto.igv ?? 0.18).toFixed(2)
       };
       console.log("ATENCION detalle:",detalle)
+
+      // Aplicar descuentos automáticamente
+      aplicarDescuentosADetalle(detalle).then((detalleConDescuento) => {
+        setListaDetalles(prev => [...prev.filter(item => item.producto !== producto.id), detalleConDescuento]);
+      });
+
       return [...old, detalle];
     });
 
@@ -175,7 +184,7 @@ const handleSelectProducto = (producto: TProducto) => {
     console.error('Error al seleccionar producto', error);
   }
 };
-
+  
   return (
     <div className="container mx-auto px-4 py-6">
       <ProductSearchPopup

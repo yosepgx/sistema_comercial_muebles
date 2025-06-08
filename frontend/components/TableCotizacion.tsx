@@ -11,6 +11,7 @@ import { Edit, Pencil, Save, Trash2 } from 'lucide-react'
 import { TCotizacionDetalle } from './types/cotizacion';
 import { UNIDADES_MEDIDA_BUSCA } from '@/constants/unidadesMedidaConstants';
 import { IconButton } from '@mui/material';
+import { useDescuentosAutomaticos } from './descuentos/useDescuentosAutomaticos';
 
 interface CotizacionTableProps {
   detalles: TCotizacionDetalle[];
@@ -22,15 +23,17 @@ interface CotizacionTableProps {
 export const CotizacionTable : React.FC<CotizacionTableProps>  = ({detalles, setDetalles, isDisabled}) => {
   const [editRowId, setEditRowId] = useState<string | null>(null)
   const [errors, setErrors] = useState<Record<string, string>>({})
+  const { aplicarDescuentosADetalle } = useDescuentosAutomaticos()
 
-  const handleCantidadChange = (id: string, value: number) => {
+
+  const handleCantidadChange =  (id: string, value: number) => {
     setDetalles((prev) =>
       prev.map((row) => {
         if (`${row.producto}-${row.cotizacion}` === id) {
           const isValid = value > 0
-          const newSubtotal = isValid ? (value * row.precio_unitario - row.descuento) : row.subtotal
           if (!isValid) {
             setErrors((e) => ({ ...e, [id]: 'Cantidad debe ser mayor a 0' }))
+            return row
           } else {
             setErrors((e) => {
               const newErrors = { ...e }
@@ -38,13 +41,19 @@ export const CotizacionTable : React.FC<CotizacionTableProps>  = ({detalles, set
               return newErrors
             })
           }
-
-          return {
+          // Crear detalle temporal con nueva cantidad
+          const detalleTemp = {
             ...row,
-            cantidad: value,
-            subtotal: parseFloat(newSubtotal.toFixed(2)),
+            cantidad: value
           }
-        }
+
+          // Recalcular descuentos automáticamente
+          let detalleConDescuento = row
+          aplicarDescuentosADetalle(detalleTemp)
+          .then(data => detalleConDescuento = data)
+          return detalleConDescuento
+
+          }
         return row
       })
     )

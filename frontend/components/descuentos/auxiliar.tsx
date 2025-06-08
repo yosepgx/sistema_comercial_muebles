@@ -3,7 +3,6 @@ import { useEffect, useState } from 'react';
 import { Form, FormControl, FormField, FormItem, FormMessage, FormLabel } from '../ui/form'
 import { Input } from '../ui/input'
 import {z} from 'zod'
-import { useRouter } from 'next/router';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { GetDatoGeneralDetailApi, UpdateDatoGeneralAPI } from '@/api/datogeneralApis';
@@ -14,7 +13,6 @@ export default function Auxiliar() {
 
     const [loading, setLoading] = useState(true);
     const id = 1; //Como no se crean nuevo regitros 
-    const router = useRouter()
     const form = useForm<z.infer<typeof formGeneralSchema>>({
             resolver: zodResolver(formGeneralSchema),
             defaultValues: {

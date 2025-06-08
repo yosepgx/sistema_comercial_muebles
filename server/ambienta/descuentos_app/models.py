@@ -15,5 +15,5 @@ class ReglaDescuento(models.Model):
     cantidad_pagada = models.IntegerField(null=False)
     cantidad_libre = models.IntegerField(null=False)
     cantidad_libre_maxima = models.IntegerField(null=False)
-    tipo_descuento = models.CharField(max_choices=20, choices=TIPO_DESCUENTO)
+    tipo_descuento = models.CharField(max_length=30,choices=TIPO_DESCUENTO, null=False)
     activo = models.BooleanField(default=True)
