@@ -37,7 +37,7 @@ export default function FormCliente() {
     form.setValue('telefono', cliente.telefono);
     form.setValue('naturaleza', cliente.naturaleza);
     form.setValue('tipo_interes', cliente.tipo_interes); 
-    form.setValue('fecha_conversion', cliente.fecha_conversion?format(cliente.fecha_conversion,'dd-MM-yyyy'): null); 
+    form.setValue('fecha_conversion', cliente.fecha_conversion?format(cliente.fecha_conversion,'yyyy-MM-dd'): null); 
     form.setValue('documento', cliente.documento);
     form.setValue('tipo_documento', cliente.tipo_documento);
     form.setValue('activo', cliente.activo.toString());

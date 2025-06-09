@@ -20,14 +20,19 @@ import { CotizacionTable } from './tablecotizacion'
 import { PostCotizacionAPI, UpdateCotizacionAPI } from '@/api/cotizacionApis'
 import { formCotizacionSchema, formCotizacionSchemaSend, FormCotizacionValues } from './schemas/formCotizacionSchema'
 import { useCalculosCotizacion } from './hooks/useCalculosCotizacion'
+import { GetDatoGeneralDetailApi } from '@/api/datogeneralApis'
+import { useDescuentosAutomaticos } from './descuentos/useDescuentosAutomaticos'
 
 export default function FormCotizacionDetalle() {
   const [loading, setLoading] = useState(true)
-  const [maximoPermisible, setMaximoPermisible] = useState('0.00')
+  const [porcentajePermisible , setPorcentajePermisible] = useState(0.05);
+  const [maximoPermisible, setMaximoPermisible] = useState(0.00)
   const [tipoDireccion, setTipoDireccion] = useState<'tienda' | 'otro'>('tienda')
   const [isDescuentoOpen, setIsDescuentoOpen] = useState(true)
   const [isSearchPopupOpen, setIsSearchPopupOpen] = useState(false);
   const {crrCotizacion, crrTab, SetModoCotizacion, tipoEdicion, crrOportunidad, setCrrTab,edicionCotizacion} = useOportunidadContext()
+  const { aplicarDescuentosADetalle, recalcularDescuentosLista, loading: descuentosLoading } = useDescuentosAutomaticos()
+
   const [listaDetalles, setListaDetalles] = useState<TCotizacionDetalle[]>([])
   const form = useForm<z.infer<typeof formCotizacionSchema>>({
     resolver: zodResolver(formCotizacionSchema),
@@ -72,11 +77,28 @@ export default function FormCotizacionDetalle() {
       GetCotizacionLineaListApi(null, crrCotizacion.id).then(
         data => setListaDetalles(data)
       ).catch(error => console.error('error al obtener lineas de cotizacion, error: ', error))
-      .finally(()=>setLoading(false))
+      .finally(()=>{
+        GetDatoGeneralDetailApi(null,1).then(data => {
+          const margen = data?.margen_general??0.05
+          setPorcentajePermisible(margen)
+          setMaximoPermisible((margen*crrCotizacion.monto_total))
+        })
+        .catch(error => console.error('error no se encontro configuracion general', error))
+        .finally(()=>setLoading(false)) 
+      })
+    }
+    else if(edicionCotizacion ==='nuevo'){
+      GetDatoGeneralDetailApi(null,1).then(data => {
+          const margen = data?.margen_general??0.05
+          setPorcentajePermisible(margen)
+          setMaximoPermisible(0.00)
+        })
+        .catch(error => console.error('error no se encontro configuracion general', error))
+        .finally(()=>setLoading(false))
     }
   },[crrTab])
 
-useCalculosCotizacion({listaDetalles, descuento, form, crrCotizacion})
+useCalculosCotizacion({listaDetalles, descuento, form, crrCotizacion, porcentajePermisible, setMaximoPermisible})
 
 const onSubmit = async (rawdata: FormCotizacionValues) => {
   console.log('Datos del formulario:', rawdata)
@@ -85,6 +107,21 @@ const onSubmit = async (rawdata: FormCotizacionValues) => {
     rawdata.oportunidad = `${crrOportunidad?.id}`
     if(tipoDireccion === 'tienda')rawdata.direccion_entrega = 'tienda';
     const data = formCotizacionSchemaSend.parse(rawdata)
+
+    const descuento = data.descuento_adicional;
+    if (descuento > maximoPermisible) {
+      form.setError("descuento_adicional", {
+        type: "manual",
+        message: `El descuento no puede ser mayor a S/. ${maximoPermisible.toFixed(2)}`,
+      });
+      return;
+    }
+
+    if (listaDetalles.length === 0) {
+      alert("Debe agregar al menos un producto a la cotización");
+      return;
+    }
+
     if(!crrCotizacion && edicionCotizacion === 'nuevo'){
       //creacion de cotizacion
       const nuevaCotizacion = await PostCotizacionAPI(null, data)
@@ -130,8 +167,15 @@ const handleSelectProducto = (producto: TProducto) => {
         activo: true,
         rnombre: producto.nombre,
         rum: producto.umedida_sunat,
+        rigv: Number(producto.igv ?? 0.18).toFixed(2)
       };
       console.log("ATENCION detalle:",detalle)
+
+      // Aplicar descuentos automáticamente
+      aplicarDescuentosADetalle(detalle).then((detalleConDescuento) => {
+        setListaDetalles(prev => [...prev.filter(item => item.producto !== producto.id), detalleConDescuento]);
+      });
+
       return [...old, detalle];
     });
 
@@ -140,7 +184,7 @@ const handleSelectProducto = (producto: TProducto) => {
     console.error('Error al seleccionar producto', error);
   }
 };
-
+  
   return (
     <div className="container mx-auto px-4 py-6">
       <ProductSearchPopup
@@ -256,6 +300,7 @@ const handleSelectProducto = (producto: TProducto) => {
                 </Label>
                 <Input
                   id="maximoPermisible"
+                  type='number'
                   value={maximoPermisible}
                   disabled = {true}
                 />

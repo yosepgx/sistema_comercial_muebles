@@ -18,8 +18,9 @@ class CotizacionSerializer(serializers.ModelSerializer):
 class CotizacionDetalleSerializer(serializers.ModelSerializer):
     rnombre = serializers.CharField(source = 'producto.nombre', read_only=True)
     rum = serializers.CharField(source = 'producto.umedida_sunat', read_only=True)
+    rigv = serializers.CharField(source = 'producto.igv', read_only=True)
     class Meta:
         model = CotizacionDetalle
         fields = ['producto', 'cotizacion', 'cantidad' ,'precio_unitario' ,
                   'descuento', 'subtotal' ,'nrolinea' ,'activo',
-                  'rnombre', 'rum']
+                  'rnombre', 'rum', 'rigv']

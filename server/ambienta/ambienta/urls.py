@@ -12,5 +12,6 @@ urlpatterns = [
     path('predictivo/', include('predictivo.urls')),
     path('usuarios/', include('usuarios_app.urls')),
     path('ventas/', include('ventas_app.urls')),
+    path('descuentos/', include('descuentos_app.urls')),
     
 ]

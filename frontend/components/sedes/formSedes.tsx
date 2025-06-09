@@ -86,10 +86,10 @@ export default function FormularioSede({tipo}: Props){
                 control = {form.control}
                 name = "id"
                 render={({field}) => (
-                    <FormItem className='flex flex-col'>
+                    <FormItem className='flex flex-col' hidden = {tipo === 'nuevo'}>
                     <FormLabel> Codigo de sede</FormLabel>
                     <FormControl>
-                        <Input type = "text" {...field} hidden = {tipo === 'nuevo'} disabled={true}/>
+                        <Input type = "text" {...field}  disabled={true}/>
                     </FormControl>
                     <FormMessage className="min-h-[24px]"/>
                     </FormItem>

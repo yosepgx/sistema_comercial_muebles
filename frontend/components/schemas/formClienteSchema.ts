@@ -45,7 +45,7 @@ export type FormClienteValues = z.infer<typeof formClienteSchema>
 export const formClienteSchemaSend = formClienteSchema.transform(data => ({
     ...data,
     id: parseInt(data.id, 10),
-    fecha_conversion: data.fecha_conversion?format(data.fecha_conversion, 'yyyy-MM-dd'): null,
+    fecha_conversion: data.fecha_conversion?format(new Date(data.fecha_conversion), 'yyyy-MM-dd'): null,
     activo: data.activo === "true",
   })
 )

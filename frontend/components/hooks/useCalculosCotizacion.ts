@@ -1,5 +1,5 @@
 // hooks/useCotizacionCalculations.ts
-import { useEffect } from 'react';
+import { Dispatch, SetStateAction, useEffect } from 'react';
 import { UseFormReturn } from 'react-hook-form';
 import { TCotizacionDetalle, TCotizacion } from '../types/cotizacion';
 import { FormCotizacionValues } from '../schemas/formCotizacionSchema';
@@ -9,13 +9,17 @@ interface UseCotizacionCalculationsProps {
   descuento: string;
   form: UseFormReturn<FormCotizacionValues>;
   crrCotizacion: TCotizacion | null;
+  porcentajePermisible: number,
+  setMaximoPermisible: Dispatch<SetStateAction<number>>,
 }
 
 export const useCalculosCotizacion = ({
   listaDetalles,
   descuento,
   form,
-  crrCotizacion
+  crrCotizacion,
+  porcentajePermisible,
+  setMaximoPermisible
 }: UseCotizacionCalculationsProps) => {
   
   useEffect(() => {
@@ -29,23 +33,37 @@ export const useCalculosCotizacion = ({
       return acc + (isNaN(sub) ? 0 : sub);
     }, 0);
 
-    // Calcular base sin IGV (dividiendo entre 1.18)
-    const totalSinIGV = totalConIGV / 1.18;
+    if (totalConIGV === 0) return;
 
-    // Procesar descuento
+    //descuento auxiliar
     const descuentoConIGV = Number(descuento || 0);
-    const descuentoBase = descuentoConIGV / 1.18;
 
-    // Calcular IGV sobre el monto final
-    const igvCalculado = (totalSinIGV - descuentoBase) * 0.18;
-    
-    // Calcular total final
-    const totalFinal = (totalConIGV - descuentoConIGV);
+    let totalBase = 0;
+    let totalIGV = 0;
 
-    // Actualizar valores en el formulario
-    form.setValue('monto_sin_impuesto', (totalSinIGV - descuentoBase).toFixed(2));
-    form.setValue('monto_igv', igvCalculado.toFixed(2));
+    listaDetalles.forEach(item => {
+      const subtotal = Number(item.subtotal);
+      const igvRate = Number(item.rigv ?? 0.18); // ej: 0.18
+      const proporcion = subtotal / totalConIGV;
+      const descuentoLineaConIGV = descuentoConIGV * proporcion;
+
+      // Convertir subtotal y descuento de IGV a base imponible
+      const baseLinea = subtotal / (1 + igvRate);
+      const descuentoBase = descuentoLineaConIGV / (1 + igvRate);
+
+      totalBase += baseLinea - descuentoBase;
+      totalIGV += (baseLinea - descuentoBase) * igvRate;
+    });
+
+    const totalFinal = totalBase + totalIGV;
+    setMaximoPermisible(totalConIGV*porcentajePermisible)
+    //console.log("rawtotal descontado: ",totalConIGV - descuentoConIGV)
+    //console.log("total procesado: ",totalFinal)
+
+    form.setValue('monto_sin_impuesto', totalBase.toFixed(2));
+    form.setValue('monto_igv', totalIGV.toFixed(2));
     form.setValue('monto_total', totalFinal.toFixed(2));
     
-  }, [listaDetalles, descuento, form]);
+    
+  }, [listaDetalles, descuento, form, porcentajePermisible]);
 };

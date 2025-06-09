@@ -304,11 +304,13 @@ export default function FormPedidoStandAlone({tipo} : Props) {
         />
 
           
-        <div className="space-y-2">
+        <div className="flex flex-col space-y-2">
             <Label className="text-sm font-medium text-gray-600">Descuento total</Label>
             <div className="relative">
               <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">S/.</span>
               <Input
+                type = "number"
+                className='pl-10'
                 value={descuentoTotal}
                 disabled={true}
               />

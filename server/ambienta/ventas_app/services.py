@@ -5,7 +5,9 @@ from oportunidades_app.models import Cotizacion
 from inventario_app.models import Producto
 from django.db import transaction
 from django.core.exceptions import ObjectDoesNotExist
-
+import xml.etree.ElementTree as ET
+from decimal import Decimal, ROUND_HALF_UP
+from collections import defaultdict
 #Pedido -> PedidoDetalle
 class CorrelativoService:
     """
@@ -166,3 +168,80 @@ class ServiceCargarDataVenta:
 
         except Exception as e:
             print(e)
+
+
+
+def redondear(valor):
+    return Decimal(valor).quantize(Decimal('0.01'), rounding=ROUND_HALF_UP)
+
+def generar_nodos_descuento_global_etree(detalle_items, descuento_auxiliar):
+    if not descuento_auxiliar or descuento_auxiliar <= 0:
+        return []  # No hay descuento
+
+    total_con_igv = sum(Decimal(item['subtotal']) for item in detalle_items)
+    if total_con_igv == 0:
+        return []
+
+    agrupados = defaultdict(lambda: {
+        'base': Decimal('0.00'),
+        'igv': Decimal('0.00'),
+        'tasa': Decimal('0.00')
+    })
+
+    for item in detalle_items:
+        subtotal = Decimal(item['subtotal'])
+        afectacion = item['producto']['afectacion_igv']
+        tasa = Decimal(item['producto'].get('igv', 0))
+
+        proporcion = subtotal / total_con_igv
+        descuento_con_igv = Decimal(descuento_auxiliar) * proporcion
+
+        if afectacion == "10":  # Gravado
+            descuento_base = descuento_con_igv / (1 + tasa)
+            descuento_igv = descuento_con_igv - descuento_base
+        else:
+            descuento_base = descuento_con_igv
+            descuento_igv = Decimal('0.00')
+
+        agrupados[afectacion]['base'] += descuento_base
+        agrupados[afectacion]['igv'] += descuento_igv
+        agrupados[afectacion]['tasa'] = tasa
+
+    nodos = []
+
+    for cod_afectacion, data in agrupados.items():
+        allowance = ET.Element('cac:AllowanceCharge')
+
+        ET.SubElement(allowance, 'cbc:ChargeIndicator').text = 'false'
+        ET.SubElement(allowance, 'cbc:AllowanceChargeReasonCode').text = '00'
+        ET.SubElement(allowance, 'cbc:MultiplierFactorNumeric').text = '0.00'
+
+        ET.SubElement(
+            allowance, 'cbc:Amount', attrib={'currencyID': 'PEN'}
+        ).text = str(redondear(data['base']))
+
+        ET.SubElement(
+            allowance, 'cbc:BaseAmount', attrib={'currencyID': 'PEN'}
+        ).text = str(redondear(data['base'] + data['igv']))
+
+        tax_total = ET.SubElement(allowance, 'cac:TaxTotal')
+        ET.SubElement(
+            tax_total, 'cbc:TaxAmount', attrib={'currencyID': 'PEN'}
+        ).text = str(redondear(data['igv']))
+
+        tax_sub = ET.SubElement(tax_total, 'cac:TaxSubtotal')
+        ET.SubElement(
+            tax_sub, 'cbc:TaxAmount', attrib={'currencyID': 'PEN'}
+        ).text = str(redondear(data['igv']))
+
+        tax_category = ET.SubElement(tax_sub, 'cac:TaxCategory')
+        ET.SubElement(tax_category, 'cbc:TaxExemptionReasonCode').text = cod_afectacion
+
+        tax_scheme = ET.SubElement(tax_category, 'cac:TaxScheme')
+        ET.SubElement(tax_scheme, 'cbc:ID').text = '1000'
+        ET.SubElement(tax_scheme, 'cbc:Name').text = 'IGV'
+        ET.SubElement(tax_scheme, 'cbc:TaxTypeCode').text = 'VAT'
+
+        nodos.append(allowance)
+
+    return nodos
