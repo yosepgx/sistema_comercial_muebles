@@ -3,11 +3,12 @@ from rest_framework import serializers
 from django.core.exceptions import ValidationError
 from .models import ReglaDescuento
 from inventario_app.models import Producto
+from django.utils import timezone
 
 class ProductoSimpleSerializer(serializers.ModelSerializer):
     class Meta:
         model = Producto
-        fields = ['id', 'codigo', 'nombre']
+        fields = ['id', 'nombre']
 
 class ReglaDescuentoSerializer(serializers.ModelSerializer):
     rproducto_info = ProductoSimpleSerializer(source='producto', read_only=True)
@@ -20,7 +21,7 @@ class ReglaDescuentoSerializer(serializers.ModelSerializer):
             'id', 'producto', 'rproducto_info',
             'fecha_inicio', 'fecha_fin', 'monto_fijo', 'porcentaje',
             'cantidad_pagada', 'cantidad_libre', 'cantidad_libre_maxima',
-            'activo', 'rporcentaje_descuento', 'restado'
+            'tipo_descuento','activo', 'rporcentaje_descuento', 'restado'
         ]
 
     def get_rporcentaje_descuento(self, obj):
@@ -34,13 +35,13 @@ class ReglaDescuentoSerializer(serializers.ModelSerializer):
     def get_restado(self, obj):
         """Retorna el estado actual de la regla"""
         from django.utils import timezone
-        hoy = timezone.now().date()
+        ahora = timezone.now()
         
         if not obj.activo:
             return "Inactivo"
-        elif hoy < obj.fecha_inicio:
+        elif ahora < obj.fecha_inicio:
             return "Programado"
-        elif hoy > obj.fecha_fin:
+        elif ahora > obj.fecha_fin:
             return "Vencido"
         else:
             return "Activo"
@@ -95,6 +96,22 @@ class ReglaDescuentoSerializer(serializers.ModelSerializer):
                 
             if query.exists():
                 errors['non_field_errors'] = ["Ya existe una regla para este producto en las fechas seleccionadas"]
+        
+        # Validaciones específicas por fecha (según estrategia)
+        ahora = timezone.now()
+        fecha_inicio = data.get('fecha_inicio')
+        fecha_fin = data.get('fecha_fin')
+
+        if self.instance is None:
+            # Caso CREACIÓN
+            if fecha_inicio and fecha_inicio < ahora:
+                errors['fecha_inicio'] = "No se puede crear una regla con fecha inicio en el pasado"
+        else:
+            # Caso EDICIÓN
+            instancia_actual = self.instance
+
+            if fecha_fin and fecha_fin < ahora:
+                errors['fecha_fin'] = "No puedes acortar la fecha de fin a antes de ahora."
         
         if errors:
             raise serializers.ValidationError(errors)

@@ -1,3 +1,4 @@
+"use client"
 // hooks/useDescuentosAutomaticos.ts
 import { useState, useCallback } from 'react'
 import { TCotizacionDetalle } from '../types/cotizacion'
@@ -23,7 +24,7 @@ export const useDescuentosAutomaticos = () => {
   ): Promise<DescuentoCalculado | null> => {
     setLoading(true)
     try {
-      const response = await customFetch(null,'/api/calcular-descuentos-linea/', {
+      const response = await customFetch(null,'descuentos/calcular_descuentos_linea/', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

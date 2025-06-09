@@ -26,10 +26,10 @@ def calcular_descuentos_linea(request):
     try:
         # Obtener reglas activas para el producto en fecha actual
         reglas_activas = ReglaDescuento.objects.filter(
-            producto_id=producto_id,
+            producto=producto_id,
             activo=True,
-            fecha_inicio__lte=timezone.now().date(),
-            fecha_fin__gte=timezone.now().date()
+            fecha_inicio__lte=timezone.now(),
+            fecha_fin__gte=timezone.now()
         ).order_by('-fecha_inicio')  # Más reciente primero
         
         descuento_total = Decimal('0.00')
@@ -62,7 +62,15 @@ def calcular_descuentos_linea(request):
 
 def calcular_descuento_por_regla(regla, cantidad, precio_unitario):
     """Calcula descuento según el tipo de regla"""
+    print("Ahora:", timezone.now())
+    print("Fecha inicio:", regla.fecha_inicio)
+    print("Fecha fin:", regla.fecha_fin)
+    print("regla:", regla.porcentaje)
+    print("regla:", regla.tipo_descuento)
+    print("cantidad:", cantidad)
+    print("precio_unitario:", precio_unitario)
     if regla.tipo_descuento == 'porcentaje':
+        print("descuento: ", (precio_unitario * cantidad) * (regla.porcentaje / 100))
         return (precio_unitario * cantidad) * (regla.porcentaje / 100)
     
     elif regla.tipo_descuento == 'monto_fijo':
@@ -130,13 +138,49 @@ class ReglaDescuentoViewSet(viewsets.ModelViewSet):
                 instance = self.get_object()
                 serializer = self.get_serializer(instance, data=request.data, partial=partial)
                 serializer.is_valid(raise_exception=True)
-                regla = serializer.save()
-                
-                return Response({
-                    'success': True,
-                    'message': 'Regla actualizada exitosamente',
-                    'data': ReglaDescuentoSerializer(regla).data
-                })
+                data = serializer.validated_data
+
+                ahora = timezone.now()
+                afecta_hoy = instance.fecha_inicio <= ahora <= instance.fecha_fin
+
+                campos_sensibles = [
+                    'fecha_inicio', 'fecha_fin', 'porcentaje', 'monto_fijo',
+                    'cantidad_pagada', 'cantidad_libre', 'cantidad_libre_maxima'
+                ]
+
+                cambios_sensibles = any(
+                    field in data and data[field] != getattr(instance, field)
+                    for field in campos_sensibles
+                )
+
+                if afecta_hoy and cambios_sensibles:
+                    # Cerrar la regla actual
+                    instance.fecha_fin = ahora - timedelta(seconds=1)
+                    instance.activo = False
+                    instance.save()
+
+                    # Crear nueva regla a partir de hoy con los datos nuevos
+                    nueva_data = deepcopy(request.data)
+                    nueva_data['fecha_inicio'] = timezone.now().replace(microsecond=0).isoformat()
+
+                    nueva_serializer = self.get_serializer(data=nueva_data)
+                    nueva_serializer.is_valid(raise_exception=True)
+                    nueva_regla = nueva_serializer.save()
+
+                    return Response({
+                        'success': True,
+                        'message': 'Regla anterior cerrada y nueva regla creada desde hoy',
+                        'data': ReglaDescuentoSerializer(nueva_regla).data
+                    })
+
+                else:
+                    # No afecta hoy o no hay cambios sensibles → update directo
+                    regla = serializer.save()
+                    return Response({
+                        'success': True,
+                        'message': 'Regla actualizada exitosamente',
+                        'data': ReglaDescuentoSerializer(regla).data
+                    })
                 
         except ValidationError as e:
             return Response({
@@ -144,6 +188,12 @@ class ReglaDescuentoViewSet(viewsets.ModelViewSet):
                 'message': 'Error de validación',
                 'errors': e.detail
             }, status=status.HTTP_400_BAD_REQUEST)
+        
+        except Exception as e:
+            return Response({
+                'success': False,
+                'message': f'Error inesperado: {str(e)}'
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     def destroy(self, request, *args, **kwargs):
         """Eliminar regla"""

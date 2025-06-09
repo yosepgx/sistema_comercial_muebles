@@ -3,7 +3,7 @@ import {TRegla} from '@/components/types/reglaDescuento';
 
 export async function GetReglaListApi(token:string | null) {
     try {
-        const response = await customFetch(token, `descuentos/reglas`, {
+        const response = await customFetch(token, `descuentos/regla-descuento`, {
             
             method: "get",
             headers:{
@@ -31,7 +31,7 @@ export async function GetReglaListApi(token:string | null) {
 
 export async function GetReglaDetailApi(token:string | null, id: number){
     try {
-        const response = await customFetch(token,`descuentos/reglas/${id}`, {
+        const response = await customFetch(token,`descuentos/regla-descuento/${id}`, {
             
             method: "get",
             headers:{
@@ -54,7 +54,7 @@ export async function GetReglaDetailApi(token:string | null, id: number){
 }
 export async function PostReglaAPI(token:string | null, data: TRegla){
     try {
-        const response = await customFetch(token,`descuentos/reglas/`, {
+        const response = await customFetch(token,`descuentos/regla-descuento/`, {
             
             method: "POST",
             headers:{
@@ -79,7 +79,7 @@ export async function PostReglaAPI(token:string | null, data: TRegla){
 
 export async function DeleteReglaAPI(token:string | null, id: number){
     try {
-        const response = await customFetch(token, `descuentos/reglas/${id}/`, {
+        const response = await customFetch(token, `descuentos/regla-descuento/${id}/`, {
             
             method: "DELETE",
             headers:{
@@ -102,7 +102,7 @@ export async function DeleteReglaAPI(token:string | null, id: number){
 
 export async function UpdateReglaAPI(token:string | null, id: number, data: TRegla) {
     try {
-      const response = await customFetch(token, `descuentos/reglas/${id}/`, {
+      const response = await customFetch(token, `descuentos/regla-descuento/${id}/`, {
         method: "PUT",
         headers: {
           'Content-Type': 'application/json',
