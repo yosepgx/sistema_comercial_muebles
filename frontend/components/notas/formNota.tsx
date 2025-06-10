@@ -39,12 +39,12 @@ export default function FormNotaCreditoDebito({edicion, pedido, notaid, detalles
     defaultValues: {
       id: '',    //s 
       fecha: '', //s back
-      fechaentrega: '', 
+      fechaentrega: ''  , 
       fecha_pago: '',
       serie: '',  //s back
       correlativo: '', //s back
       tipo_comprobante: tipoComprobanteChoices.TIPONCBOLETA, //s
-      direccion: '', 
+      direccion: 'tienda', 
       cotizacion: '', //? puede ser null o puede ser la cotizacion del pedido pedido.cotizacion
       moneda: 'PEN', //s
       estado_pedido: 'anulado', //n
@@ -54,8 +54,8 @@ export default function FormNotaCreditoDebito({edicion, pedido, notaid, detalles
       descuento_adicional: '0.00', 
       observaciones: '', //razon
       codigo_tipo_tributo: '1000',//no
-      activo: '', //si 
-      documento_relacionado: pedido? pedido.documento_relacionado: null,
+      activo: 'true', //si 
+      documento_referencia: pedido? pedido.documento_referencia: null,
     }
   })
 
@@ -73,8 +73,8 @@ export default function FormNotaCreditoDebito({edicion, pedido, notaid, detalles
         .then(dataNota => {
           if(dataNota){
           cargarPedido(dataNota,form)//carga la nota , luego cargar su pedido  y las lineas de la nota
-          if(dataNota.documento_relacionado){
-            GetPedidoDetailApi(null, dataNota.documento_relacionado)
+          if(dataNota.documento_referencia){
+            GetPedidoDetailApi(null, dataNota.documento_referencia)
               .then(dataPedido => SetPedidodRel(dataPedido))
               .catch(error => console.log("no se pudo cargar el pedido relacionado"))
             GetPedidoLineaListApi(null,dataNota.id)
@@ -88,10 +88,15 @@ export default function FormNotaCreditoDebito({edicion, pedido, notaid, detalles
   },[])
 
   const onSubmit = async (rawdata: FormPedidoValues) => {
-    if(!pedidoRel)return
-    console.log('Nota enviada:', rawdata)
+    if(!pedidoRel )return
+    if(!pedidoRel.id) return
+    
+    console.log('rel', pedidoRel)
+    
     console.log('Detalles:', listaDetalles)
-    rawdata.cotizacion = `${pedidoRel.cotizacion}`
+    rawdata.documento_referencia = pedidoRel.id
+    rawdata.direccion = 'tienda'
+    console.log('Nota enviada:', rawdata)
     const data = formPedidoSchemaSend.parse(rawdata)
     if(data){
       if(edicion === 'nuevo'){

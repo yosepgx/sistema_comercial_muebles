@@ -120,24 +120,25 @@ export default function PedidosPage(){
           flex: 1
       },
       
-    //   {
-    //       field: 'serie_correlativo',
-    //       headerName: 'Serie - Correlativo',
-    //       renderHeader: () => (
-    //         <span className="text-center block">
-    //           Codigo de <br /> Pedido
-    //         </span>
-    //       ),
-    //       renderCell: (params) => `${params.row.documento_referencia.serie}-${params.row.documento_referencia.correlativo}`,
-    //       resizable: false,
-    //       flex: 1
-    //     },
-      
-      {   field: 'monto_total', 
-          headerName: 'Monto Total',
+      {
+          field: 'serie_correlativo',
+          headerName: 'Serie - Correlativo',
+          renderHeader: () => (
+            <span className="text-center block">
+              Codigo de <br /> Pedido
+            </span>
+          ),
+          //renderCell: (params) => `${params.row.documento_referencia?params.row.documento_referencia.serie}-${params.row.documento_referencia.correlativo}`,
+          renderCell: (params) => `${params.row.documento_referencia}`,
           resizable: false,
           flex: 1
-      },
+        },
+      
+      // {   field: 'monto_total', 
+      //     headerName: 'Monto Total',
+      //     resizable: false,
+      //     flex: 1
+      // },
       
       {
       field: 'acciones',
@@ -149,7 +150,7 @@ export default function PedidosPage(){
       width: 120,
       renderCell: (params) => (
         <div>
-          <IconButton onClick={() => router.push(`/pedidos/${params.row.id}`)}>
+          <IconButton onClick={() => router.push(`/notas/${params.row.id}`)}>
             <Edit />
           </IconButton>
         </div>

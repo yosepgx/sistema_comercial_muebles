@@ -26,7 +26,7 @@ export const formPedidoSchema = z. object({
   observaciones: z.string().nullable().transform(v => v ?? ""),
   codigo_tipo_tributo: z.string(),
   activo: z.string(),
-  documento_relacionado: z.number().nullable().optional()
+  documento_referencia: z.number().nullable().optional()
 })
 
 export type FormPedidoValues = z.infer<typeof formPedidoSchema>
@@ -34,11 +34,13 @@ export type FormPedidoValues = z.infer<typeof formPedidoSchema>
 export const formPedidoSchemaSend = formPedidoSchema.transform ( data => ({
   ...data,
   id: parseInt(data.id,10),
-  cotizacion: parseInt(data.id, 10),
+  cotizacion: parseInt(data.cotizacion, 10), //undefined para ''
+  fecha_pago: data.fecha_pago === ''?null : data.fecha_pago,
+  fechaentrega: data.fecha_pago === ''?null : data.fechaentrega,
   monto_sin_impuesto: parseFloat(data.monto_sin_impuesto),
   monto_igv: parseFloat(data.monto_igv),
   monto_total: parseFloat(data.monto_total),
   descuento_adicional: parseFloat(data.descuento_adicional),
-  documento_relacionado: data.documento_relacionado? data.documento_relacionado: null,
+  documento_relacionado: data.documento_referencia? data.documento_referencia: null,
   activo: data.activo ==='true',
 }))

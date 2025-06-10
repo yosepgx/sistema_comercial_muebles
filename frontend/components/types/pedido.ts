@@ -39,7 +39,7 @@ const pedido = z.object({
     observaciones: z.string(),
     codigo_tipo_tributo: z.string(), //talvez number
     activo: z.boolean(),
-    documento_relacionado: z.number().nullable().optional()
+    documento_referencia: z.number().nullable().optional()
 })
 
 export type TPedido = z.infer<typeof pedido>

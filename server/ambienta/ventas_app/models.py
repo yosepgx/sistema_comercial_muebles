@@ -38,7 +38,7 @@ class Pedido(models.Model):
     tipo_comprobante = models.CharField(max_length=50, choices=TIPO_COMPROBANTE_CHOICES)
     estado_pedido = models.CharField(max_length=15, choices=ESTADOS_PEDIDO, default=PENDIENTE)
     codigo_tipo_tributo = models.CharField(max_length=10, default="1000")    
-    cotizacion = models.OneToOneField(Cotizacion, on_delete=models.PROTECT)
+    cotizacion = models.OneToOneField(Cotizacion, on_delete=models.PROTECT, null=True)
     moneda = models.CharField(max_length=5, default="PEN")  # Sol peruano
 
     monto_sin_impuesto = models.DecimalField(max_digits=10, decimal_places=2)#valor de venta

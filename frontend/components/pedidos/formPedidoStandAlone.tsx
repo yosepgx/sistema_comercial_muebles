@@ -21,7 +21,7 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import {format} from  'date-fns'
 import { UNIDADES_MEDIDA_BUSCA } from '@/constants/unidadesMedidaConstants'
-import { formPedidoSchema,formPedidoSchemaSend, FormPedidoValues } from '../schemas/pedidoSchemas'
+import { formPedidoSchema, FormPedidoValues } from '../schemas/pedidoSchemas'
 
 type Props = {
   tipo: 'nuevo' | 'edicion'

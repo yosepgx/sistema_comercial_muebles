@@ -1,9 +1,12 @@
 from rest_framework import serializers
 from .models import Pedido, PedidoDetalle
 class PedidoSerializer(serializers.ModelSerializer):
+    
     class Meta:
         model = Pedido
         fields= '__all__'
+        read_only_fields = ['serie', 'correlativo', 'fechaentrega', 'fecha_pago']
+
 
 class PedidoDetalleSerializer(serializers.ModelSerializer):
     rnombre = serializers.CharField(source = 'producto.nombre', read_only=True)
