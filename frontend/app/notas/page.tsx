@@ -32,7 +32,8 @@ export default function PedidosPage(){
 
     const cargarDatos = async () => {
         try {
-        const res = await GetPedidoListApi(ct)
+        let res = await GetPedidoListApi(ct)
+        res = res.filter(value => value.tipo_comprobante !== 'boleta' && value.tipo_comprobante !== 'factura')
         console.log("Datos cargados:", res)
         setData(res)
         } catch (error) {
@@ -85,40 +86,19 @@ export default function PedidosPage(){
 }, [data, busquedaGeneral, fechaInicio, fechaFin, campoFecha]);
 
   const Columns: GridColDef<TPedido>[] = [
-      {   field: 'id', 
-          headerName: 'Id',
-          resizable: false,
-          flex: 1
-      },
-      {   field: 'fecha',
+      
+      {   field: 'fecha', 
           renderHeader: () => (
             <span className="text-center block">
               Fecha de <br /> creacion
             </span>
-          ),  
+          ), 
           resizable: false,
           flex: 1,
           valueFormatter: (value) => transformDateUTCHourToUserTime(value),
 
       },
-      {   field: 'fechaentrega',
-          renderHeader: () => (
-            <span className="text-center block">
-              Fecha de <br /> entrega
-            </span>
-          ), 
-          resizable: false,
-          flex: 1
-      },
-      {   field: 'fecha_pago',
-          renderHeader: () => (
-            <span className="text-center block">
-              Fecha de <br /> pago
-            </span>
-          ),  
-          resizable: false,
-          flex: 1
-      },
+      
       {   field: 'serie', 
           headerName: 'Serie',
           resizable: false,
@@ -137,61 +117,27 @@ export default function PedidosPage(){
             </span>
           ),
           resizable: false,
-          flex: 1,
-      },
-      {   field: 'direccion', 
-          renderHeader: () => (
-            <span className="text-center block">
-              Direccion de <br /> Entrega
-            </span>
-          ),
-          resizable: false,
-          flex: 1,
-      },
-      {   field: 'cotizacion', 
-          renderHeader: () => (
-            <span className="text-center block">
-              Codigo de <br /> Cotizacion
-            </span>
-          ),
-          resizable: false,
-          
           flex: 1
       },
-      {   field: 'estado_pedido', 
-          renderHeader: () => (
-            <span className="text-center block">
-              Estado de <br /> Pedido
-            </span>
-          ),
-          resizable: false,
-          flex: 1
-      },
-      // {   field: 'monto_sin_impuesto', 
-      //     headerName: 'Monto Sin Impuesto',
-      //     resizable: false,
-      //     flex: 1
-      // },
-      // {   field: 'monto_igv', 
-      //     headerName: 'Monto Con IGV',
-      //     resizable: false,
-      //     flex: 1
-      // },
+      
+    //   {
+    //       field: 'serie_correlativo',
+    //       headerName: 'Serie - Correlativo',
+    //       renderHeader: () => (
+    //         <span className="text-center block">
+    //           Codigo de <br /> Pedido
+    //         </span>
+    //       ),
+    //       renderCell: (params) => `${params.row.documento_referencia.serie}-${params.row.documento_referencia.correlativo}`,
+    //       resizable: false,
+    //       flex: 1
+    //     },
+      
       {   field: 'monto_total', 
           headerName: 'Monto Total',
           resizable: false,
           flex: 1
       },
-      {   field: 'descuento_adicional',
-          renderHeader: () => (
-            <span className="text-center block">
-              Descuento <br /> auxiliar
-            </span>
-          ),
-          resizable: false,
-          flex: 1,
-      },
-      
       
       {
       field: 'acciones',
@@ -251,7 +197,6 @@ export default function PedidosPage(){
                 <CustomButton type="button" onClick={()=>descargarPedidosAPI(null, 
                   format(fechaInicio?? '01/01/2012', 'yyyy-MM-dd'), 
                   format(fechaFin ?? '01/01/2040', 'yyyy-MM-dd'))
-                  
                   }>
                   Exportar
                 </CustomButton>
@@ -267,14 +212,6 @@ export default function PedidosPage(){
                     },
                 },
                 
-                }}
-                sx={{
-                  '& .MuiDataGrid-columnHeader': {
-                    whiteSpace: 'normal',
-                    lineHeight: '1.2',
-                    textAlign: 'center',
-                    wordBreak: 'break-word',
-                  }
                 }}
                 pageSizeOptions={[5, 10, 25]}
                 disableRowSelectionOnClick

@@ -1,3 +1,4 @@
+import { tipoComprobanteChoices } from "@/constants/tipoComprobanteChoices"
 import {string, z} from "zod"
 
 const pedidoDetalle = z.object({
@@ -20,7 +21,13 @@ const pedido = z.object({
     fecha_pago: z.string().nullable(),
     serie: z.string().optional(), //read-only
     correlativo: z.string().optional(), //read-only
-    tipo_comprobante: z.enum(["boleta","factura"]),
+    tipo_comprobante: z.enum(["boleta",
+    "factura", 
+    tipoComprobanteChoices.TIPONCBOLETA, 
+    tipoComprobanteChoices.TIPONCFACTURA,
+    tipoComprobanteChoices.TIPONDBOLETA,
+    tipoComprobanteChoices.TIPONDFACTURA,
+  ]),
     direccion: z.string(),
     cotizacion: z.number(),
     moneda: z.enum(["PEN"]),
@@ -32,6 +39,7 @@ const pedido = z.object({
     observaciones: z.string(),
     codigo_tipo_tributo: z.string(), //talvez number
     activo: z.boolean(),
+    documento_relacionado: z.number().nullable().optional()
 })
 
 export type TPedido = z.infer<typeof pedido>

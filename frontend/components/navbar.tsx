@@ -37,6 +37,10 @@ const itemsVentas: IMenuItem[] = [
         label: "Clientes",
         href: "/clientes",
     },
+    {
+        label: "Notas",
+        href: "/notas",
+    },
     
 ]
 

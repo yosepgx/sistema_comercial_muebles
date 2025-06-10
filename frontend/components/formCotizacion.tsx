@@ -16,7 +16,7 @@ import { RadioGroup, RadioGroupItem } from './ui/radio-group'
 import { GetCotizacionLineaListApi, PostCotizacionLineaAPI } from '@/api/cotizacionDetalleApis'
 import { TProducto } from '@/components/types/productoTypes'
 import ProductSearchPopup from './popsearchproducto'
-import { CotizacionTable } from './tablecotizacion'
+import { CotizacionTable } from './tableCotizacion'
 import { PostCotizacionAPI, UpdateCotizacionAPI } from '@/api/cotizacionApis'
 import { formCotizacionSchema, formCotizacionSchemaSend, FormCotizacionValues } from './schemas/formCotizacionSchema'
 import { useCalculosCotizacion } from './hooks/useCalculosCotizacion'
@@ -152,32 +152,30 @@ const onSubmit = async (rawdata: FormCotizacionValues) => {
 const handleSelectProducto = (producto: TProducto) => {
   try {
     console.log("producto seleccionado", producto)
-    setListaDetalles((old) => {
-      const yaExiste = old.some(item => item.producto === producto.id);
-      if (yaExiste) return old;
+    const yaExiste = listaDetalles.some(item => item.producto === producto.id);
+    if (yaExiste) return;
 
-      const detalle: TCotizacionDetalle = {
-        producto: producto.id,
-        cotizacion: 0, //al crear asignar a todas estas la cotizacion
-        cantidad: 1,
-        precio_unitario: producto.rprecio_actual?producto.rprecio_actual:0 ,
-        descuento: 0,
-        subtotal: producto.rprecio_actual?producto.rprecio_actual * 1: 0,
-        nrolinea: old.length + 1,
-        activo: true,
-        rnombre: producto.nombre,
-        rum: producto.umedida_sunat,
-        rigv: Number(producto.igv ?? 0.18).toFixed(2)
-      };
-      console.log("ATENCION detalle:",detalle)
+    const detalle: TCotizacionDetalle = {
+      producto: producto.id,
+      cotizacion: 0,
+      cantidad: 1,
+      precio_unitario: producto.rprecio_actual ?? 0,
+      descuento: 0,
+      subtotal: producto.rprecio_actual ?? 0,
+      nrolinea: listaDetalles.length + 1,
+      activo: true,
+      rnombre: producto.nombre,
+      rum: producto.umedida_sunat,
+      rigv: Number(producto.igv ?? 0.18).toFixed(2)
+    };
 
-      // Aplicar descuentos automáticamente
-      aplicarDescuentosADetalle(detalle).then((detalleConDescuento) => {
-        setListaDetalles(prev => [...prev.filter(item => item.producto !== producto.id), detalleConDescuento]);
+    aplicarDescuentosADetalle(detalle)
+      .then((detalleConDescuento) => {
+        setListaDetalles(prev => [...prev, detalleConDescuento]);
+      })
+      .catch(error => {
+        console.error('Error aplicando descuentos', error);
       });
-
-      return [...old, detalle];
-    });
 
     setIsSearchPopupOpen(false);
   } catch (error) {

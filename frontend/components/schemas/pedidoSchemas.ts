@@ -1,3 +1,4 @@
+import { tipoComprobanteChoices } from '@/constants/tipoComprobanteChoices'
 import {z} from 'zod'
 
 export const formPedidoSchema = z. object({
@@ -7,7 +8,13 @@ export const formPedidoSchema = z. object({
   fecha_pago: z.string(),
   serie: z.string().optional(), //debe de ser manejado por back
   correlativo: z.string().optional(), //debe de ser manejado por back
-  tipo_comprobante: z.enum(["boleta","factura"]),
+  tipo_comprobante: z.enum(["boleta",
+    "factura", 
+    tipoComprobanteChoices.TIPONCBOLETA, 
+    tipoComprobanteChoices.TIPONCFACTURA,
+    tipoComprobanteChoices.TIPONDBOLETA,
+    tipoComprobanteChoices.TIPONDFACTURA,
+  ]),
   direccion: z.string(),
   cotizacion: z.string(),
   moneda: z.enum(['PEN']),
@@ -19,6 +26,7 @@ export const formPedidoSchema = z. object({
   observaciones: z.string().nullable().transform(v => v ?? ""),
   codigo_tipo_tributo: z.string(),
   activo: z.string(),
+  documento_relacionado: z.number().nullable().optional()
 })
 
 export type FormPedidoValues = z.infer<typeof formPedidoSchema>
@@ -31,4 +39,6 @@ export const formPedidoSchemaSend = formPedidoSchema.transform ( data => ({
   monto_igv: parseFloat(data.monto_igv),
   monto_total: parseFloat(data.monto_total),
   descuento_adicional: parseFloat(data.descuento_adicional),
+  documento_relacionado: data.documento_relacionado? data.documento_relacionado: null,
+  activo: data.activo ==='true',
 }))
