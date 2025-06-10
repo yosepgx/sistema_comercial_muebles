@@ -48,34 +48,37 @@ export const NotaCreditoDebitoTable: React.FC<NotaCreditoDebitoTableProps> = ({
     field: 'cantidad' | 'precio_unitario' ,
     value: number
   ) => {
-    setDetalles((prev) =>
-      prev.map((row) => {
-        const rowId = `${row.producto}-${row.pedido}`
-        if (rowId === id) {
-          if (field === 'cantidad' && value <= 0) {
-            setErrors((e) => ({ ...e, [id]: 'Cantidad debe ser mayor a 0' }))
-            return row
-          } else {
-            setErrors((e) => {
-              const newErrors = { ...e }
-              delete newErrors[id]
-              return newErrors
-            })
-          }
 
-          const updated = {
-            ...row,
-            [field]: value,
-          }
-
-          updated.subtotal =
-            updated.cantidad * updated.precio_unitario
-
-          return updated
+    if (value < 0) {
+        setErrors((e) => ({ ...e, [id]: 'Cantidad no debe ser menor a 0' }));
+        return;
+        } else {
+          setErrors((e) => {
+            const newErrors = { ...e };
+            delete newErrors[id];
+            return newErrors;
+          });
         }
-        return row
-      })
-    )
+
+    setDetalles((prev) =>
+    prev.map((row) => {
+      if (`${row.producto}-${row.pedido}` === id) {
+        
+        const updated = {
+          ...row,
+          [field]: value,
+        }
+
+        updated.subtotal =
+          updated.cantidad * updated.precio_unitario
+
+        return updated 
+      }
+      return row;
+    })
+    );
+
+    
   }
 
   const handleSave = (id: string) => {

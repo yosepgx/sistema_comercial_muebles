@@ -47,7 +47,7 @@ export const CotizacionTable : React.FC<CotizacionTableProps>  = ({detalles, set
     })
     );
 
-    // Luego aplicas el descuento
+    // el descuento
     const detalleOriginal = detalles.find((row) => `${row.producto}-${row.cotizacion}` === id);
     if (!detalleOriginal) return;
 

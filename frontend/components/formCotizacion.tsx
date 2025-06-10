@@ -154,7 +154,7 @@ const handleSelectProducto = (producto: TProducto) => {
     console.log("producto seleccionado", producto)
     const yaExiste = listaDetalles.some(item => item.producto === producto.id);
     if (yaExiste) return;
-
+    //si no esta creas la linea
     const detalle: TCotizacionDetalle = {
       producto: producto.id,
       cotizacion: 0,
@@ -168,9 +168,10 @@ const handleSelectProducto = (producto: TProducto) => {
       rum: producto.umedida_sunat,
       rigv: Number(producto.igv ?? 0.18).toFixed(2)
     };
-
+    //mandas al back para calcular
     aplicarDescuentosADetalle(detalle)
       .then((detalleConDescuento) => {
+        //asignas a la lista actual
         setListaDetalles(prev => [...prev, detalleConDescuento]);
       })
       .catch(error => {
