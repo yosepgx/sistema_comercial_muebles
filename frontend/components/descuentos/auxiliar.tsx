@@ -8,6 +8,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { GetDatoGeneralDetailApi, UpdateDatoGeneralAPI } from '@/api/datogeneralApis';
 import { TDGeneral } from '../types/dgeneralType';
 import { formGeneralSchema, formGeneralSchemaSend, FormGeneralValues } from '../schemas/formGeneralSchema';
+import CustomButton from '../customButtom';
 
 export default function Auxiliar() {
 
@@ -66,6 +67,7 @@ export default function Auxiliar() {
                 </FormItem>
             )}
             />
+            <CustomButton type='submit' >Guardar Margen</CustomButton>
             </form>
         </Form>
     )
