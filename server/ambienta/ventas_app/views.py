@@ -6,7 +6,7 @@ from rest_framework.response import Response
 from rest_framework import status, viewsets
 from .services import ServiceCargarDataVenta  
 from .models import Pedido, PedidoDetalle
-from .serializers import PedidoSerializer, PedidoDetalleSerializer
+from .serializers import PedidoSerializer, PedidoDetalleSerializer, NotaSerializer
 from oportunidades_app.services import ServiceCargarDatosOportunidades
 import openpyxl
 from oportunidades_app.models import Oportunidad, Cotizacion
@@ -18,7 +18,76 @@ from datetime import datetime
 import pandas as pd
 from io import BytesIO
 from ajustes_app.models import Dgeneral
+from decimal import Decimal
 #cuando un pedido se anula si estaba:
+#TODO: puede ser necesario en ambos views
+# if registro.cantidad_comprometida < cantidad:
+#     raise ValidationError(f"Stock comprometido insuficiente para '{linea.producto}'.")
+
+def obtener_notas_credito_devolucion(pedido: Pedido):
+    return Pedido.objects.filter(
+    documento_referencia=pedido,
+    tipo_comprobante__in=[
+        Pedido.TIPONCBOLETA,
+        Pedido.TIPONCFACTURA
+    ]
+)
+
+def obtener_notas_debito_de(pedido: Pedido):
+    return Pedido.objects.filter(
+            documento_referencia=pedido,
+            tipo_comprobante__in=[
+                Pedido.TIPONDBOLETA,
+                Pedido.TIPONDFACTURA
+            ]
+        )
+
+class NotaViewSet(viewsets.ModelViewSet):
+    queryset = Pedido.objects.filter(
+        tipo_comprobante__in=[
+            Pedido.TIPONCBOLETA, Pedido.TIPONCFACTURA,
+            Pedido.TIPONDBOLETA, Pedido.TIPONDFACTURA
+        ]
+    ).order_by('-id')
+    serializer_class = NotaSerializer
+
+    def perform_create(self, serializer):
+        nota = serializer.save()
+
+        pedido_original = nota.documento_referencia 
+        tipo_nota = nota.tipo_nota
+
+        if tipo_nota in [Pedido.CTIPOANULACION, Pedido.CTIPODEVOLUCIONTOT]:
+            #quitar las cantidades y devolver a stock
+            #si esta en pagado ya comprometio -> quita lo comprometido y lo pone en disponible
+            if pedido_original.estado_pedido == Pedido.PAGADO:
+                lineas = pedido_original.detalles.all()
+                for linea in lineas:
+                    cantidad = linea.cantidad
+                    registro = linea.producto.registros_inventario.first()
+                    if not registro:
+                        raise ValidationError(f"El producto '{linea.producto}' no tiene registro de inventario.")
+                    registro.cantidad_comprometida -= cantidad
+                    registro.cantidad_disponible += cantidad
+                    registro.save()
+                ncs = obtener_notas_credito_devolucion(pedido_original)
+                
+            #si esta en despachado ya lo desconto -> regresar lo que desconto al disponible
+            if pedido_original.estado_pedido == Pedido.DESPACHADO:
+                pedido_original.fecha_entrega = timezone.now().date()
+                lineas = pedido_original.detalles.all()
+                for linea in lineas:
+                    cantidad = linea.cantidad
+                    registro = linea.producto.registros_inventario.first()
+                    if not registro:
+                        raise ValidationError(f"El producto '{linea.producto}' no tiene registro de inventario.")
+                    registro.cantidad_disponible += cantidad
+                    registro.save()
+
+            # Anular el pedido original
+            pedido_original.estado_pedido = Pedido.ANULADO
+            pedido_original.save() 
+
 
 
 #      por validar: no pasa nada con el stock
@@ -61,6 +130,7 @@ class PedidoViewSet(viewsets.ModelViewSet):
                     registro.cantidad_comprometida += cantidad
                     registro.save()
             
+            
     #      pagado -> anulado: se tiene que desbloquear los compromisos y se anula cotizacion
             if estado_anterior == Pedido.PAGADO and nuevo_estado == Pedido.ANULADO:
                 lineas = instance.detalles.all()
@@ -89,13 +159,14 @@ class PedidoViewSet(viewsets.ModelViewSet):
                     registro.cantidad_comprometida -= cantidad
                     registro.save()
 
+
                 oportunidad = instance.cotizacion.oportunidad
                 if oportunidad:
                     oportunidad.estado_oportunidad = Oportunidad.GANADO
                     oportunidad.save()
 
     #      despachado -> anulado: se tiene que volver a agregar los productos a stock disponible y se anula cotizacion
-    #                           -> si se cancela el codigo del comprobante sigue, no se modifica el comprobante
+    #                           -> si se cancela, el codigo del comprobante sigue, no se modifica el comprobante
             if estado_anterior == Pedido.DESPACHADO and nuevo_estado == Pedido.ANULADO:
                 #TODO: seria bueno tener fecha de anulacion
                 lineas = instance.detalles.all()
@@ -120,6 +191,7 @@ class PedidoViewSet(viewsets.ModelViewSet):
             self.perform_update(serializer)
 
         return Response(serializer.data, status=status.HTTP_200_OK)
+
 
 class PedidoDetalleViewSet(viewsets.ModelViewSet):
     queryset = PedidoDetalle.objects.all() 
