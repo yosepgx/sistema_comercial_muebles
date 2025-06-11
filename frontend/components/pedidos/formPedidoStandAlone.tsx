@@ -22,12 +22,15 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import {format} from  'date-fns'
 import { UNIDADES_MEDIDA_BUSCA } from '@/constants/unidadesMedidaConstants'
 import { formPedidoSchema, FormPedidoValues } from '../schemas/pedidoSchemas'
+import { usePermiso } from '@/hooks/usePermiso'
+import { PERMISSION_KEYS } from '@/constants/constantRoles'
 
 type Props = {
   tipo: 'nuevo' | 'edicion'
 }
 
 export default function FormPedidoStandAlone({tipo} : Props) {
+  const puedeEditarPedidos = usePermiso(PERMISSION_KEYS.PEDIDO_DESPACHAR)
   const [pedido, setPedido] = useState<TPedido | null>(null)
   const [descuentoTotal, setDescuentoTotal] = useState(0.0)
   const {id} = useParams();
@@ -387,13 +390,13 @@ export default function FormPedidoStandAlone({tipo} : Props) {
 
           {/* Botones de acción */}
           <div className="flex flex-row gap-8">
-            {pedido && <CustomButton type='button' variant='primary'
+            {pedido && puedeEditarPedidos && <CustomButton type='button' variant='primary'
             onClick={()=>GetXMLFile(null,pedido.id)}
             >
               Generar archivo XML
             </CustomButton>}
             
-            {pedido?.estado_pedido === 'pendiente' && (
+            {pedido?.estado_pedido === 'pendiente' && puedeEditarPedidos &&  (
               <CustomButton
                 type='button'
                 variant='green'
@@ -410,7 +413,7 @@ export default function FormPedidoStandAlone({tipo} : Props) {
               </CustomButton>
             )}
 
-            {pedido?.estado_pedido === 'pagado' && (
+            {pedido?.estado_pedido === 'pagado' && puedeEditarPedidos &&  (
               <CustomButton
                 type='button'
                 variant='green'
@@ -426,7 +429,7 @@ export default function FormPedidoStandAlone({tipo} : Props) {
                 Marcar como Despachado
               </CustomButton>
             )}
-            <CustomButton
+            {/* {puedeEditarPedidos && <CustomButton
               type='button'
               variant='red'
               onClick={async () => {
@@ -441,8 +444,8 @@ export default function FormPedidoStandAlone({tipo} : Props) {
               }}
             >
               Anular Pedido
-            </CustomButton>
-            <CustomButton type='button'
+            </CustomButton>} */}
+            {puedeEditarPedidos && <CustomButton type='button'
             variant='red'
             onClick={ async () => {
               const confirmacion = window.confirm('¿Deseas Emitir una nota sobre el pedido?')
@@ -455,7 +458,7 @@ export default function FormPedidoStandAlone({tipo} : Props) {
                   }
                 }
             }}
-            >Emitir Nota de credito o debito</CustomButton>
+            >Emitir Nota de credito o debito</CustomButton>}
           </div>
         </div>
       </div>

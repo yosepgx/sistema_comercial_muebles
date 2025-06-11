@@ -12,10 +12,13 @@ import { DataGrid, GridColDef } from "@mui/x-data-grid";
 import { Edit, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { usePermiso } from "@/hooks/usePermiso";
+import { PERMISSION_KEYS } from "@/constants/constantRoles";
 
 
 
 export default function CategoriasPage(){
+    const puedeGestionarCategoria = usePermiso(PERMISSION_KEYS.CATEGORIA_ACTUALIZAR)
     const [data, setData] = useState<TCategoria[]>([])
     const [loading, setLoading] = useState(true)
     const router = useRouter()
@@ -86,6 +89,7 @@ export default function CategoriasPage(){
     return (
         <ProtectedRoute>
             <MainWrap>
+                {puedeGestionarCategoria && <>
                 <div className="flex justify-end mb-4">
                 <CustomButton type='button' variant='primary' onClick={()=>{router.push('/ajustes/categorias/nuevo')}}>
                     Nueva Categoría
@@ -106,6 +110,7 @@ export default function CategoriasPage(){
                     disableRowSelectionOnClick
                     disableColumnMenu
                     />
+                </>}
             </MainWrap>
         </ProtectedRoute>
     )

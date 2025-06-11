@@ -11,18 +11,20 @@ import { IconButton } from "@mui/material"
 import { Edit, Trash2 } from "lucide-react"
 import { useRouter } from "next/navigation"
 import CustomButton from "@/components/customButtom"
+import { usePermiso } from "@/hooks/usePermiso"
+import { PERMISSION_KEYS } from "@/constants/constantRoles"
 
 
 
 
 export default function UsuariosPage(){
+    const puedeGestionarUsuarios = usePermiso(PERMISSION_KEYS.USUARIO_ACTUALIZAR)
     const [data, setData] = useState<Tusuario[]>([])
     const [loading, setLoading] = useState(true)
     const router = useRouter()
-    const {ct} = useAuth();
     const cargarDatos = async () => {
         try {
-        const res = await GetUsuarioListApi(ct)
+        const res = await GetUsuarioListApi(null)
         console.log("Datos cargados:", res)
         setData(res)
         } catch (error) {
@@ -78,7 +80,7 @@ export default function UsuariosPage(){
         <IconButton onClick={() => {
         const confirmDelete = window.confirm('¿Estás seguro de que deseas eliminar este usuario?');
         if (confirmDelete) {
-            const nuevo = { ...params.row, activo: false };
+            const nuevo = { ...params.row, is_active: false };
             UpdateUsuarioAPI(null, params.row.id, nuevo);
         }
         }}>
@@ -97,6 +99,7 @@ export default function UsuariosPage(){
     return (
         <ProtectedRoute>
             <MainWrap>
+                {puedeGestionarUsuarios && <>
                 <div className="flex justify-end mb-4">
                 <CustomButton type='button' variant='primary' onClick={()=>{router.push('/ajustes/usuarios/nuevo')}}>
                     Nuevo Usuario
@@ -117,7 +120,7 @@ export default function UsuariosPage(){
                 disableRowSelectionOnClick
                 disableColumnMenu
                 />
-
+                </>}
             </MainWrap>
         </ProtectedRoute>
     )

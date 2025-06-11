@@ -7,7 +7,9 @@ import MainWrap from "@/components/mainwrap"
 import { ProtectedRoute } from "@/components/protectedRoute"
 import { TDGeneral } from "@/components/types/dgeneralType"
 import { TSede } from "@/components/types/sede"
+import { PERMISSION_KEYS } from "@/constants/constantRoles"
 import { useAuth } from "@/context/authContext"
+import { usePermiso } from "@/hooks/usePermiso"
 import { IconButton } from "@mui/material"
 import { DataGrid, GridColDef } from "@mui/x-data-grid"
 import { Edit, Trash2 } from "lucide-react"
@@ -15,6 +17,7 @@ import { useRouter } from "next/navigation"
 import { useEffect, useState } from "react"
 
 export default function DatosPage(){
+    const puedeGestionarDatosGenerales = usePermiso(PERMISSION_KEYS.CONFIGURAR_SISTEMA)
     const [datasede, setDataSede] = useState<TSede[]>([])
     const [datagen, setDataGen] = useState<TDGeneral[]>([])
     const [loadingsede, setLoadingSede] = useState(true)
@@ -148,6 +151,7 @@ export default function DatosPage(){
     return (
         <ProtectedRoute>
             <MainWrap>
+                {puedeGestionarDatosGenerales && <>
                 <DataGrid
                     rows = {datagen}
                     columns={genColumns}
@@ -184,6 +188,7 @@ export default function DatosPage(){
                     disableRowSelectionOnClick
                     disableColumnMenu
                     />
+                    </>}
             </MainWrap>
         </ProtectedRoute>
     )

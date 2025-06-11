@@ -17,8 +17,11 @@ import { transformDateUTCHourToUserTime } from "@/components/transformDate";
 import { useRouter } from "next/navigation";
 import {format} from 'date-fns'
 import CustomButton from "@/components/customButtom";
+import { usePermiso } from "@/hooks/usePermiso";
+import { PERMISSION_KEYS } from "@/constants/constantRoles";
 
 export default function PedidosPage(){
+    const puedeVerNotas = usePermiso(PERMISSION_KEYS.PEDIDO_LEER_TODOS)
     const [data, setData] = useState<TPedido[]>([])
     const [loading, setLoading] = useState(true)
     const router = useRouter()
@@ -163,7 +166,7 @@ export default function PedidosPage(){
     return (
         <ProtectedRoute>
             <MainWrap>
-                
+                {puedeVerNotas && <>
                 <div className="flex grid-cols-4 gap-8">
                   <div>
                   <Label>Buscador</Label>
@@ -218,6 +221,7 @@ export default function PedidosPage(){
                 disableRowSelectionOnClick
                 disableColumnMenu
                 />
+                </>}
             </MainWrap>
         </ProtectedRoute>
     )

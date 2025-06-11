@@ -85,9 +85,9 @@ export default function FormCotizaciones() {
             }}>
             <Eye />
           </IconButton>
-          <IconButton>
+          {/* <IconButton>
             <Trash2 />
-          </IconButton>
+          </IconButton> */}
           <IconButton>
             <Printer onClick={()=>{handleDownload(null,params.row.id)}}/>
           </IconButton>

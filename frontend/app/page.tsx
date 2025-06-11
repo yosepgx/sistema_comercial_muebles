@@ -14,11 +14,18 @@ import { TOportunidad } from "@/components/types/oportunidad";
 import { GetOportunidadListApi, UpdateOportunidadAPI } from "@/api/oportunidadApis";
 import CustomButton from "@/components/customButtom";
 import { useRouter } from "next/navigation";
+import { usePermiso } from "@/hooks/usePermiso";
+import { PERMISSION_KEYS } from "@/constants/constantRoles";
 
 
 
 
 export default function HomePage() {
+  const puedeVerOportunidades = usePermiso(PERMISSION_KEYS.OPORTUNIDAD_LEER)
+  const puedeEliminarOportunidades = usePermiso(PERMISSION_KEYS.OPORTUNIDAD_ELIMINAR)
+  const puedeCrearOportunidades = usePermiso(PERMISSION_KEYS.OPORTUNIDAD_CREAR)
+  const puedeEditarOportunidades = usePermiso(PERMISSION_KEYS.OPORTUNIDAD_ACTUALIZAR)
+
   const [data, setData] = useState<TOportunidad[]>([])
   const [loading, setLoading] = useState(true)
   const {ct} = useAuth();
@@ -77,11 +84,11 @@ export default function HomePage() {
     width: 120,
     renderCell: (params) => (
        <div>
-        <IconButton onClick={() => {router.push(`/${params.row.id}`); 
+        <IconButton disabled={!puedeEditarOportunidades} onClick={() => {router.push(`/${params.row.id}`); 
         localStorage.removeItem('nueva-oportunidad');}}>
           <Edit />
         </IconButton>
-        <IconButton onClick={() => {
+        <IconButton disabled={!puedeEliminarOportunidades} onClick={() => {
           const confirmDelete = window.confirm('¿Estás seguro de que deseas eliminar esta oportunidad de venta?');
           if (confirmDelete) {
               const nuevo = { ...params.row, activo: false };
@@ -154,6 +161,7 @@ export default function HomePage() {
     <>
       <ProtectedRoute>
         <MainWrap>
+          {puedeVerOportunidades && <>
             <div className="flex grid-cols-3 gap-8">
               <div>
               <Label>Buscador</Label>
@@ -196,6 +204,7 @@ export default function HomePage() {
             disableRowSelectionOnClick
             disableColumnMenu
             />
+            </>}
         </MainWrap>
       </ProtectedRoute>
     </>
