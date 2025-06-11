@@ -1,0 +1,41 @@
+<!-- templates/guias_remision/pdf_guia_remision.html -->
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <style>
+        body { font-family: sans-serif; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { border: 1px solid #ccc; padding: 6px; text-align: left; }
+        th { background-color: #f0f0f0; }
+    </style>
+</head>
+<body>
+    <h2>Guía de Remisión</h2>
+    <p><strong>Serie y Correlativo:</strong> {{ pedido.serie }} - {{ pedido.correlativo }}</p>
+    <p><strong>Fecha de Emisión:</strong> {{ pedido.fecha|date:"Y-m-d H:i" }}</p>
+    <p><strong>Dirección de Partida:</strong> {{ direccion_partida }}</p>
+    <p><strong>Dirección de Llegada:</strong> {{ pedido.direccion }}</p>
+    <p><strong>Observaciones:</strong> {{ pedido.observaciones|default:"-" }}</p>
+
+    <h3>Productos Transportados</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>N°</th>
+                <th>Producto</th>
+                <th>Cantidad</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for detalle in detalles %}
+            <tr>
+                <td>{{ forloop.counter }}</td>
+                <td>{{ detalle.producto.nombre }}</td>
+                <td>{{ detalle.cantidad }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
+</html>

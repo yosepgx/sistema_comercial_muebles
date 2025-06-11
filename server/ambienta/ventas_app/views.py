@@ -19,6 +19,8 @@ import pandas as pd
 from io import BytesIO
 from ajustes_app.models import Dgeneral
 from decimal import Decimal
+from django.template.loader import render_to_string
+from weasyprint import HTML
 #cuando un pedido se anula si estaba:
 #TODO: puede ser necesario en ambos views
 # if registro.cantidad_comprometida < cantidad:
@@ -681,3 +683,28 @@ class DescargarPedidos(APIView):
                 {"detail": "Error al generar el archivo Excel.", "error": str(e)},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
+
+class GenerarPDFGuiaRemisionView(APIView):
+    def post(self, request, pedido_id):
+        direccion_partida = request.data.get("direccion_partida")
+        if not direccion_partida:
+            return Response({"error": "Debe proporcionar la dirección de partida"}, status=400)
+
+        try:
+            pedido = Pedido.objects.prefetch_related("detalles__producto").get(id=pedido_id)
+        except Pedido.DoesNotExist:
+            return Response("Pedido no encontrado", status=404)
+
+        detalles = pedido.detalles.filter(activo=True)
+
+        html_string = render_to_string("guias_remision/pdf_guia_remision.html", {
+            "pedido": pedido,
+            "detalles": detalles,
+            "direccion_partida": direccion_partida
+        })
+
+        pdf_bytes = HTML(string=html_string).write_pdf()
+
+        response = HttpResponse(pdf_bytes, content_type="application/pdf")
+        response["Content-Disposition"] = f'attachment; filename="GuiaRemision_{pedido.serie}-{pedido.correlativo}.pdf"'
+        return response
