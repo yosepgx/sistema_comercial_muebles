@@ -61,7 +61,8 @@ class CorrelativoService:
     def guardar_siguiente_correlativo(sede_id, tipo_documento, documento_origen_id=None):
         """
         No solo obtiene el siguiente correlativo para un tipo de documento y sede específica sino 
-        tambien lo guarda
+        tambien lo guarda. NO necesita cambios para NC y ND porque al crearse sedes ya se crean con 
+        el codigo necesario BC FC BD FD, solo tiene que sumar 1 
         
         Args:
             sede_id (int): ID de la sede
@@ -83,9 +84,6 @@ class CorrelativoService:
                     activo=True
                 )
                 
-                # Incrementar correlativo
-                serie_correlativo.ultimo_correlativo += 1
-                serie_correlativo.save()
                 
                 # Formatear número completo
                 numero_completo = f"{serie_correlativo.serie}-{serie_correlativo.ultimo_correlativo:08d}"
@@ -105,6 +103,10 @@ class CorrelativoService:
                         'numero': documento_origen.numero_completo if hasattr(documento_origen, 'numero_completo') else f"{documento_origen.serie}-{documento_origen.correlativo}",
                         'tipo': documento_origen.tipo_comprobante
                     }
+
+                # Incrementar correlativo
+                serie_correlativo.ultimo_correlativo += 1
+                serie_correlativo.save()
                 
                 return resultado
                 

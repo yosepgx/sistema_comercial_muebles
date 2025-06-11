@@ -21,6 +21,7 @@ from ajustes_app.models import Dgeneral
 from decimal import Decimal
 from django.template.loader import render_to_string
 from weasyprint import HTML
+from .services import CorrelativoService
 #cuando un pedido se anula si estaba:
 #TODO: puede ser necesario en ambos views
 # if registro.cantidad_comprometida < cantidad:
@@ -55,12 +56,14 @@ class NotaViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         nota = serializer.save()
-
+        
         pedido_original = nota.documento_referencia 
+        sede = pedido_original.cotizacion.oportunidad.sede
+        CorrelativoService.guardar_siguiente_correlativo(sede_id=sede.id, tipo_documento=nota.tipo_comprobante, documento_origen_id=pedido_original.id)
         tipo_nota = nota.tipo_nota
 
+        #quitar las cantidades y devolver a stock
         if tipo_nota in [Pedido.CTIPOANULACION, Pedido.CTIPODEVOLUCIONTOT]:
-            #quitar las cantidades y devolver a stock
             #si esta en pagado ya comprometio -> quita lo comprometido y lo pone en disponible
             if pedido_original.estado_pedido == Pedido.PAGADO:
                 lineas = pedido_original.detalles.all()
