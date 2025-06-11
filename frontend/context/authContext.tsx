@@ -10,7 +10,7 @@ interface UserLogin{
     password: string;
 }
 
-interface User{
+export interface User{
     username: string;
     email: string;
     groups: [number];
