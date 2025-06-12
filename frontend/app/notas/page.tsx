@@ -68,7 +68,9 @@ export default function PedidosPage(){
     const camposFiltrables = [
       item.id?.toString().toLowerCase(),
       item.estado_pedido?.toLowerCase(),
-      item.direccion?.toLowerCase()
+      item.direccion?.toLowerCase(),
+      item.serie?.toLowerCase(),
+      item.correlativo?.toLowerCase(),
     ];
     return camposFiltrables.some(campo => campo?.includes(texto));
   });
