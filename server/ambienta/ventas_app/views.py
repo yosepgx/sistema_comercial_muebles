@@ -58,7 +58,14 @@ class NotaViewSet(viewsets.ModelViewSet):
         nota = serializer.save()
         
         pedido_original = nota.documento_referencia 
-        sede = pedido_original.cotizacion.oportunidad.sede
+        
+
+        cotizacion = pedido_original.cotizacion
+        if cotizacion is None:
+            raise ValidationError("El pedido original no tiene una cotización asociada.")
+        
+        sede = cotizacion.oportunidad.sede
+        
         CorrelativoService.guardar_siguiente_correlativo(sede_id=sede.id, tipo_documento=nota.tipo_comprobante, documento_origen_id=pedido_original.id)
         tipo_nota = nota.tipo_nota
 
@@ -89,6 +96,17 @@ class NotaViewSet(viewsets.ModelViewSet):
                     registro.cantidad_disponible += cantidad
                     registro.save()
 
+            #Anular cotizacion original (no dejara crear otra porque esta en aceptada)
+            cotizacion.estado_cotizacion = Cotizacion.RECHAZADA
+            cotizacion.observaciones = "Anulacion del pedido"
+            cotizacion.save()
+
+            #oportunidad pasa a negociacion
+            oportunidad = cotizacion.oportunidad
+            if oportunidad.estado_oportunidad == Oportunidad.GANADO:
+                oportunidad.estado_oportunidad = Oportunidad.EN_NEGOCIACION
+                oportunidad.save()
+                    
             # Anular el pedido original
             pedido_original.estado_pedido = Pedido.ANULADO
             pedido_original.save() 
@@ -189,7 +207,7 @@ class PedidoViewSet(viewsets.ModelViewSet):
                 cotizacion.save()
                 
                 oportunidad = instance.cotizacion.oportunidad
-                if oportunidad:
+                if oportunidad.estado_oportunidad == Oportunidad.GANADO:
                     oportunidad.estado_oportunidad = Oportunidad.EN_NEGOCIACION
                     oportunidad.save()
             
