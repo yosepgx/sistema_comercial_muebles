@@ -6,8 +6,8 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.authentication import SessionAuthentication, TokenAuthentication
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
-
-from .serializers import UserLogInSerializer
+from rest_framework.views import APIView
+from .serializers import UserLogInSerializer, AdminPasswordResetSerializer
 from rest_framework import status
 from rest_framework.authtoken.models import Token
 from django.shortcuts import get_object_or_404
@@ -80,3 +80,13 @@ def logout(request):
     request.user.auth_token.delete()
     return Response({"message": "Logout exitoso"}, status=status.HTTP_200_OK)
     
+
+class AdminPasswordResetView(APIView):
+    def post(self, request):
+        serializer = AdminPasswordResetSerializer(data=request.data)
+        if serializer.is_valid():
+            user = User.objects.get(id=serializer.validated_data['user_id'])
+            user.set_password(serializer.validated_data['new_password'])
+            user.save()
+            return Response({"message": "Contraseña actualizada correctamente"}, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

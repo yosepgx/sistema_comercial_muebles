@@ -4,7 +4,7 @@ import { useForm } from 'react-hook-form';
 import { string, z } from 'zod';
 import { Tusuario } from '../types/usuarioType';
 import { useEffect, useState } from 'react';
-import { GetUsuarioDetailApi, PostUsuarioAPI, UpdateUsuarioAPI } from '@/api/usuarioApis';
+import { GetUsuarioDetailApi, PostUsuarioAPI, SingUpUsuarioAPI, UpdateUsuarioAPI } from '@/api/usuarioApis';
 import { useParams, useRouter } from 'next/navigation';
 import { Form, FormControl, FormField, FormItem, FormMessage, FormLabel } from '../ui/form';
 import { Input } from '../ui/input';
@@ -22,6 +22,7 @@ const formSchema = z.object({
     email: z.string().email({ message: 'Correo electrónico inválido' }),
     rol: string(),
     is_active: z.string(),
+    password: z.string().optional(),
 })
 
 type FormValues = z.infer<typeof formSchema>
@@ -50,7 +51,8 @@ export default function FormularioUsuario({tipo}: Props){
             username: '',
             email: '',
             rol: 'administrador',
-            is_active: 'true'
+            is_active: 'true',
+            //password undefined
           }});
 
     const cargarUsuario = (usuario: Tusuario | null) => {
@@ -82,7 +84,8 @@ export default function FormularioUsuario({tipo}: Props){
 
         if (allRolesExist) {
             if(tipo === "nuevo"){
-                await PostUsuarioAPI(null,data);
+                //await PostUsuarioAPI(null,data);
+                await SingUpUsuarioAPI(null,data)
             }
             else{
                 await UpdateUsuarioAPI(null,data.id,data);
@@ -142,6 +145,20 @@ export default function FormularioUsuario({tipo}: Props){
                     </FormItem>
                 )}
                 />
+                {tipo === 'nuevo' && 
+                <FormField
+                control = {form.control}
+                name = "password"
+                render={({field}) => (
+                    <FormItem className='flex flex-col'>
+                    <FormLabel> Contraseña</FormLabel>
+                    <FormControl>
+                        <Input type = "password" {...field}/>
+                    </FormControl>
+                    <FormMessage className="min-h-[24px]"/>
+                    </FormItem>
+                )}
+                />}
                 <FormField
                 control = {form.control}
                 name = "rol"

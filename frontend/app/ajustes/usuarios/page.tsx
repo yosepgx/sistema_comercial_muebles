@@ -8,17 +8,20 @@ import { Tusuario } from "@/components/types/usuarioType"
 import { useAuth } from "@/context/authContext"
 import { DataGrid, GridColDef } from '@mui/x-data-grid';
 import { IconButton } from "@mui/material"
-import { Edit, Trash2 } from "lucide-react"
+import { Edit, Lock, Trash2 } from "lucide-react"
 import { useRouter } from "next/navigation"
 import CustomButton from "@/components/customButtom"
 import { usePermiso } from "@/hooks/usePermiso"
 import { PERMISSION_KEYS } from "@/constants/constantRoles"
+import { ChangePasswordPopup } from "@/components/usuarios/popupChangeContraseña"
 
 
 
 
 export default function UsuariosPage(){
     const puedeGestionarUsuarios = usePermiso(PERMISSION_KEYS.USUARIO_ACTUALIZAR)
+    const [passwordModalOpen, setPasswordModalOpen] = useState(false);
+    const [selectedUserId, setSelectedUserId] = useState<number | null>(null);
     const [data, setData] = useState<Tusuario[]>([])
     const [loading, setLoading] = useState(true)
     const router = useRouter()
@@ -36,6 +39,11 @@ export default function UsuariosPage(){
     useEffect(() => {
         cargarDatos()
     }, [])
+
+    const abrirModalCambioPassword = (id: number) => {
+        setSelectedUserId(id);
+        setPasswordModalOpen(true);
+    };
 
     const userColumns: GridColDef<Tusuario>[] = [
     {   field: 'id', 
@@ -86,6 +94,9 @@ export default function UsuariosPage(){
         }}>
           <Trash2 />
         </IconButton>
+        <IconButton onClick={() => abrirModalCambioPassword(params.row.id)}>
+            <Lock />
+          </IconButton>
       </div>
     ),
   }
@@ -119,6 +130,11 @@ export default function UsuariosPage(){
                 pageSizeOptions={[5, 10, 25]}
                 disableRowSelectionOnClick
                 disableColumnMenu
+                />
+                <ChangePasswordPopup
+                open={passwordModalOpen}
+                onClose={() => setPasswordModalOpen(false)}
+                userId={selectedUserId}
                 />
                 </>}
             </MainWrap>

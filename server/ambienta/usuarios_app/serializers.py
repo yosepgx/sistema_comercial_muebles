@@ -40,7 +40,9 @@ class UserGroupSerializer(serializers.ModelSerializer):
         # Actualiza el User
         instance.username = validated_data.get('username', instance.username)
         instance.email = validated_data.get('email', instance.email)
+        instance.is_active = validated_data.get('is_active', instance.is_active)
         instance.save()
+        #Actualiza groups
         groups_data = validated_data.pop('groups', None)
         if groups_data is not None:
             instance.groups.set(groups_data)
@@ -66,5 +68,21 @@ class UserGroupSerializer(serializers.ModelSerializer):
 class UserLogInSerializer(serializers.ModelSerializer):
     class Meta(object):
         model = User
-        fields = ['id','username','password', 'email']    
+        fields = ['id','username','password', 'email']  
+
+
+class AdminPasswordResetSerializer(serializers.Serializer):
+    user_id = serializers.IntegerField()
+    new_password = serializers.CharField()
+    confirm_password = serializers.CharField()
+
+    def validate(self, data):
+        if data['new_password'] != data['confirm_password']:
+            raise serializers.ValidationError("Las contraseñas no coinciden.")
+        return data
+
+    def validate_user_id(self, value):
+        if not User.objects.filter(id=value).exists():
+            raise serializers.ValidationError("Usuario no encontrado.")
+        return value
     

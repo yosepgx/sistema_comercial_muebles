@@ -1,4 +1,5 @@
 import { customFetch } from "@/components/customFetch";
+import { FormPasswordData } from "@/components/schemas/formPasswordSchema";
 import { Tusuario } from "@/components/types/usuarioType"; 
 
 
@@ -123,3 +124,64 @@ export async function UpdateUsuarioAPI(token:string | null, id: number, data: Tu
       return null;
     }
   }
+
+export async function SingUpUsuarioAPI(token:string | null, data: Tusuario){
+    //fields = ['id', 'username', 'email', 'groups', 'is_active']
+    //groups = fields = ['id', 'name', 'permissions', 'permission_ids']
+    //password
+    try {
+        const response = await customFetch(token,`usuarios/signup/`, {
+            
+            method: "POST",
+            headers:{
+                'Content-Type':'application/json' ,
+            },
+            body: JSON.stringify(data),
+        });
+
+        if(!response.ok){
+            throw new Error(`Error del servidor: ${response.status} - ${response.statusText}`)
+
+        }
+
+        const responseData = await response.json();
+        return responseData as Tusuario;
+        
+    } catch (error) {
+        console.error("Error al guardar detalle de usuario:", error);
+        return null;
+    }
+}
+
+
+
+export async function ChangePasswordAPI(token:string | null, data: FormPasswordData){
+    // {
+    //   "user_id": 5,
+    //   "new_password": "nuevaClave123",
+    //   "confirm_password": "nuevaClave123"
+    // }
+
+    try {
+        const response = await customFetch(token,`usuarios/change-password/`, {
+            
+            method: "POST",
+            headers:{
+                'Content-Type':'application/json' ,
+            },
+            body: JSON.stringify(data),
+        });
+
+        if(!response.ok){
+            throw new Error(`Error del servidor: ${response.status} - ${response.statusText}`)
+
+        }
+
+        const responseData = await response.json();
+        return responseData as Tusuario;
+        
+    } catch (error) {
+        console.error("Error al guardar detalle de usuario:", error);
+        return null;
+    }
+}
