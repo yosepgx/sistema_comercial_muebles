@@ -29,8 +29,10 @@ class ProductoSerializer(serializers.ModelSerializer):
     rprecio_actual = serializers.FloatField(source= 'precio', read_only = True)
     rhistorial_precio = PrecioSerializer (source = "precios", many=True, read_only = True)
     rcategoria_producto= CategoriaProductoSerializer ( source = "categoria", read_only = True)
+    rstock = serializers.CharField(source= 'stock', read_only= True)
+    #rinventario_comprometido = serializers.CharField(source= 'producto.inventario.cantidad_comprometida', read_only= True)
     class Meta:
         model = Producto
         fields = ['id', 'nombre','umedida_sunat', 'descripcion', 'categoria', 'igv', 
                   'afecto_igv', 'codigo_afecion_igv', 'es_servicio', 'activo', 
-                  'rprecio_actual', 'rhistorial_precio', 'rcategoria_producto' ]
+                  'rprecio_actual', 'rhistorial_precio', 'rcategoria_producto', 'rstock' ]

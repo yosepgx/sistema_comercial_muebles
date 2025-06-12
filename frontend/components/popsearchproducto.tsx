@@ -72,12 +72,12 @@ const ProductSearchPopup: React.FC<ProductSearchPopupProps> = ({
       width: 100,
       flex: 1,
     },
-    // {
-    //   field: 'stock',
-    //   headerName: 'STOCK',
-    //   width: 100,
-    //   flex: 1,
-    // },
+    {
+      field: 'rstock',
+      headerName: 'STOCK',
+      width: 100,
+      flex: 1,
+    },
     {
       field: 'actions',
       headerName: 'Acción',
