@@ -24,6 +24,7 @@ import { UNIDADES_MEDIDA_BUSCA } from '@/constants/unidadesMedidaConstants'
 import { formPedidoSchema, FormPedidoValues } from '../schemas/pedidoSchemas'
 import { usePermiso } from '@/hooks/usePermiso'
 import { PERMISSION_KEYS } from '@/constants/constantRoles'
+import { GenerarGuiaModal } from './GenerarGuiaModal'
 
 type Props = {
   tipo: 'nuevo' | 'edicion'
@@ -31,6 +32,7 @@ type Props = {
 
 export default function FormPedidoStandAlone({tipo} : Props) {
   const puedeEditarPedidos = usePermiso(PERMISSION_KEYS.PEDIDO_DESPACHAR)
+  const [openModal, setOpenModal] = useState(false);
   const [pedido, setPedido] = useState<TPedido | null>(null)
   const [descuentoTotal, setDescuentoTotal] = useState(0.0)
   const {id} = useParams();
@@ -459,11 +461,22 @@ export default function FormPedidoStandAlone({tipo} : Props) {
                 }
             }}
             >Emitir Nota de credito o debito</CustomButton>}
+            {puedeEditarPedidos && 
+              <CustomButton
+              onClick={() => setOpenModal(true)}
+            >Generar Guia</CustomButton>}
           </div>
         </div>
       </div>
         </form>
       </Form>        
+      <div>
+        <GenerarGuiaModal
+        open={openModal}
+        onClose={() => setOpenModal(false)}
+        pedidoId={`${pedido?.id}`}
+      />
+      </div>
       {/* Sección RESUMEN PRODUCTOS */}
       <div className="mt-8">
         <h3 className="text-lg font-semibold mb-4 text-gray-800">RESUMEN PRODUCTOS</h3>

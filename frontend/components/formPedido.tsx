@@ -24,10 +24,12 @@ import { formPedidoSchema, FormPedidoValues } from './schemas/pedidoSchemas'
 import { UNIDADES_MEDIDA_BUSCA } from '@/constants/unidadesMedidaConstants'
 import { usePermiso } from '@/hooks/usePermiso'
 import { PERMISSION_KEYS } from '@/constants/constantRoles'
+import { GenerarGuiaModal } from './pedidos/GenerarGuiaModal'
 
 
 export default function FormPedido() {
   const puedeEditarPedidos = usePermiso(PERMISSION_KEYS.PEDIDO_DESPACHAR)
+  const [openModal, setOpenModal] = useState(false);
   const {crrTab, crrOportunidad} = useOportunidadContext()
   const [pedido, setPedido] = useState<TPedido | null>(null)
   const [listaDetalles, setListaDetalles] = useState<TPedidoDetalle[]>([])
@@ -441,11 +443,22 @@ export default function FormPedido() {
             >
               Anular Pedido
             </CustomButton>} */}
+            {puedeEditarPedidos && 
+              <CustomButton
+              onClick={() => setOpenModal(true)}
+            >Generar Guia</CustomButton>}
           </div>
         </div>
       </div>
         </form>
       </Form>        
+      <div>
+        <GenerarGuiaModal
+        open={openModal}
+        onClose={() => setOpenModal(false)}
+        pedidoId={`${pedido?.id}`}
+      />
+      </div>
       {/* Sección RESUMEN PRODUCTOS */}
       <div className="mt-8">
         <h3 className="text-lg font-semibold mb-4 text-gray-800">RESUMEN PRODUCTOS</h3>
