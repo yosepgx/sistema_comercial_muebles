@@ -39,7 +39,7 @@ const ProductSearchPopup: React.FC<ProductSearchPopupProps> = ({
   //FIX: filtrado de categoria tambien
   const filteredProductos = productos.filter(producto =>{
     const categoria = categorias.find(cat => cat.id === producto.categoria);
-    let lowerSearchTerm = searchTerm.toLowerCase()
+    const lowerSearchTerm = searchTerm.toLowerCase()
     return (
     String(producto.id).includes(lowerSearchTerm) ||
     producto.nombre?.toLowerCase().includes(lowerSearchTerm) ||
