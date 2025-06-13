@@ -62,12 +62,18 @@ export default function FormCotizaciones() {
       resizable: false,
       flex: 1
     },
-    // {
-    //   field: 'vendedor',
-    //   headerName: 'VENDEDOR',
-    //   resizable: false,
-    //   flex: 1
-    // },
+    {
+      field: 'vendedor',
+      headerName: 'VENDEDOR',
+      resizable: false,
+      flex: 1
+    },
+    {   
+      field: 'descuento_adicional', 
+      headerName: 'Descuento auxiliar',
+      resizable: false,
+      flex: 1
+    },
     {
       field: 'acciones',
       headerName: 'Acciones',

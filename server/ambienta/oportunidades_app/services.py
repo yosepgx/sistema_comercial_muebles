@@ -35,7 +35,7 @@ class ServiceCargarDatosOportunidades:
         try:
             campos = {'fecha': str ,'estado_cotizacion': str ,'oportunidad': str ,
                       'monto_sin_impuesto': float,'monto_total': float,'monto_igv': float, 'descuento_adicional': float,
-                      'observaciones': str,'direccion_entrega':str ,'activo': bool}
+                      'observaciones': str,'direccion_entrega':str , 'vendedor':str, 'activo': bool}
             df = pd.read_excel(archivo, sheet_name='Cotizacion', 
                                usecols=campos.keys(),
                                parse_dates=['fecha'],
@@ -48,6 +48,8 @@ class ServiceCargarDatosOportunidades:
                 
                 id_oportunidad = datos.pop('oportunidad')
                 op = Oportunidad.objects.get(id=id_oportunidad)
+
+                #getVendedor - Usuario  
                 
                 obj = Cotizacion(oportunidad = op, **datos)
                 objetos.append(obj)

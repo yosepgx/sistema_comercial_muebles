@@ -107,6 +107,7 @@ class CotizacionViewSet(viewsets.ModelViewSet):
         resultado = CorrelativoService.guardar_siguiente_correlativo(sede_id=sede.id,tipo_documento=tipo_comprobante)
         
         # Creamos el pedido con la información de la cotización
+        #TODOS12: REGULARIZAR CON NOTA
         pedido = Pedido.objects.create(
             #fecha = now_add
             fechaentrega = None,

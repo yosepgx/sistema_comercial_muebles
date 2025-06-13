@@ -120,6 +120,11 @@ export default function CotizacionesPage(){
             resizable: false,
             flex: 1
         },
+        {   field: 'vendedor', 
+            headerName: 'Vendedor',
+            resizable: false,
+            flex: 1
+        },
         {   field: 'descuento_adicional', 
             headerName: 'Descuento auxiliar',
             resizable: false,

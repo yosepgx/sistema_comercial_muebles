@@ -6,7 +6,6 @@ export const formCotizacionSchema = z. object({
   id: z.string(),     //manejado por back
   fecha: z.string(), //manejado por back 
   estado_cotizacion: z.enum(["propuesta","aceptada","rechazada"]), // si usa el boton de aceptar o rechazar 
-  //vendedor_asignado: z.number(),
   oportunidad: z.string(),
   monto_sin_impuesto: z.string(), //suma ingresada al final
   monto_igv: z.string(),
@@ -17,6 +16,7 @@ export const formCotizacionSchema = z. object({
   observaciones: z.string(),
   direccion_entrega: z.string(), //deberia de funcionar ya que se asigna la direccion despues
   activo: z.string(),
+  vendedor: z.string().min(1,"Es necesario indicar el nombre del vendedor"),
 
 })
 
@@ -29,7 +29,6 @@ export const formCotizacionSchemaSend = formCotizacionSchema.transform ( data =>
   monto_total: parseFloat(data.monto_total),
   descuento_adicional: parseFloat(data.descuento_adicional),
   activo: data.activo==='true',
-  //vendedor_asignado = 1, //TODO: funcionalidades de asignar vendedor
   
 }))
 

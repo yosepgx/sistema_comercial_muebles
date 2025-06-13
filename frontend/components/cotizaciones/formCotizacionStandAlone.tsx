@@ -286,6 +286,19 @@ if(!crrCotizacion)return (<div>Cargando...</div>)
             <div>
             <FormField
               control = {form.control}
+              name = "vendedor"
+              render={({field}) => (
+                <FormItem className='flex flex-col'>
+                  <FormLabel> Vendedor</FormLabel>
+                  <FormControl>
+                    <Input type = "text" {...field} disabled={edicionCotizacion==='edicion'}/>
+                  </FormControl>
+                  <FormMessage className="min-h-[24px]"/>
+                </FormItem>
+              )}
+            />
+            <FormField
+              control = {form.control}
               name = "observaciones"
               render={({field}) => (
                 <FormItem className='flex flex-col'>
