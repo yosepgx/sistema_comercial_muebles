@@ -12,7 +12,7 @@ export const GetXMLNota = async (token: string | null, idnota: number) => {
     const url = window.URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;    
-    link.setAttribute('download', `nota-${idnota}`);
+    link.setAttribute('download', `nota-${idnota}.xml`);
     document.body.appendChild(link);
     link.click();
     link.remove();

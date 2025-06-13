@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useState } from "react";
+import { customFetch } from "../customFetch";
 
 interface GenerarGuiaModalProps {
   open: boolean;
@@ -16,7 +17,7 @@ export function GenerarGuiaModal({ open, onClose, pedidoId }: GenerarGuiaModalPr
   const handleGenerarGuia = async () => {
     if(!pedidoId)return
     try {
-      const response = await fetch(`/pedidos/generar-guia/${pedidoId}`, {
+      const response = await customFetch(null,`ventas/generar-guia/${pedidoId}/`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

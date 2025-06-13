@@ -23,6 +23,7 @@ import { useParams, useRouter } from 'next/navigation'
 import { formCotizacionSchema, formCotizacionSchemaSend, FormCotizacionValues } from '../schemas/formCotizacionSchema'
 import { useCalculosCotizacion } from '../hooks/useCalculosCotizacion'
 import { GetDatoGeneralDetailApi } from '@/api/datogeneralApis'
+import { cargarCotizacion } from './cargarCotizacion'
 
 
 type Props = {
@@ -73,26 +74,12 @@ const fetchCotizacion = async () => {
     return cotizacion;
 }
 
-const cargarCotizacion = (cotizacion: TCotizacion | null) => {
-  if(!cotizacion) return;
-  form.setValue('id', `${cotizacion.id}`);
-  form.setValue('fecha', cotizacion.fecha);
-  form.setValue('estado_cotizacion', cotizacion.estado_cotizacion);
-  form.setValue('oportunidad', `${cotizacion.oportunidad}`);
-  form.setValue('monto_sin_impuesto', `${cotizacion.monto_sin_impuesto}`);
-  form.setValue('monto_igv', `${cotizacion.monto_igv}`);
-  form.setValue('monto_total', `${cotizacion.monto_total}`);
-  form.setValue('descuento_adicional', `${cotizacion.descuento_adicional}`);
-  form.setValue('observaciones', cotizacion.observaciones || '');
-  form.setValue('direccion_entrega', cotizacion.direccion_entrega || '');
-  form.setValue('activo', cotizacion.activo ? 'true' : 'false');
-};
 
 useEffect(()=>{
     if(edicionCotizacion ==='edicion' && id){
         const cargar = async () => {
             const data = await fetchCotizacion(); 
-            cargarCotizacion(data);              
+            cargarCotizacion(data, form);              
         };
         cargar();
     }
