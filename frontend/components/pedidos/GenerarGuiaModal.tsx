@@ -37,7 +37,7 @@ export function GenerarGuiaModal({ open, onClose, pedidoId }: GenerarGuiaModalPr
       a.click();
       a.remove();
 
-      alert("Guía generada y descargada con éxito");
+      //alert("Guía generada y descargada con éxito");
       onClose(); // cerrar el modal externo
     } catch (error) {
       console.error(error);

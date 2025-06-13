@@ -49,7 +49,7 @@ export default function InventarioPage() {
                 columns={columns}
                 odata={data}
                 defaultColumn={defaultColumnCell}
-                placeholder={"Buscar por codigo de producto"}
+                placeholder={"Buscar por nombre de producto"}
                 canFilterActivo = {false}
                 canExport = {true}
             >

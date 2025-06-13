@@ -161,6 +161,10 @@ export default function FormNotaCreditoDebito({edicion, pedido, notaid, detalles
               console.warn("Error inesperado", result.code);
           }
         }
+        if(result?.error === false){
+          router.push('/notas')
+        }
+        //si resultado ok se tiene que ir para evitar presionar doble
       }
       //si es edicion este boton no aparece
     }
@@ -199,10 +203,10 @@ export default function FormNotaCreditoDebito({edicion, pedido, notaid, detalles
                           <Label htmlFor="credito-boleta">Nota de credito a boleta</Label>
                           <RadioGroupItem value={tipoComprobanteChoices.TIPONCFACTURA} id="creditof" />
                           <Label htmlFor="credito-factura">Nota de credito a factura</Label>
-                          <RadioGroupItem value={tipoComprobanteChoices.TIPONDBOLETA} id="debitob" />
+                          {/* <RadioGroupItem value={tipoComprobanteChoices.TIPONDBOLETA} id="debitob" />
                           <Label htmlFor="debito-boleta">Nota de debito a boleta</Label>
                           <RadioGroupItem value={tipoComprobanteChoices.TIPONDFACTURA} id="debitof" />
-                          <Label htmlFor="debito-factura">Nota de debito a factura</Label>
+                          <Label htmlFor="debito-factura">Nota de debito a factura</Label> */}
                         </div>
                       </RadioGroup>
                     </FormItem>
@@ -213,19 +217,25 @@ export default function FormNotaCreditoDebito({edicion, pedido, notaid, detalles
                   name="tipo_nota"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Tipo de Nota</FormLabel>
+                      <FormLabel>Razon de eliminacion</FormLabel>
                       <RadioGroup value={field.value} onValueChange={field.onChange}>
-                        <div className="flex flex-col">
+                        <div className="flex flex-col gap-y-2">
+                          <div className='flex flex-row gap-2'>
                           <RadioGroupItem value={tipoNotaChoices.CTIPOANULACION} id="tipoanul" />
-                          <Label >Nota de credito a boleta</Label>
+                          <Label >Anulacion</Label>
+                          </div>
+                          <div className='flex flex-row gap-2'>
                           <RadioGroupItem value={tipoNotaChoices.CTIPOANULACIONRUC} id="tipoanul" />
-                          <Label >Nota de credito a boleta</Label>
+                          <Label >Anulacion por error de RUC</Label>
+                          </div>
                           {/* <RadioGroupItem value={tipoNotaChoices.CTIPODECITEM} id="tipodesci" />
                           <Label >Nota de credito a factura</Label>
                           <RadioGroupItem value={tipoNotaChoices.CTIPODESCGLOBAL} id="tipodesg" />
                           <Label >Nota de debito a boleta</Label> */}
+                          <div className='flex flex-row gap-2'>
                           <RadioGroupItem value={tipoNotaChoices.CTIPODEVOLUCIONTOT} id="tipodevtot" />
-                          <Label >Nota de debito a factura</Label>
+                          <Label >Devolucion total</Label>
+                          </div>
                           {/* <RadioGroupItem value={tipoNotaChoices.DTIPOAUMENTOVALOR} id="tipoAumento" />
                           <Label >Nota de debito a factura</Label> */}
                         </div>

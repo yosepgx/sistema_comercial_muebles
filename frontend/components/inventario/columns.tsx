@@ -38,9 +38,8 @@ export const defaultColumnCell: Partial<ColumnDef<Inventario>> = {
 
 export const columns: ColumnDef<Inventario>[] = [
     {
-      accessorKey: "id",
+      accessorKey: "producto",
       header: "Codigo",
-      enableGlobalFilter: false,
       cell: ({ getValue }) => <span>{getValue() as string}</span>,
     },
     
@@ -50,15 +49,20 @@ export const columns: ColumnDef<Inventario>[] = [
       cell: ({ getValue }) => <span>{getValue() as string}</span>,
       filterFn: "includesString",
     },
+    // {
+    //   accessorKey: "almacen",
+    //   header: "Almacen",
+    //   cell: ({ getValue }) => <span>{getValue() as string}</span>,
+    //   enableGlobalFilter: false
+    // },
     {
-      accessorKey: "almacen",
-      header: "Almacen",
-      cell: ({ getValue }) => <span>{getValue() as string}</span>,
+      accessorKey: "cantidad_disponible",
+      header: "Stock",
       enableGlobalFilter: false
     },
     {
-      accessorKey: "cantidad_disponible",
-      header: "Cantidad Disponible",
+      accessorKey: "cantidad_comprometida",
+      header: "Cantidad Comprometida",
       enableGlobalFilter: false
     },
     {

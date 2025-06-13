@@ -37,7 +37,7 @@ class NotaSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError(code="NOTA_ERR02",detail="Debe especificarse el tipo de documento")
         if not tipo_nota:
             raise serializers.ValidationError(code="NOTA_ERR03",detail="Debe especificarse el tipo de nota")
-        if pedido_original.estado == Pedido.ANULADO:
+        if pedido_original.estado_pedido == Pedido.ANULADO:
             raise serializers.ValidationError(code="NOTA_ERR04",detail="No se puede emitir una nota para un pedido que ya fue anulado.")
         
         notas_existentes = Pedido.objects.filter(documento_referencia=pedido_original)
