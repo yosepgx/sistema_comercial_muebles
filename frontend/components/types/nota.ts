@@ -1,7 +1,7 @@
 import { tipoComprobanteChoices } from "@/constants/tipoComprobanteChoices"
 import {string, z} from "zod"
-
-const pedidoDetalle = z.object({
+//la separacion es solo para controlar que las notas tienen cotizaciones null y los pedidos no
+const notaDetalle = z.object({
     producto: z.number(),
     pedido: z.number(),
     cantidad: z.number(),
@@ -14,7 +14,7 @@ const pedidoDetalle = z.object({
     rum: z.string()
 })
 
-const pedido = z.object({
+const nota = z.object({
     id: z.number(),
     fecha: z.string(),
     fechaentrega: z.string().nullable(),
@@ -29,7 +29,7 @@ const pedido = z.object({
     tipoComprobanteChoices.TIPONDFACTURA,
   ]),
     direccion: z.string(),
-    cotizacion: z.number(),
+    cotizacion: z.number().nullable(),
     moneda: z.enum(["PEN"]),
     estado_pedido: z.enum(["pendiente", "pagado", "despachado", "anulado"]),
     monto_sin_impuesto: z.number(),
@@ -41,7 +41,8 @@ const pedido = z.object({
     activo: z.boolean(),
     documento_referencia: z.number().nullable().optional(),
     tipo_nota:z.string().nullable().optional()
+    
 })
 
-export type TPedido = z.infer<typeof pedido>
-export type TPedidoDetalle = z.infer<typeof pedidoDetalle>
+export type TNota = z.infer<typeof nota>
+export type TNotaDetalle = z.infer<typeof notaDetalle>

@@ -31,7 +31,7 @@ class Pedido(models.Model):
     ]
 
     CTIPOANULACION = "anulacion de la operacion"
-    #CTIPOERRORRUC = "Anulacion por error en el RUC" se puede hacer la anulacion de arriba
+    CTIPOANULACIONRUC = "anulacion por ruc erroneo" #se puede hacer la anulacion de arriba
     #CTIPOCORRECIONDESC = "Correccion por error en la descripcion" no es necesario se jala la descr
     CTIPODESCGLOBAL = "decuento global"#si
     CTIPODECITEM = "descuento por item"  #solo total no parcial
@@ -43,8 +43,9 @@ class Pedido(models.Model):
 
     TIPO_NOTA_CHOICES = [
         (CTIPOANULACION, "anulacion de la operacion"), #stock
-        (CTIPODESCGLOBAL , "decuento global"), 
-        (CTIPODECITEM , "descuento por item"),
+        (CTIPOANULACIONRUC, "anulacion por ruc erroneo"), 
+        (CTIPODESCGLOBAL , "decuento global"), #no se haran descuentos porque se puede anular y volver a hacer
+        (CTIPODECITEM , "descuento por item"), #ademas ya pasas por varias validaciones antes de crearse
         (CTIPODEVOLUCIONTOT , "devolucion total"), #stock
         (DTIPOAUMENTOVALOR , "aumento en el valor"),
     ]

@@ -27,10 +27,11 @@ export default function NotaCreditoDebitoLoader() {
       const lineas = await GetPedidoLineaListApi(null, id)
       const lineasConValoresEnCero = lineas.map(linea => ({
         ...linea,
-        cantidad: 0,
-        precio_unitario: 0,
-        descuento: 0,
-        subtotal: 0,
+        //misma cantidad
+        pedido: 0, //se tiene que asignar despues de su creacion sino estara asignado al pedido
+        precio_unitario: linea.cantidad >0? linea.precio_unitario - linea.descuento/linea.cantidad : linea.precio_unitario - linea.descuento,
+        //no hay descuentos en nc o mejor dicho el "precio_unitario" es el descuento
+        //subtotal: linea.subtotal, mismo subtotal
       }))
       setDetalles(lineasConValoresEnCero)
     } catch (error) {

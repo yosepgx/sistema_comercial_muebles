@@ -1,27 +1,30 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { useForm, UseFormReturn } from 'react-hook-form'
-import { z } from 'zod'
+import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { RadioGroup, RadioGroupItem } from '../ui/radio-group'
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '../ui/form'
 import CustomButton from '../customButtom'
-import { Collapsible, CollapsibleTrigger, CollapsibleContent } from '../ui/collapsible'
-import { ChevronRight, ChevronDown } from 'lucide-react'
-import ProductSearchPopup from '../popsearchproducto'
+import { ChevronRight } from 'lucide-react'
 import { NotaCreditoDebitoTable } from './tableNota'
-import { TProducto } from '@/components/types/productoTypes'
 import { TPedido, TPedidoDetalle } from '../types/pedido'
 import { GetPedidoDetailApi, PostPedidoAPI } from '@/api/pedidoApis'
-import { formPedidoSchema, formPedidoSchemaSend, FormPedidoValues } from '../schemas/pedidoSchemas'
-import { format } from 'date-fns'
 import { cargarPedido } from '../pedidos/cargarPedido'
-import { watch } from 'fs'
 import { tipoComprobanteChoices } from '@/constants/tipoComprobanteChoices'
 import { GetPedidoLineaListApi } from '@/api/pedidoDetalleApis'
+import { tipoNotaChoices } from '@/constants/tipoNotaChoices'
+import { DataGrid, GridColDef } from '@mui/x-data-grid'
+import { UNIDADES_MEDIDA_BUSCA } from '@/constants/unidadesMedidaConstants'
+import { usePermiso } from '@/hooks/usePermiso'
+import { PERMISSION_KEYS } from '@/constants/constantRoles'
+import { GetXMLNota, PostNotaAPI } from '@/api/notaApis'
+import { useRouter } from 'next/navigation'
+import { formNotaSchema, formNotaSchemaSend, FormNotaValues } from '../schemas/formNotaSchema'
+import { TNota, TNotaDetalle } from '../types/nota'
+import { cargarNota } from './cargarNota'
 
 
 
@@ -34,8 +37,8 @@ type Props = {
 
 
 export default function FormNotaCreditoDebito({edicion, pedido, notaid, detalles }: Props) {
-  const form = useForm<FormPedidoValues>({
-    resolver: zodResolver(formPedidoSchema),
+  const form = useForm<FormNotaValues>({
+    resolver: zodResolver(formNotaSchema),
     defaultValues: {
       id: '',    //s 
       fecha: '', //s back
@@ -44,6 +47,7 @@ export default function FormNotaCreditoDebito({edicion, pedido, notaid, detalles
       serie: '',  //s back
       correlativo: '', //s back
       tipo_comprobante: tipoComprobanteChoices.TIPONCBOLETA, //s
+      tipo_nota: tipoNotaChoices.CTIPOANULACION,
       direccion: 'tienda', 
       cotizacion: '', //? puede ser null o puede ser la cotizacion del pedido pedido.cotizacion
       moneda: 'PEN', //s
@@ -59,11 +63,10 @@ export default function FormNotaCreditoDebito({edicion, pedido, notaid, detalles
     }
   })
 
-  const [isDescuentoOpen, setIsDescuentoOpen] = useState(true)
-  const [nota, setNota] = useState(null)
+  const puedeEditarPedidos = usePermiso(PERMISSION_KEYS.PEDIDO_CREAR)
   const [listaDetalles, setListaDetalles] = useState<TPedidoDetalle[]>(detalles)
   const [pedidoRel, SetPedidodRel] = useState<TPedido | null>(pedido)
-  
+  const router = useRouter()
 
   //en el caso nuevo trae datos en pedido
   //en el caso edicion no trae esos datos pero ya tiene el pedido relacionado guardado
@@ -72,7 +75,7 @@ export default function FormNotaCreditoDebito({edicion, pedido, notaid, detalles
         GetPedidoDetailApi(null, notaid)
         .then(dataNota => {
           if(dataNota){
-          cargarPedido(dataNota,form)//carga la nota , luego cargar su pedido  y las lineas de la nota
+          cargarNota(dataNota,form)//carga la nota , luego cargar su pedido  y las lineas de la nota
           if(dataNota.documento_referencia){
             GetPedidoDetailApi(null, dataNota.documento_referencia)
               .then(dataPedido => SetPedidodRel(dataPedido))
@@ -87,7 +90,56 @@ export default function FormNotaCreditoDebito({edicion, pedido, notaid, detalles
       }
   },[])
 
-  const onSubmit = async (rawdata: FormPedidoValues) => {
+  const columns: GridColDef<TPedidoDetalle>[] = [
+      {
+        field: 'producto',
+        headerName: 'CODIGO',
+        resizable: false,
+        flex: 1
+      },
+      {
+        field: 'rnombre',
+        headerName: 'PRODUCTO',
+        resizable: false,
+        flex: 1,
+        
+      },
+      {
+        field: 'precio_unitario',//-descuento/cantidad TODO: no puede haber descuento en ncs solo correcion
+        headerName: 'Correcion Unitaria',
+        resizable: false,
+        flex: 1,
+        
+      },
+      {
+        field: 'rum',
+        headerName: 'UM',
+        resizable: false,
+        flex: 1,
+        valueFormatter: (value) => UNIDADES_MEDIDA_BUSCA[value]?? 'Sin unidad',
+      },
+      {
+        field: 'cantidad',
+        headerName: 'CANTIDAD',
+        resizable: false,
+        flex: 1
+      },
+      // {
+      //   field: 'descuento',
+      //   headerName: 'DESCUENTO',
+      //   resizable: false,
+      //   flex: 1
+      // },
+      {
+        field: 'subtotal',
+        headerName: 'TOTAL',
+        resizable: false,
+        flex: 1
+      },
+      
+    ]
+
+  const onSubmit = async (rawdata: FormNotaValues) => {
     if(!pedidoRel )return
     if(!pedidoRel.id) return
     
@@ -97,10 +149,18 @@ export default function FormNotaCreditoDebito({edicion, pedido, notaid, detalles
     rawdata.documento_referencia = pedidoRel.id
     rawdata.direccion = 'tienda'
     console.log('Nota enviada:', rawdata)
-    const data = formPedidoSchemaSend.parse(rawdata)
-    if(data){
+    const data = formNotaSchemaSend.parse(rawdata)
+    const send = {...data, detalles: listaDetalles}//TODO: necesita su propio schema
+    if(send){
       if(edicion === 'nuevo'){
-        PostPedidoAPI(null, data)//post de la nota
+        const result = await PostNotaAPI(null, data);
+        if (result?.error && result?.code) {
+          if (result.code.includes('NOTA_ERR')) {
+              alert(result.message);
+          } else {
+              console.warn("Error inesperado", result.code);
+          }
+        }
       }
       //si es edicion este boton no aparece
     }
@@ -115,7 +175,7 @@ export default function FormNotaCreditoDebito({edicion, pedido, notaid, detalles
           <div className="flex items-center gap-2 text-sm text-gray-600">
             <ChevronRight size={16} />
             <span> Nota de Crédito / Débito </span>
-            {edicion === 'nuevo' && (<CustomButton type="submit" >Guardar Nota</CustomButton>)}
+            {edicion === 'nuevo' && <CustomButton type="submit" >Guardar Nota</CustomButton>}
           </div>
 
           
@@ -135,14 +195,39 @@ export default function FormNotaCreditoDebito({edicion, pedido, notaid, detalles
                       <FormLabel>Tipo de Nota</FormLabel>
                       <RadioGroup value={field.value} onValueChange={field.onChange}>
                         <div className="flex items-center space-x-2">
-                          <RadioGroupItem value={tipoComprobanteChoices.TIPONCBOLETA} id="credito" />
+                          <RadioGroupItem value={tipoComprobanteChoices.TIPONCBOLETA} id="creditob" />
                           <Label htmlFor="credito-boleta">Nota de credito a boleta</Label>
-                          <RadioGroupItem value={tipoComprobanteChoices.TIPONCFACTURA} id="debito" />
+                          <RadioGroupItem value={tipoComprobanteChoices.TIPONCFACTURA} id="creditof" />
                           <Label htmlFor="credito-factura">Nota de credito a factura</Label>
-                          <RadioGroupItem value={tipoComprobanteChoices.TIPONDBOLETA} id="debito" />
+                          <RadioGroupItem value={tipoComprobanteChoices.TIPONDBOLETA} id="debitob" />
                           <Label htmlFor="debito-boleta">Nota de debito a boleta</Label>
-                          <RadioGroupItem value={tipoComprobanteChoices.TIPONDFACTURA} id="debito" />
+                          <RadioGroupItem value={tipoComprobanteChoices.TIPONDFACTURA} id="debitof" />
                           <Label htmlFor="debito-factura">Nota de debito a factura</Label>
+                        </div>
+                      </RadioGroup>
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="tipo_nota"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Tipo de Nota</FormLabel>
+                      <RadioGroup value={field.value} onValueChange={field.onChange}>
+                        <div className="flex flex-col">
+                          <RadioGroupItem value={tipoNotaChoices.CTIPOANULACION} id="tipoanul" />
+                          <Label >Nota de credito a boleta</Label>
+                          <RadioGroupItem value={tipoNotaChoices.CTIPOANULACIONRUC} id="tipoanul" />
+                          <Label >Nota de credito a boleta</Label>
+                          {/* <RadioGroupItem value={tipoNotaChoices.CTIPODECITEM} id="tipodesci" />
+                          <Label >Nota de credito a factura</Label>
+                          <RadioGroupItem value={tipoNotaChoices.CTIPODESCGLOBAL} id="tipodesg" />
+                          <Label >Nota de debito a boleta</Label> */}
+                          <RadioGroupItem value={tipoNotaChoices.CTIPODEVOLUCIONTOT} id="tipodevtot" />
+                          <Label >Nota de debito a factura</Label>
+                          {/* <RadioGroupItem value={tipoNotaChoices.DTIPOAUMENTOVALOR} id="tipoAumento" />
+                          <Label >Nota de debito a factura</Label> */}
                         </div>
                       </RadioGroup>
                     </FormItem>
@@ -174,6 +259,11 @@ export default function FormNotaCreditoDebito({edicion, pedido, notaid, detalles
                     </FormItem>
                   )}
                 />
+                {puedeEditarPedidos && edicion==='edicion' &&
+                  <CustomButton type='button' variant='primary' 
+                  onClick={()=>{if(notaid)GetXMLNota(null,notaid);}}
+                  >Generar XML</CustomButton>
+                }
               </div>
             
         </form>
@@ -186,13 +276,24 @@ export default function FormNotaCreditoDebito({edicion, pedido, notaid, detalles
         </div>
 
         <div className="bg-white rounded-lg border">
-          <NotaCreditoDebitoTable
-            detalles={listaDetalles ?? []}
-            setDetalles={setListaDetalles}
-            isDisabled = {false}
+          <DataGrid
+            rows={listaDetalles}
+            columns={columns}
+            getRowId={(row) => `${row.producto}-${row.cantidad}-${row.rum}`}
+            initialState={{
+              pagination: {
+                paginationModel: { pageSize: 10 }
+              }
+            }}
+            pageSizeOptions={[5, 10, 25]}
+            disableRowSelectionOnClick
           />
         </div>
       </div>
+      <CustomButton variant="orange" type="button" 
+        onClick={()=>{router.push('/notas'); }}>
+        Salir
+      </CustomButton>
     </div>
   )
 }
