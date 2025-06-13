@@ -22,6 +22,7 @@ import { formCotizacionSchema, formCotizacionSchemaSend, FormCotizacionValues } 
 import { useCalculosCotizacion } from './hooks/useCalculosCotizacion'
 import { GetDatoGeneralDetailApi } from '@/api/datogeneralApis'
 import { useDescuentosAutomaticos } from './descuentos/useDescuentosAutomaticos'
+import { NewCotizacionTable } from './newTableCotizacion'
 
 export default function FormCotizacionDetalle() {
   const [loading, setLoading] = useState(true)
@@ -48,6 +49,7 @@ export default function FormCotizacionDetalle() {
       observaciones: '',
       direccion_entrega: '',
       activo: 'true',
+      vendedor: '',
     }
   })
 
@@ -176,6 +178,7 @@ const handleSelectProducto = (producto: TProducto) => {
       })
       .catch(error => {
         console.error('Error aplicando descuentos', error);
+        setListaDetalles(prev => [...prev, detalle]);
       });
 
     setIsSearchPopupOpen(false);
@@ -401,13 +404,13 @@ const handleSelectProducto = (producto: TProducto) => {
         {/* Tabla de detalles */}
         {(loading && edicionCotizacion !== 'nuevo')? (<div>Cargando ...</div>) : 
         (<div className="bg-white rounded-lg border">
-          <CotizacionTable
+          <NewCotizacionTable
             detalles={listaDetalles}
             setDetalles={setListaDetalles}
             isDisabled = { edicionCotizacion === 'edicion'}
           />
         </div>)
-}
+        }
       </div>
          
     </div>

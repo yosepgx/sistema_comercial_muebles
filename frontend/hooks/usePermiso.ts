@@ -8,6 +8,7 @@ export function usePermiso(permiso: keyof typeof PERMISOS): boolean {
   if (!user) return false;
 
   const rol = obtenerRolDelUsuario (user);
+  //console.log("rol del usuario", rol)
   if(!rol)return false;
   
   const rolesPermitidos = PERMISOS[permiso] as readonly RolUsuario[];

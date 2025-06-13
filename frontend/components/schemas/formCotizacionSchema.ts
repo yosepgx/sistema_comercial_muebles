@@ -10,13 +10,13 @@ export const formCotizacionSchema = z. object({
   monto_sin_impuesto: z.string(), //suma ingresada al final
   monto_igv: z.string(),
   monto_total: z.string(),
-  descuento_adicional: z.string().refine(val => !isNaN(parseFloat(val)) && parseFloat(val) > 0, {
-    message: "El descuento debe ser un número mayor a 0"
+  descuento_adicional: z.string().refine(val => !isNaN(parseFloat(val)) && parseFloat(val) >= 0, {
+    message: "El descuento debe ser un número mayor o igual a 0"
   }),
   observaciones: z.string(),
   direccion_entrega: z.string(), //deberia de funcionar ya que se asigna la direccion despues
   activo: z.string(),
-  vendedor: z.string().min(1,"Es necesario indicar el nombre del vendedor"),
+  vendedor: z.string().min(1, "Es necesario indicar el nombre del vendedor"),
 
 })
 

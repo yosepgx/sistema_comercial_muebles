@@ -13,11 +13,12 @@ interface UserLogin{
 export interface User{
     username: string;
     email: string;
-    groups: [number];
-    perfil: {
-        dni: string;
-        telefono: string;
-    }
+    groups: [string];
+    is_active: boolean;
+    // perfil: {
+    //     dni: string;
+    //     telefono: string;
+    // }
 }
 interface UserRecover{
     token: string;
