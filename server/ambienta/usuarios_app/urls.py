@@ -14,5 +14,5 @@ urlpatterns = [
     path('logout',logout),
     path('signup',signup),
     path('test_token',test_token),
-    path('change-password', AdminPasswordResetView.as_view(), name='change-password')
+    path('change-password/', AdminPasswordResetView.as_view(), name='change-password')
 ]
