@@ -4,7 +4,7 @@ from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status, viewsets
-from .services import ServiceCargarDataVenta  
+from .services import ServiceCargarDataVenta, generar_nodos_descuento_global_etree
 from .models import Pedido, PedidoDetalle
 from .serializers import PedidoSerializer, PedidoDetalleSerializer, NotaSerializer
 from oportunidades_app.services import ServiceCargarDatosOportunidades
@@ -292,6 +292,10 @@ class GenerarXMLUBLView(APIView):
         # Relleno ID 
         tax_scheme = ET.SubElement(party_tax_scheme, "cac:TaxScheme")
         ET.SubElement(tax_scheme, "cbc:ID").text = "-"
+        
+        nodos = generar_nodos_descuento_global_etree(pedido.detalles.all(),pedido.descuento_adicional)
+        for nodo in nodos:
+            documento.append(nodo)
 
         # Total
         total = ET.SubElement(documento, "cac:LegalMonetaryTotal")

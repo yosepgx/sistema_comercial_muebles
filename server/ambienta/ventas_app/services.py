@@ -180,10 +180,23 @@ def generar_nodos_descuento_global_etree(detalle_items, descuento_auxiliar):
     if not descuento_auxiliar or descuento_auxiliar <= 0:
         return []  # No hay descuento
 
-    total_con_igv = sum(Decimal(item['subtotal']) for item in detalle_items)
-    if total_con_igv == 0:
+    # Calcular total sin IGV como base para prorrateo
+    total_sin_igv = Decimal('0.00')
+    for item in detalle_items:
+        subtotal = Decimal(item.subtotal)
+        afectacion = item.producto.codigo_afecion_igv
+        tasa = Decimal(item.producto.igv or 0)
+
+        if afectacion == "10":  # Gravado
+            neto = subtotal / (1 + tasa)
+        else:
+            neto = subtotal  # No tiene IGV
+        total_sin_igv += neto
+
+    if total_sin_igv == 0:
         return []
 
+    # Distribuir descuento proporcional
     agrupados = defaultdict(lambda: {
         'base': Decimal('0.00'),
         'igv': Decimal('0.00'),
@@ -191,22 +204,27 @@ def generar_nodos_descuento_global_etree(detalle_items, descuento_auxiliar):
     })
 
     for item in detalle_items:
-        subtotal = Decimal(item['subtotal'])
-        afectacion = item['producto']['afectacion_igv']
-        tasa = Decimal(item['producto'].get('igv', 0))
+        subtotal = Decimal(item.subtotal)
+        afectacion = item.producto.codigo_afecion_igv
+        tasa = Decimal(item.producto.igv or 0)
 
-        proporcion = subtotal / total_con_igv
-        descuento_con_igv = Decimal(descuento_auxiliar) * proporcion
-
-        if afectacion == "10":  # Gravado
-            descuento_base = descuento_con_igv / (1 + tasa)
-            descuento_igv = descuento_con_igv - descuento_base
+        if afectacion == "10":
+            base_item = subtotal / (1 + tasa)
         else:
-            descuento_base = descuento_con_igv
-            descuento_igv = Decimal('0.00')
+            base_item = subtotal
 
-        agrupados[afectacion]['base'] += descuento_base
-        agrupados[afectacion]['igv'] += descuento_igv
+        proporcion = base_item / total_sin_igv
+        descuento_auxiliar_con_igv = Decimal(descuento_auxiliar) * proporcion
+
+        if afectacion == "10":
+            descuento_auxiliar_base = descuento_auxiliar_con_igv / (1 + tasa)
+            descuento_auxiliar_igv = descuento_auxiliar_con_igv - descuento_auxiliar_base
+        else:
+            descuento_auxiliar_base = descuento_auxiliar_con_igv
+            descuento_auxiliar_igv = Decimal('0.00')
+
+        agrupados[afectacion]['base'] += descuento_auxiliar_base
+        agrupados[afectacion]['igv'] += descuento_auxiliar_igv
         agrupados[afectacion]['tasa'] = tasa
 
     nodos = []
@@ -216,7 +234,7 @@ def generar_nodos_descuento_global_etree(detalle_items, descuento_auxiliar):
 
         ET.SubElement(allowance, 'cbc:ChargeIndicator').text = 'false'
         ET.SubElement(allowance, 'cbc:AllowanceChargeReasonCode').text = '00'
-        ET.SubElement(allowance, 'cbc:MultiplierFactorNumeric').text = '0.00'
+        # ET.SubElement(allowance, 'cbc:MultiplierFactorNumeric').text = str(porcentaje)
 
         ET.SubElement(
             allowance, 'cbc:Amount', attrib={'currencyID': 'PEN'}
@@ -224,25 +242,7 @@ def generar_nodos_descuento_global_etree(detalle_items, descuento_auxiliar):
 
         ET.SubElement(
             allowance, 'cbc:BaseAmount', attrib={'currencyID': 'PEN'}
-        ).text = str(redondear(data['base'] + data['igv']))
-
-        tax_total = ET.SubElement(allowance, 'cac:TaxTotal')
-        ET.SubElement(
-            tax_total, 'cbc:TaxAmount', attrib={'currencyID': 'PEN'}
-        ).text = str(redondear(data['igv']))
-
-        tax_sub = ET.SubElement(tax_total, 'cac:TaxSubtotal')
-        ET.SubElement(
-            tax_sub, 'cbc:TaxAmount', attrib={'currencyID': 'PEN'}
-        ).text = str(redondear(data['igv']))
-
-        tax_category = ET.SubElement(tax_sub, 'cac:TaxCategory')
-        ET.SubElement(tax_category, 'cbc:TaxExemptionReasonCode').text = cod_afectacion
-
-        tax_scheme = ET.SubElement(tax_category, 'cac:TaxScheme')
-        ET.SubElement(tax_scheme, 'cbc:ID').text = '1000'
-        ET.SubElement(tax_scheme, 'cbc:Name').text = 'IGV'
-        ET.SubElement(tax_scheme, 'cbc:TaxTypeCode').text = 'VAT'
+        ).text = str(redondear(total_sin_igv))  
 
         nodos.append(allowance)
 
