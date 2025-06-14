@@ -129,20 +129,35 @@ class ServiceCargarDataVenta:
                                )
             
             objetos = []
-            df['observaciones'] = None
-            for _, row in df.iterrows():
-                datos = row.to_dict()
+            with transaction.atomic():
+                for _, row in df.iterrows():
+                    datos = row.to_dict()
+
+                    id_cotizacion = datos.pop('cotizacion')
+                    cot = Cotizacion.objects.get(id=id_cotizacion)
+
+                    tipo_comprobante = datos['tipo_comprobante']
+                    sede_id = cot.oportunidad.sede.id  
+
+                    #necesito la serie y correlativo
+                    correlativo_info = CorrelativoService.obtener_guardar_siguiente_correlativo(
+                        sede_id=sede_id,
+                        tipo_documento=tipo_comprobante
+                    )
+                    datos['serie'] = correlativo_info['serie']
+                    datos['correlativo'] = correlativo_info['correlativo']
+                    observaciones = datos.get('observaciones')
+                    datos['observaciones'] = None if pd.isna(observaciones) else observaciones
+                    observaciones = datos.get('observaciones')
+                    
+                    obj = Pedido(cotizacion=cot, **datos)
+                    objetos.append(obj)
                 
-                id_cotizacion = datos.pop('cotizacion')
-                cot = Cotizacion.objects.get(id=id_cotizacion)
-                
-                obj = Pedido(cotizacion = cot, **datos)
-                objetos.append(obj)
-            
-            Pedido.objects.bulk_create(objetos)
+                Pedido.objects.bulk_create(objetos)
 
         except Exception as e:
             print(e)
+            raise
 
     def PedidoDetalle(archivo):
         try:

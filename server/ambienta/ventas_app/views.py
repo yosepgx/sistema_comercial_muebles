@@ -140,6 +140,7 @@ class PedidoDetalleViewSet(viewsets.ModelViewSet):
         return super().get_queryset()
 
 class CargarDataPedidosView(APIView):
+    #sedes -> serieCorrelativo -> oportunidades -> cotizaciones -> pedidos
     parser_classes = (MultiPartParser, FormParser)  
 
     def post(self, request, *args, **kwargs):
