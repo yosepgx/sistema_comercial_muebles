@@ -5,13 +5,9 @@ from .models import ReglaDescuento
 from inventario_app.models import Producto
 from django.utils import timezone
 
-class ProductoSimpleSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Producto
-        fields = ['id', 'nombre']
 
 class ReglaDescuentoSerializer(serializers.ModelSerializer):
-    rproducto_info = ProductoSimpleSerializer(source='producto', read_only=True)
+    rproducto_info = serializers.CharField(source='producto.nombre', read_only=True)
     rporcentaje_descuento = serializers.SerializerMethodField(read_only = True)
     restado = serializers.SerializerMethodField(read_only= True)
     
@@ -45,75 +41,3 @@ class ReglaDescuentoSerializer(serializers.ModelSerializer):
             return "Vencido"
         else:
             return "Activo"
-
-    def validate(self, data):
-        """Validaciones personalizadas"""
-        errors = {}
-        
-        # Validar fechas
-        if data.get('fecha_inicio') and data.get('fecha_fin'):
-            if data['fecha_inicio'] >= data['fecha_fin']:
-                errors['fecha_fin'] = "La fecha fin debe ser posterior a la fecha inicio"
-        
-        # Validar que tenga al menos un tipo de descuento
-        if not data.get('porcentaje') and not data.get('monto_fijo'):
-            if not (data.get('cantidad_pagada') and data.get('cantidad_libre')):
-                errors['non_field_errors'] = ["Debe especificar al menos un tipo de descuento"]
-        
-        # Validar porcentaje
-        if data.get('porcentaje') and (data['porcentaje'] < 0 or data['porcentaje'] > 100):
-            errors['porcentaje'] = "El porcentaje debe estar entre 0 y 100"
-        
-        # Validar monto fijo
-        if data.get('monto_fijo') and data['monto_fijo'] < 0:
-            errors['monto_fijo'] = "El monto fijo no puede ser negativo"
-        
-        # Validar cantidades
-        if data.get('cantidad_pagada', 0) < 0:
-            errors['cantidad_pagada'] = "La cantidad pagada no puede ser negativa"
-        
-        if data.get('cantidad_libre', 0) < 0:
-            errors['cantidad_libre'] = "La cantidad libre no puede ser negativa"
-        
-        if data.get('cantidad_libre_maxima', 0) < 0:
-            errors['cantidad_libre_maxima'] = "La cantidad libre máxima no puede ser negativa"
-        
-        # Validar duplicados
-        producto = data.get('producto')
-        fecha_inicio = data.get('fecha_inicio')
-        fecha_fin = data.get('fecha_fin')
-        
-        if producto and fecha_inicio and fecha_fin:
-            query = ReglaDescuento.objects.filter(
-                producto=producto,
-                fecha_inicio__range=[fecha_inicio, fecha_fin],
-                fecha_fin__range = [fecha_inicio, fecha_fin]
-            )
-            
-            # Si estamos editando, excluir el registro actual
-            if self.instance:
-                query = query.exclude(pk=self.instance.pk)
-                
-            if query.exists():
-                errors['non_field_errors'] = ["Ya existe una regla para este producto en las fechas seleccionadas"]
-        
-        # Validaciones específicas por fecha (según estrategia)
-        ahora = timezone.now()
-        fecha_inicio = data.get('fecha_inicio')
-        fecha_fin = data.get('fecha_fin')
-
-        if self.instance is None:
-            # Caso CREACIÓN
-            if fecha_inicio and fecha_inicio < ahora:
-                errors['fecha_inicio'] = "No se puede crear una regla con fecha inicio en el pasado"
-        else:
-            # Caso EDICIÓN
-            instancia_actual = self.instance
-
-            if fecha_fin and fecha_fin < ahora:
-                errors['fecha_fin'] = "No puedes acortar la fecha de fin a antes de ahora."
-        
-        if errors:
-            raise serializers.ValidationError(errors)
-        
-        return data

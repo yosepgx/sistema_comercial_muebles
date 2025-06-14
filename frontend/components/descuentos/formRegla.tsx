@@ -13,6 +13,7 @@ import {format} from 'date-fns'
 import {z} from "zod"
 import { BotonesFinales } from "../botonesFinales"
 import { parseFechaTiempo } from "../utils/parseFecha"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select"
 type Props = {
   tipo: 'nuevo' | 'edicion'
 }
@@ -79,12 +80,47 @@ export default function FormRegla({tipo} : Props){
         }
         router.push('/descuentos')
     }
+
+    const wtipoDescuento = form.watch('tipo_descuento', 'porcentaje')
+
+    useEffect(() => {
+    if (wtipoDescuento === 'porcentaje') {
+        form.setValue('cantidad_pagada', '0');
+        form.setValue('cantidad_libre', '0');
+        form.setValue('cantidad_libre_maxima', '0');
+    } else if (wtipoDescuento === 'cantidad') {
+        form.setValue('porcentaje', '0');
+    }
+    }, [wtipoDescuento]);
+
+
     
     return (
         <>
         <Form {...form}> 
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
             <div className=" space-y-2">
+            <FormField
+            control = {form.control}
+            name = "tipo_descuento"
+            render={({field}) => (
+                <FormItem className='flex flex-col'>
+                <FormLabel> Tipo de descuento</FormLabel>
+                <Select onValueChange = {field.onChange} defaultValue={field.value}>
+                    <FormControl>
+                    <SelectTrigger>
+                        <SelectValue placeholder="Seleccionar Tipo de descuento"/>
+                    </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                    <SelectItem value="porcentaje">Porcentaje</SelectItem>
+                    <SelectItem value="cantidad">Cantidad</SelectItem>
+                    </SelectContent>
+                </Select>
+                <FormMessage className="min-h-[24px]"/>
+                </FormItem>
+            )}
+            />
             <FormField
             control = {form.control}
             name = "id"
@@ -105,7 +141,7 @@ export default function FormRegla({tipo} : Props){
                 <FormItem className='flex flex-col'>
                 <FormLabel> Codigo de producto</FormLabel>
                 <FormControl>
-                    <Input type = "text" {...field} />
+                    <Input type = "number" {...field} />
                 </FormControl>
                 <FormMessage className="min-h-[24px]"/>
                 </FormItem>
@@ -157,7 +193,7 @@ export default function FormRegla({tipo} : Props){
                 <FormItem className='flex flex-col'>
                 <FormLabel> Porcentaje</FormLabel>
                 <FormControl>
-                    <Input type = "number" {...field} />
+                    <Input type = "number" {...field} disabled={wtipoDescuento !== 'porcentaje'}  />
                 </FormControl>
                 <FormMessage className="min-h-[24px]"/>
                 </FormItem>
@@ -170,7 +206,7 @@ export default function FormRegla({tipo} : Props){
                 <FormItem className='flex flex-col'>
                 <FormLabel> Cantidad necesaria a pagar</FormLabel>
                 <FormControl>
-                    <Input type = "number" {...field} />
+                    <Input type = "number" {...field} disabled={wtipoDescuento !== 'cantidad'} />
                 </FormControl>
                 <FormMessage className="min-h-[24px]"/>
                 </FormItem>
@@ -183,7 +219,7 @@ export default function FormRegla({tipo} : Props){
                 <FormItem className='flex flex-col'>
                 <FormLabel> Cantidad gratuita</FormLabel>
                 <FormControl>
-                    <Input type = "text" {...field} />
+                    <Input type = "number" {...field} disabled={wtipoDescuento !== 'cantidad'}/>
                 </FormControl>
                 <FormMessage className="min-h-[24px]"/>
                 </FormItem>
@@ -196,34 +232,30 @@ export default function FormRegla({tipo} : Props){
                 <FormItem className='flex flex-col'>
                 <FormLabel> Cantidad gratuita maxima</FormLabel>
                 <FormControl>
-                    <Input type = "text" {...field} />
+                    <Input type = "number" {...field} disabled={wtipoDescuento !== 'cantidad'}/>
                 </FormControl>
                 <FormMessage className="min-h-[24px]"/>
                 </FormItem>
             )}
             />
-            <FormField
-            control = {form.control}
-            name = "tipo_descuento"
-            render={({field}) => (
-                <FormItem className='flex flex-col'>
-                <FormLabel> Tipo de descuento</FormLabel>
-                <FormControl>
-                    <Input type = "text" {...field} />
-                </FormControl>
-                <FormMessage className="min-h-[24px]"/>
-                </FormItem>
-            )}
-            />
+            
             <FormField
             control = {form.control}
             name = "activo"
             render={({field}) => (
                 <FormItem className='flex flex-col'>
                 <FormLabel> Activo</FormLabel>
-                <FormControl>
-                    <Input type = "text" {...field} />
-                </FormControl>
+                <Select onValueChange = {field.onChange} defaultValue={field.value}>
+                    <FormControl>
+                    <SelectTrigger>
+                        <SelectValue placeholder="Seleccionar estado activo/inactivo"/>
+                    </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                    <SelectItem value="true">Activo</SelectItem>
+                    <SelectItem value="false">Inactivo</SelectItem>
+                    </SelectContent>
+                </Select>
                 <FormMessage className="min-h-[24px]"/>
                 </FormItem>
             )}

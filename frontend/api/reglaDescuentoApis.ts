@@ -63,13 +63,29 @@ export async function PostReglaAPI(token:string | null, data: TRegla){
             body: JSON.stringify(data),
         });
 
+        let responseData: any = null;
+
+        try {
+            responseData = await response.json();
+            console.log('data obtenida', responseData)
+        } catch {
+            responseData = null;
+        }
+
         if(!response.ok){
+            
+            if(responseData?.code?.includes('DESCUENTO_ERR')){
+                alert(responseData?.message)
+            }
+            else{
+                alert('Error inesperado del servidor');
+            }
             throw new Error(`Error del servidor: ${response.status} - ${response.statusText}`)
 
         }
 
-        const responseData = await response.json();
-        return responseData as TRegla;
+
+        return responseData?.data as TRegla;
         
     } catch (error) {
         console.error("Error al guardar reglas de descuento:", error);
@@ -109,13 +125,28 @@ export async function UpdateReglaAPI(token:string | null, id: number, data: TReg
         },
         body: JSON.stringify(data),
       });
+
+        let responseData: any = null;
+
+        try {
+            responseData = await response.json();
+        } catch {
+            responseData = null;
+        }
+
+        if(!response.ok){
+            
+            if(responseData?.code?.include('DESCUENTO_ERR')){
+                alert(responseData?.message)
+            }
+            else{
+                alert('Error inesperado del servidor');
+            }
+            throw new Error(`Error del servidor: ${response.status} - ${response.statusText}`)
+
+        }
   
-      if (!response.ok) {
-        throw new Error(`Error del servidor: ${response.status} - ${response.statusText}`);
-      }
-  
-      const responseData = await response.json();
-      return responseData as TRegla;
+      return responseData?.data as TRegla;
   
     } catch (error) {
       console.error("Error al actualizar reglas de descuento:", error);
