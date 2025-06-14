@@ -12,6 +12,7 @@ import xml.etree.ElementTree as ET
 from ajustes_app.models import Dgeneral
 from .services import CorrelativoService
 from rest_framework.generics import CreateAPIView
+from django.shortcuts import get_object_or_404
 
 #cuando un pedido se anula si estaba:
 #TODO: puede ser necesario en ambos views
@@ -49,19 +50,33 @@ class NotaViewSet(CreateAPIView):
     serializer_class = NotaSerializer
 
     def perform_create(self, serializer):
-        nota = serializer.save()
-        
-        pedido_original = nota.documento_referencia 
-        
+        documento_id = serializer.validated_data.get('documento_referencia')
+
+        if not documento_id:
+            raise ValidationError(code="NOTA_ERR09", detail="Debe indicar un documento de referencia.")
+
+        pedido_original = get_object_or_404(Pedido, id=documento_id)
 
         cotizacion = pedido_original.cotizacion
         if cotizacion is None:
-            raise ValidationError(code="NOTA_ERR06",detail="El pedido original no tiene una cotización asociada.")
-        
+            raise ValidationError(code="NOTA_ERR06", detail="El pedido original no tiene una cotización asociada.")
+
         sede = cotizacion.oportunidad.sede
-        
-        CorrelativoService.guardar_siguiente_correlativo(sede_id=sede.id, tipo_documento=nota.tipo_comprobante, documento_origen_id=pedido_original.id)
-        tipo_nota = nota.tipo_nota
+
+        resultado = CorrelativoService.obtener_guardar_siguiente_correlativo(
+            sede_id=sede.id,
+            tipo_documento=serializer.validated_data['tipo_comprobante'],
+            documento_origen_id=pedido_original.id
+        )
+
+        nota = serializer.save()
+
+        # Asignar los campos de serie y correlativo
+        nota.serie = resultado['serie']
+        nota.correlativo = resultado['correlativo']
+        nota.save()
+
+        tipo_nota = nota.tipo_nota  
 
         #quitar las cantidades y devolver a stock
         if tipo_nota in [Pedido.CTIPOANULACION, Pedido.CTIPODEVOLUCIONTOT, Pedido.CTIPOANULACIONRUC]:

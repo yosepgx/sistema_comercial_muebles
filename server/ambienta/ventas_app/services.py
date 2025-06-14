@@ -58,7 +58,7 @@ class CorrelativoService:
         
     
     @staticmethod
-    def guardar_siguiente_correlativo(sede_id, tipo_documento, documento_origen_id=None):
+    def obtener_guardar_siguiente_correlativo(sede_id, tipo_documento, documento_origen_id=None):
         """
         No solo obtiene el siguiente correlativo para un tipo de documento y sede específica sino 
         tambien lo guarda. NO necesita cambios para NC y ND porque al crearse sedes ya se crean con 

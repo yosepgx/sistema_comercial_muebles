@@ -23,17 +23,29 @@ export default function NotaCreditoDebitoLoader() {
     try {
       const pedido = await GetPedidoDetailApi(null, id)
       setPedido(pedido)
-
+      const descuentoGlobal = pedido?.descuento_adicional ?? 0;
       const lineas = await GetPedidoLineaListApi(null, id)
-      const lineasConValoresEnCero = lineas.map(linea => ({
-        ...linea,
-        //misma cantidad
-        pedido: 0, //se tiene que asignar despues de su creacion sino estara asignado al pedido
-        precio_unitario: linea.cantidad >0? linea.precio_unitario - linea.descuento/linea.cantidad : linea.precio_unitario - linea.descuento,
-        //no hay descuentos en nc o mejor dicho el "precio_unitario" es el descuento
-        //subtotal: linea.subtotal, mismo subtotal
-      }))
-      setDetalles(lineasConValoresEnCero)
+
+      const subtotalTotal = lineas.reduce((acc, linea) => acc + (linea.subtotal || 0), 0);
+
+      const lineasSinDescuentos = lineas.map((linea) => {
+        const cantidad = linea.cantidad || 1;
+        const precioSinDescuentoUnitario = cantidad > 0
+          ? linea.precio_unitario - linea.descuento / cantidad
+          : linea.precio_unitario - linea.descuento;
+
+        const proporcion = subtotalTotal > 0 ? (linea.subtotal || 0) / subtotalTotal : 0;
+        const descuentoProrrateado = proporcion * descuentoGlobal;
+        const descuentoUnitarioProrrateado = cantidad > 0 ? descuentoProrrateado / cantidad : 0;
+
+        return {
+          ...linea,
+          pedido: 0,
+          precio_unitario: precioSinDescuentoUnitario - descuentoUnitarioProrrateado,
+        };
+      });
+
+      setDetalles(lineasSinDescuentos)
     } catch (error) {
       console.error("Error al cargar datos del pedido o sus líneas", error)
     } finally {
