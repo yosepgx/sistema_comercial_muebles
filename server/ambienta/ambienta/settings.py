@@ -22,9 +22,7 @@ ALLOWED_HOSTS = env.list('ALLOWED_HOSTS')
 
 CORS_ALLOW_CREDENTIALS  = True
 
-CORS_ALLOWED_ORIGINS = [
-    "http://localhost:3000",  
-]
+CORS_ALLOWED_ORIGINS = env.list('CORS_ALLOWED_ORIGINS')
 #CORS_ALLOW_ALL_ORIGINS = True
 
 #SESSION_ENGINE = 'django.contrib.sessions.backends.db'  # Si estás usando la base de datos para las sesiones
