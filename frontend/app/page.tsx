@@ -44,6 +44,7 @@ export default function HomePage() {
         headerName: 'Documento de Cliente',
         resizable: false,
         flex: 1,
+        valueFormatter: (value) => value? value: 'Cliente no asignado',
     },
     {   field: 'sede', 
         headerName: 'Sede',

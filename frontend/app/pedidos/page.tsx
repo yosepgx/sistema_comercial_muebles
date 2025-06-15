@@ -115,7 +115,8 @@ export default function PedidosPage(){
             </span>
           ), 
           resizable: false,
-          flex: 1
+          flex: 1,
+          valueFormatter: (value) => value? value: 'Sin Fecha',
       },
       {   field: 'fecha_pago',
           renderHeader: () => (
@@ -124,7 +125,8 @@ export default function PedidosPage(){
             </span>
           ),  
           resizable: false,
-          flex: 1
+          flex: 1,
+          valueFormatter: (value) => value? value: 'Sin Fecha',
       },
       {   field: 'serie', 
           headerName: 'Serie',
