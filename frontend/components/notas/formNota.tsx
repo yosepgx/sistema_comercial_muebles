@@ -62,7 +62,7 @@ export default function FormNotaCreditoDebito({edicion, pedido, notaid, detalles
       documento_referencia: pedido? pedido.documento_referencia: null,
     }
   })
-
+  console.log("datos obtenidos de detalles", detalles)
   const puedeEditarPedidos = usePermiso(PERMISSION_KEYS.PEDIDO_CREAR)
   const [listaDetalles, setListaDetalles] = useState<TPedidoDetalle[]>(detalles)
   const [pedidoRel, SetPedidodRel] = useState<TPedido | null>(pedido)
@@ -147,20 +147,16 @@ export default function FormNotaCreditoDebito({edicion, pedido, notaid, detalles
     
     console.log('Detalles:', listaDetalles)
     rawdata.documento_referencia = pedidoRel.id
+    if(pedidoRel.tipo_comprobante === 'boleta')rawdata.tipo_comprobante = tipoComprobanteChoices.TIPONCBOLETA
+    else if(pedidoRel.tipo_comprobante === 'factura')rawdata.tipo_comprobante = tipoComprobanteChoices.TIPONCFACTURA
     rawdata.direccion = 'tienda'
     console.log('Nota enviada:', rawdata)
     const data = formNotaSchemaSend.parse(rawdata)
     const send = {...data, detalles: listaDetalles}//TODO: necesita su propio schema
     if(send){
       if(edicion === 'nuevo'){
-        const result = await PostNotaAPI(null, data);
-        if (result?.error && result?.code) {
-          if (result.code.includes('NOTA_ERR')) {
-              alert(result.message);
-          } else {
-              console.warn("Error inesperado", result.code);
-          }
-        }
+        const result = await PostNotaAPI(null, send);
+        
         if(result?.error === false){
           router.push('/notas')
         }
@@ -170,7 +166,7 @@ export default function FormNotaCreditoDebito({edicion, pedido, notaid, detalles
     }
   }
 
-
+  
   return (
     <div className="container mx-auto px-4 py-6">
       
@@ -178,12 +174,13 @@ export default function FormNotaCreditoDebito({edicion, pedido, notaid, detalles
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
           <div className="flex items-center gap-2 text-sm text-gray-600">
             <ChevronRight size={16} />
-            <span> Nota de Crédito / Débito </span>
+            <span> Nota de Crédito </span>
             {edicion === 'nuevo' && <CustomButton type="submit" >Guardar Nota</CustomButton>}
           </div>
 
           
               <div className="grid grid-cols-2 gap-6">
+                <div className='flex flex-col gap-y-4 '>
                 {pedidoRel && (
                 <div className='space-y-2'>
                 <Label> Serie y correlativo de Pedido relacionado</Label>
@@ -191,7 +188,7 @@ export default function FormNotaCreditoDebito({edicion, pedido, notaid, detalles
                 </div>)
                 }
 
-                <FormField
+                {/* <FormField
                   control={form.control}
                   name="tipo_comprobante"
                   render={({ field }) => (
@@ -202,23 +199,44 @@ export default function FormNotaCreditoDebito({edicion, pedido, notaid, detalles
                           <RadioGroupItem value={tipoComprobanteChoices.TIPONCBOLETA} id="creditob" />
                           <Label htmlFor="credito-boleta">Nota de credito a boleta</Label>
                           <RadioGroupItem value={tipoComprobanteChoices.TIPONCFACTURA} id="creditof" />
-                          <Label htmlFor="credito-factura">Nota de credito a factura</Label>
+                          <Label htmlFor="credito-factura">Nota de credito a factura</Label> */}
                           {/* <RadioGroupItem value={tipoComprobanteChoices.TIPONDBOLETA} id="debitob" />
                           <Label htmlFor="debito-boleta">Nota de debito a boleta</Label>
                           <RadioGroupItem value={tipoComprobanteChoices.TIPONDFACTURA} id="debitof" />
                           <Label htmlFor="debito-factura">Nota de debito a factura</Label> */}
-                        </div>
+                        {/* </div>
                       </RadioGroup>
                     </FormItem>
                   )}
+                /> */}
+                <FormField
+                  control={form.control}
+                  name="observaciones"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Motivo</FormLabel>
+                      <FormControl>
+                        <Input {...field} disabled={edicion==='edicion'}/>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
                 />
+
+                {puedeEditarPedidos && edicion==='edicion' &&
+                  <CustomButton type='button' variant='primary' 
+                  onClick={()=>{if(notaid)GetXMLNota(null,notaid);}}
+                  >Generar XML</CustomButton>
+                }
+
+                </div>
                 <FormField
                   control={form.control}
                   name="tipo_nota"
                   render={({ field }) => (
-                    <FormItem>
+                    <FormItem >
                       <FormLabel>Razon de eliminacion</FormLabel>
-                      <RadioGroup value={field.value} onValueChange={field.onChange}>
+                      <RadioGroup value={field.value} onValueChange={field.onChange} disabled={edicion==='edicion'}>
                         <div className="flex flex-col gap-y-2">
                           <div className='flex flex-row gap-2'>
                           <RadioGroupItem value={tipoNotaChoices.CTIPOANULACION} id="tipoanul" />
@@ -243,21 +261,9 @@ export default function FormNotaCreditoDebito({edicion, pedido, notaid, detalles
                     </FormItem>
                   )}
                 />
-                <FormField
-                  control={form.control}
-                  name="observaciones"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Motivo</FormLabel>
-                      <FormControl>
-                        <Input {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
                 
-                <FormField
+                
+                {/* <FormField
                   control={form.control}
                   name="descuento_adicional"
                   render={({ field }) => (
@@ -268,12 +274,8 @@ export default function FormNotaCreditoDebito({edicion, pedido, notaid, detalles
                       </FormControl>
                     </FormItem>
                   )}
-                />
-                {puedeEditarPedidos && edicion==='edicion' &&
-                  <CustomButton type='button' variant='primary' 
-                  onClick={()=>{if(notaid)GetXMLNota(null,notaid);}}
-                  >Generar XML</CustomButton>
-                }
+                /> */}
+                
               </div>
             
         </form>

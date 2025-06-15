@@ -4,14 +4,14 @@ import {string, z} from "zod"
 const pedidoDetalle = z.object({
     producto: z.number(),
     pedido: z.number(),
-    cantidad: z.number(),
-    precio_unitario: z.number(),
-    descuento: z.number(),
-    subtotal: z.number(),
+    cantidad: z.coerce.number(),
+    precio_unitario: z.coerce.number(),
+    descuento: z.coerce.number(),
+    subtotal: z.coerce.number(),
     nrolinea: z.number(),
     activo: z.boolean(),
-    rnombre: z.string(),
-    rum: z.string()
+    rnombre: z.string().optional(),
+    rum: z.string().optional()
 })
 
 const pedido = z.object({
@@ -42,6 +42,6 @@ const pedido = z.object({
     documento_referencia: z.number().nullable().optional(),
     tipo_nota:z.string().nullable().optional()
 })
-
+export const pedidoDetalleListSchema = z.array(pedidoDetalle)
 export type TPedido = z.infer<typeof pedido>
 export type TPedidoDetalle = z.infer<typeof pedidoDetalle>

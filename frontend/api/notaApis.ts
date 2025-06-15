@@ -24,7 +24,7 @@ export const GetXMLNota = async (token: string | null, idnota: number) => {
 
 type APIResponse<T> =
   | { error: false; data: T }
-  | { error: true; code: string; message: string };
+  | { error: true; message: string };
 
 export async function PostNotaAPI(token: string | null, data: TNota): Promise<APIResponse<TNota>>  {
     try {
@@ -39,11 +39,13 @@ export async function PostNotaAPI(token: string | null, data: TNota): Promise<AP
         const responseData = await response.json();
 
         if (!response.ok) {
-            if (responseData?.code && responseData?.detail) {
+            if (responseData?.non_field_errors && responseData?.non_field_errors?.length>0) {
+                const mensaje = responseData?.non_field_errors[0];
+                alert(mensaje)
                 return {
                     error: true,
-                    code: responseData.code,
-                    message: responseData.detail
+                    //code: responseData.code,
+                    message: mensaje
                 };
             }
 
@@ -59,7 +61,6 @@ export async function PostNotaAPI(token: string | null, data: TNota): Promise<AP
         console.error("Error al crear nota:", error);
         return {
             error: true,
-            code: "ERROR_INTERNO",
             message: "Error inesperado al crear nota."
         };
     }

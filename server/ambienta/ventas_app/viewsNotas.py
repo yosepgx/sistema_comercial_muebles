@@ -50,13 +50,11 @@ class NotaViewSet(CreateAPIView):
     serializer_class = NotaSerializer
 
     def perform_create(self, serializer):
-        documento_id = serializer.validated_data.get('documento_referencia')
+        pedido_original = serializer.validated_data.get('documento_referencia')
 
-        if not documento_id:
+        if not pedido_original:
             raise ValidationError(code="NOTA_ERR09", detail="Debe indicar un documento de referencia.")
-
-        pedido_original = get_object_or_404(Pedido, id=documento_id)
-
+    
         cotizacion = pedido_original.cotizacion
         if cotizacion is None:
             raise ValidationError(code="NOTA_ERR06", detail="El pedido original no tiene una cotización asociada.")
@@ -137,7 +135,7 @@ class GenerarXMLNotaView(APIView):
     def get(self, request, pedido_id):
         try:
             nota = Pedido.objects.get(id=pedido_id)
-            cliente = nota.cotizacion.oportunidad.cliente
+            cliente = nota.documento_referencia.cotizacion.oportunidad.cliente
         except Pedido.DoesNotExist:
             return Response({'error': 'Pedido no encontrado'}, status=status.HTTP_404_NOT_FOUND)
 
@@ -184,7 +182,7 @@ class GenerarXMLNotaView(APIView):
         #codigo del tipo de nota y motivo
         documento_referencia = ET.SubElement(documento, "cac:DiscrepancyResponse")
         ET.SubElement(documento_referencia, "cbc:ReferenceID").text = f"{nota.documento_referencia.serie}-{int(nota.documento_referencia.correlativo):08d}"  # Ej: "F001-1234"
-        ET.SubElement(documento_referencia, "cbc:ResponseCode").text = nota_tipo
+        ET.SubElement(documento_referencia, "cbc:ResponseCode").text = str(nota_tipo)
         ET.SubElement(documento_referencia, "cbc:Description").text = motivo_nota
         
         # Tipo de documento modificado

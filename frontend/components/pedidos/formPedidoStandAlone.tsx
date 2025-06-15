@@ -460,7 +460,7 @@ export default function FormPedidoStandAlone({tipo} : Props) {
                   }
                 }
             }}
-            >Emitir Nota de credito o debito</CustomButton>}
+            >Emitir Nota de credito</CustomButton>}
             {puedeEditarPedidos && 
               <CustomButton
               onClick={() => setOpenModal(true)}

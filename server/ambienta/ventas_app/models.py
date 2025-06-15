@@ -76,7 +76,7 @@ class Pedido(models.Model):
         null=True,
         blank=True,
         related_name='notas_asociadas',
-        help_text="Pedido original al que se asocia esta nota de crédito o débito"
+        help_text="Pedido original al que se asocia esta nota de crédito o debito"
     )
     
     def __str__(self):
