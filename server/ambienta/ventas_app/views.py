@@ -53,12 +53,15 @@ class PedidoViewSet(viewsets.ModelViewSet):
         nuevo_estado = request.data.get('estado_pedido', estado_anterior)
 
         with transaction.atomic():
-    #      por validar -> pagado: se bloquea el stock (pasa de stock general a stock comprometido)
+    #      por validar -> pagado: se bloquea el stock (pasa de stock general a stock comprometido) / si es servicio no se reduce stock
             if estado_anterior == Pedido.PENDIENTE and nuevo_estado == Pedido.PAGADO:
                 instance.fecha_pago = timezone.now().date()
                 lineas = instance.detalles.all()
                 for linea in lineas:
                     cantidad = linea.cantidad
+                    validador_servicio = linea.producto.es_servicio
+                    if validador_servicio:
+                        continue
                     registro = linea.producto.registros_inventario.first()
                     if not registro:
                         raise ValidationError(f"El producto '{linea.producto}' no tiene registro de inventario.")
@@ -72,6 +75,9 @@ class PedidoViewSet(viewsets.ModelViewSet):
                 lineas = instance.detalles.all()
                 for linea in lineas:
                     cantidad = linea.cantidad
+                    validador_servicio = linea.producto.es_servicio
+                    if validador_servicio:
+                        continue
                     registro = linea.producto.registros_inventario.first()
                     if not registro:
                         raise ValidationError(f"El producto '{linea.producto}' no tiene registro de inventario.")
@@ -89,6 +95,9 @@ class PedidoViewSet(viewsets.ModelViewSet):
                 lineas = instance.detalles.all()
                 for linea in lineas:
                     cantidad = linea.cantidad
+                    validador_servicio = linea.producto.es_servicio
+                    if validador_servicio:
+                        continue
                     registro = linea.producto.registros_inventario.first()
                     if not registro:
                         raise ValidationError(f"El producto '{linea.producto}' no tiene registro de inventario.")
@@ -108,6 +117,9 @@ class PedidoViewSet(viewsets.ModelViewSet):
                 lineas = instance.detalles.all()
                 for linea in lineas:
                     cantidad = linea.cantidad
+                    validador_servicio = linea.producto.es_servicio
+                    if validador_servicio:
+                        continue
                     registro = linea.producto.registros_inventario.first()
                     if not registro:
                         raise ValidationError(f"El producto '{linea.producto}' no tiene registro de inventario.")
@@ -465,12 +477,22 @@ class GenerarPDFGuiaRemisionView(APIView):
         except Pedido.DoesNotExist:
             return Response("Pedido no encontrado", status=404)
 
+        try:
+            datos = Dgeneral.objects.get(id=1)
+            
+        except Dgeneral.DoesNotExist:
+            return Response("No hay datos generales de la empresa", status=500)
+        
         detalles = pedido.detalles.filter(activo=True)
+
+        fecha_emision_actual = timezone.now()
 
         html_string = render_to_string("guias_remision/pdf_guia_remision.html", {
             "pedido": pedido,
             "detalles": detalles,
-            "direccion_partida": direccion_partida
+            "direccion_partida": direccion_partida,
+            "datos": datos,
+            "fecha_emision": fecha_emision_actual,
         })
 
         pdf_bytes = HTML(string=html_string).write_pdf()

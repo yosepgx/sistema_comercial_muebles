@@ -76,7 +76,7 @@ class NotaViewSet(CreateAPIView):
 
         tipo_nota = nota.tipo_nota  
 
-        #quitar las cantidades y devolver a stock
+        #quitar las cantidades y devolver a stock / si es servicio no tiene que quitar nada (no hay registro)
         if tipo_nota in [Pedido.CTIPOANULACION, Pedido.CTIPODEVOLUCIONTOT, Pedido.CTIPOANULACIONRUC]:
             
             #si esta en pagado ya comprometio -> quita lo comprometido y lo pone en disponible
@@ -84,6 +84,9 @@ class NotaViewSet(CreateAPIView):
                 lineas = pedido_original.detalles.all()
                 for linea in lineas:
                     cantidad = linea.cantidad
+                    validador_servicio = linea.producto.es_servicio
+                    if validador_servicio:
+                        continue
                     registro = linea.producto.registros_inventario.first()
                     if not registro:
                         raise ValidationError(code="NOTA_ERR07",detail=f"El producto '{linea.producto}' no tiene registro de inventario.")
@@ -98,6 +101,9 @@ class NotaViewSet(CreateAPIView):
                 lineas = pedido_original.detalles.all()
                 for linea in lineas:
                     cantidad = linea.cantidad
+                    validador_servicio = linea.producto.es_servicio
+                    if validador_servicio:
+                        continue
                     registro = linea.producto.registros_inventario.first()
                     if not registro:
                         raise ValidationError(code="NOTA_ERR08",detail=f"El producto '{linea.producto}' no tiene registro de inventario.")

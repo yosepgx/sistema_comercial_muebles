@@ -12,8 +12,13 @@
 </head>
 <body>
     <h2>Guía de Remisión</h2>
-    <p><strong>Serie y Correlativo:</strong> {{ pedido.serie }} - {{ pedido.correlativo }}</p>
-    <p><strong>Fecha de Emisión:</strong> {{ pedido.fecha|date:"Y-m-d H:i" }}</p>
+    <p><strong>RUC del emisor:</strong> {{ datos.codigo_RUC }}</p>
+    <p><strong>Razon del emisor:</strong> {{ datos.razon_social }}</p>
+    <p><strong>Pedido relacionado:</strong> {{ pedido.serie }} - {{ pedido.correlativo }}, emitido {{pedido.fecha|date:"Y-m-d H:i"}}</p>
+    <p><strong>Fecha de Emisión:</strong> {{ fecha_emision|date:"Y-m-d H:i" }}</p>
+    <p><strong>Motivo de traslado:</strong> Venta </p>
+    <p><strong>Apellidos y nombres, denominacion o razon del destinatario:</strong> {{ pedido.cotizacion.oportunidad.cliente.nombre }}</p>
+    <p><strong>Documento de identidad del destinatario:</strong> {{ pedido.cotizacion.oportunidad.cliente.documento }}</p>
     <p><strong>Dirección de Partida:</strong> {{ direccion_partida }}</p>
     <p><strong>Dirección de Llegada:</strong> {{ pedido.direccion }}</p>
     <p><strong>Observaciones:</strong> {{ pedido.observaciones|default:"-" }}</p>
@@ -24,6 +29,7 @@
             <tr>
                 <th>N°</th>
                 <th>Producto</th>
+                <th>Unidad De Medida</th>
                 <th>Cantidad</th>
             </tr>
         </thead>
@@ -32,6 +38,7 @@
             <tr>
                 <td>{{ forloop.counter }}</td>
                 <td>{{ detalle.producto.nombre }}</td>
+                <td>{{ detalle.producto.umedida_sunat }}</td>
                 <td>{{ detalle.cantidad }}</td>
             </tr>
             {% endfor %}
