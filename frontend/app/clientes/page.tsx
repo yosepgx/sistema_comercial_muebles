@@ -6,7 +6,9 @@ import MainWrap from "@/components/mainwrap";
 import { ProtectedRoute } from "@/components/protectedRoute";
 import { transformOnlyDate } from "@/components/transformDate";
 import { TCliente } from "@/components/types/clienteType";
+import { PERMISSION_KEYS } from "@/constants/constantRoles";
 import { useAuth } from "@/context/authContext";
+import { usePermiso } from "@/hooks/usePermiso";
 import { IconButton } from "@mui/material";
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
 import { Edit, Trash2 } from "lucide-react";
@@ -17,13 +19,16 @@ import { useEffect, useState } from "react";
 
 
 export default function ClientePage(){
+    const puedeVerClientes = usePermiso(PERMISSION_KEYS.CLIENTE_LEER)
+    const puedeEditarCliente = usePermiso(PERMISSION_KEYS.CLIENTE_ACTUALIZAR)
+    const puedeBorrarCliente = usePermiso(PERMISSION_KEYS.CLIENTE_ELIMINAR)
+    const puedeCrearCLiente = usePermiso(PERMISSION_KEYS.CLIENTE_CREAR)
     const [data, setData] = useState<TCliente[]>([])
     const [loading, setLoading] = useState(true)
     const router = useRouter()
-    const {ct} = useAuth();
     const cargarDatos = async () => {
         try {
-        const res = await GetClienteListApi(ct)
+        const res = await GetClienteListApi(null)
         console.log("Datos cargados:", res)
         setData(res)
         } catch (error) {
@@ -99,10 +104,10 @@ export default function ClientePage(){
         width: 120,
         renderCell: (params) => (
         <div>
-            <IconButton onClick={() => router.push(`/clientes/${params.row.id}`)}>
+            <IconButton disabled={!puedeEditarCliente} onClick={() => router.push(`/clientes/${params.row.id}`) }>
             <Edit />
             </IconButton>
-            <IconButton onClick={() => {
+            <IconButton disabled={!puedeBorrarCliente} onClick={() => {
             const confirmDelete = window.confirm('¿Estás seguro de que deseas eliminar este cliente?');
             if (confirmDelete) {
                 const nuevo = { ...params.row, activo: false };
@@ -123,10 +128,11 @@ export default function ClientePage(){
     return (
         <ProtectedRoute>
             <MainWrap>
+                {puedeVerClientes && <>
                 <div className="flex justify-end mb-4">
-                <CustomButton type='button' variant='primary' onClick={()=>{router.push('/clientes/nuevo')}}>
-                    Nueva Categoría
-                </CustomButton>
+                {puedeCrearCLiente && <CustomButton type='button' variant='primary' onClick={()=>{router.push('/clientes/nuevo')}}>
+                    Nuevo Cliente
+                </CustomButton>}
                 </div>
                 <DataGrid
                 rows = {data? data : []}
@@ -143,6 +149,7 @@ export default function ClientePage(){
                 disableRowSelectionOnClick
                 disableColumnMenu
                 />
+                </>}
             </MainWrap>
         </ProtectedRoute>
     )

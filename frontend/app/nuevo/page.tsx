@@ -8,14 +8,17 @@ import { ProtectedRoute } from "@/components/protectedRoute"
 import MainWrap from "@/components/mainwrap"
 import { OportunidadProvider, useOportunidadContext } from "@/context/oportunidadContext"
 import InnerPageOportunidad from "@/components/innerPageOportunidad"
+import { usePermiso } from "@/hooks/usePermiso"
+import { PERMISSION_KEYS } from "@/constants/constantRoles"
 
 export default function NuevaOportunidadPage() {
+  const puedeCrearOportunidades = usePermiso(PERMISSION_KEYS.OPORTUNIDAD_CREAR)
   return (
   <ProtectedRoute>
     <MainWrap>
-      <OportunidadProvider>
+      {puedeCrearOportunidades && <OportunidadProvider>
       <InnerPageOportunidad tipo="nuevo"/>
-      </OportunidadProvider>
+      </OportunidadProvider>}
     </MainWrap>
   </ProtectedRoute>
   )

@@ -41,6 +41,7 @@ const Producto = z.object({
     precio : z.number(),
     rprecio_actual: z.number().optional(),
     rhistorial_precio: z.array(precioSchema).optional(),
+    rstock: z.number().optional(),
 });
 
 const Categoria = z.object({

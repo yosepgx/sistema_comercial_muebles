@@ -8,21 +8,26 @@ import { Tusuario } from "@/components/types/usuarioType"
 import { useAuth } from "@/context/authContext"
 import { DataGrid, GridColDef } from '@mui/x-data-grid';
 import { IconButton } from "@mui/material"
-import { Edit, Trash2 } from "lucide-react"
+import { Edit, Lock, Trash2 } from "lucide-react"
 import { useRouter } from "next/navigation"
 import CustomButton from "@/components/customButtom"
+import { usePermiso } from "@/hooks/usePermiso"
+import { PERMISSION_KEYS } from "@/constants/constantRoles"
+import { ChangePasswordPopup } from "@/components/usuarios/popupChangeContraseña"
 
 
 
 
 export default function UsuariosPage(){
+    const puedeGestionarUsuarios = usePermiso(PERMISSION_KEYS.USUARIO_ACTUALIZAR)
+    const [passwordModalOpen, setPasswordModalOpen] = useState(false);
+    const [selectedUserId, setSelectedUserId] = useState<number | null>(null);
     const [data, setData] = useState<Tusuario[]>([])
     const [loading, setLoading] = useState(true)
     const router = useRouter()
-    const {ct} = useAuth();
     const cargarDatos = async () => {
         try {
-        const res = await GetUsuarioListApi(ct)
+        const res = await GetUsuarioListApi(null)
         console.log("Datos cargados:", res)
         setData(res)
         } catch (error) {
@@ -34,6 +39,11 @@ export default function UsuariosPage(){
     useEffect(() => {
         cargarDatos()
     }, [])
+
+    const abrirModalCambioPassword = (id: number) => {
+        setSelectedUserId(id);
+        setPasswordModalOpen(true);
+    };
 
     const userColumns: GridColDef<Tusuario>[] = [
     {   field: 'id', 
@@ -78,12 +88,15 @@ export default function UsuariosPage(){
         <IconButton onClick={() => {
         const confirmDelete = window.confirm('¿Estás seguro de que deseas eliminar este usuario?');
         if (confirmDelete) {
-            const nuevo = { ...params.row, activo: false };
+            const nuevo = { ...params.row, is_active: false };
             UpdateUsuarioAPI(null, params.row.id, nuevo);
         }
         }}>
           <Trash2 />
         </IconButton>
+        <IconButton onClick={() => abrirModalCambioPassword(params.row.id)}>
+            <Lock />
+          </IconButton>
       </div>
     ),
   }
@@ -97,6 +110,7 @@ export default function UsuariosPage(){
     return (
         <ProtectedRoute>
             <MainWrap>
+                {puedeGestionarUsuarios && <>
                 <div className="flex justify-end mb-4">
                 <CustomButton type='button' variant='primary' onClick={()=>{router.push('/ajustes/usuarios/nuevo')}}>
                     Nuevo Usuario
@@ -117,7 +131,12 @@ export default function UsuariosPage(){
                 disableRowSelectionOnClick
                 disableColumnMenu
                 />
-
+                <ChangePasswordPopup
+                open={passwordModalOpen}
+                onClose={() => setPasswordModalOpen(false)}
+                userId={selectedUserId}
+                />
+                </>}
             </MainWrap>
         </ProtectedRoute>
     )

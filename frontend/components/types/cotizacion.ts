@@ -18,9 +18,6 @@ export const cotizacion = z.object({
     id: z.number(),
     fecha: z.string(),
     estado_cotizacion: z.enum(["propuesta","aceptada","rechazada"]),
-    //cliente_id: z.number(),
-    //sede: z.number(),
-    //vendedor_asignado: z.number(),
     oportunidad: z.number(),
     monto_sin_impuesto: z.coerce.number(),
     monto_igv: z.coerce.number(),
@@ -29,6 +26,7 @@ export const cotizacion = z.object({
     observaciones: z.string().nullable(),
     direccion_entrega: z.string(),
     activo: z.boolean(),
+    vendedor: z.string(),
 })
 
 export const cotizaciones = z.array(cotizacion);

@@ -9,6 +9,7 @@ import { TRegla } from "../types/reglaDescuento";
 import { useEffect, useState } from "react";
 import { GetReglaListApi } from "@/api/reglaDescuentoApis";
 import { useRouter } from "next/navigation";
+import { customFetch } from "../customFetch";
 
 export default function Reglas() {
     const [data, setData] = useState<TRegla[]>([])
@@ -17,7 +18,11 @@ export default function Reglas() {
         { field: "id", headerName: "REGLA", flex: 1},
         { field: "producto", headerName: "CÓDIGO PRODUCTO", flex: 1 },
         { field: "porcentaje", headerName: "% DE DESCUENTO", flex: 1 },
-        { field: "productName", headerName: "NOMBRE PRODUCTO", flex: 1 },
+        { 
+            field: "rproducto_info", 
+            headerName: "NOMBRE PRODUCTO", 
+            flex: 1,
+        },
         { field: "cantidad_pagada", headerName: "CANTIDAD PAGADA", flex: 1 },
         { field: "cantidad_libre", headerName: "CANTIDAD LIBRE", flex: 1 },
         { field: "cantidad_libre_maxima", headerName: "CANTIDAD LIBRE MÁXIMA", flex: 1},
@@ -26,9 +31,8 @@ export default function Reglas() {
         { field: "activo", 
             headerName: "Activo", 
             flex: 1,
-            renderCell: (value) => (
-                value? "Activo": "Inactivo"
-            )},
+            valueFormatter: (value) => (value? "Activo":"Inactivo"),
+        },
         {
             field: "actions",
             headerName: "ACCIONES",
@@ -38,16 +42,57 @@ export default function Reglas() {
             <IconButton>
                 <Pencil onClick={() => router.push(`descuentos/${params.row.id}`)}/>
             </IconButton>
-            
+            <IconButton onClick={() => toggleActivoRegla(params.row.id)}>
+                <CheckBox color={params.row.activo ? "primary" : "disabled"} />
+            </IconButton>
             </div>
             ),
         },
 
     ];
 
+    const toggleActivoRegla = async (id: number) => {
+    try {
+        const response = await customFetch(null,`descuentos/regla-descuento/${id}/toggle_activo/`, {
+            method: "PATCH",
+        });
+
+        let responseData: any = null;
+
+        try {
+            responseData = await response.json();
+            console.log(responseData)
+        } catch {
+            responseData = null;
+        }
+
+
+        if(!response.ok){
+            
+            if(responseData?.code?.includes('DESCUENTO_ERR')){
+                alert(responseData?.message)
+            }
+            else{
+                alert('Error inesperado del servidor');
+            }
+            throw new Error(`Error del servidor: ${response.status} - ${response.statusText}`)
+
+        }
+        
+        setData((prev) =>
+            prev.map((regla) =>
+                regla.id === id ? { ...regla, activo: responseData.data.activo } : regla
+            )
+        );
+    } catch (error) {
+        console.error("Error en toggleActivo:", error);
+        //alert("No se pudo cambiar el estado del descuento.");
+    }
+};
+
     useEffect(()=>{
         GetReglaListApi(null)
-        .then(data => setData(data))
+        .then(data => {setData(data); console.log(data);})
         .catch(error => console.error("No se pudo cargar los descuentos, error: ", error))
     },[])
     

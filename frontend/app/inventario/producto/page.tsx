@@ -7,8 +7,11 @@ import { columns } from "@/components/producto/columns";
 import { useAuth } from "@/context/authContext";
 import { GetProductoListApi } from "@/api/productoApis";
 import { TProducto } from "@/components/types/productoTypes";
+import { usePermiso } from "@/hooks/usePermiso";
+import { PERMISSION_KEYS } from "@/constants/constantRoles";
 
 export default function ProductoPage(){
+    const puedeGestionarProducto = usePermiso(PERMISSION_KEYS.PRODUCTO_ACTUALIZAR)
     const [data, setData] = useState<TProducto[]>([])
     const [loading, setLoading] = useState(true)
     const {ct} = useAuth();
@@ -36,6 +39,8 @@ export default function ProductoPage(){
     <>
         <ProtectedRoute>
             <MainWrap>
+                {puedeGestionarProducto && 
+                <>
                 <div>Productos</div>
                 <DataTable
                     columns={columns}
@@ -46,6 +51,7 @@ export default function ProductoPage(){
                     canCreate = {true}
                     directionCreate="/inventario/producto/nuevo"
                 ></DataTable>
+                </>}
             </MainWrap>
         </ProtectedRoute>
     </>

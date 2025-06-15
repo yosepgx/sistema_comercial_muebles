@@ -16,12 +16,14 @@ import { RadioGroup, RadioGroupItem } from './ui/radio-group'
 import { GetCotizacionLineaListApi, PostCotizacionLineaAPI } from '@/api/cotizacionDetalleApis'
 import { TProducto } from '@/components/types/productoTypes'
 import ProductSearchPopup from './popsearchproducto'
-import { CotizacionTable } from './tablecotizacion'
+import { CotizacionTable } from './tableCotizacion'
 import { PostCotizacionAPI, UpdateCotizacionAPI } from '@/api/cotizacionApis'
 import { formCotizacionSchema, formCotizacionSchemaSend, FormCotizacionValues } from './schemas/formCotizacionSchema'
 import { useCalculosCotizacion } from './hooks/useCalculosCotizacion'
 import { GetDatoGeneralDetailApi } from '@/api/datogeneralApis'
 import { useDescuentosAutomaticos } from './descuentos/useDescuentosAutomaticos'
+import { NewCotizacionTable } from './newTableCotizacion'
+import { cargarCotizacion } from './cotizaciones/cargarCotizacion'
 
 export default function FormCotizacionDetalle() {
   const [loading, setLoading] = useState(true)
@@ -48,32 +50,18 @@ export default function FormCotizacionDetalle() {
       observaciones: '',
       direccion_entrega: '',
       activo: 'true',
+      vendedor: '',
     }
   })
 
   const descuento = form.watch('descuento_adicional', '0.00');
 
-  const cargarCotizacion = (cotizacion: TCotizacion | null) => {
-    if(!cotizacion) return;
-    console.log("la cotizacion a cargar es:", cotizacion)
-    form.setValue('id', `${cotizacion.id}`);
-    form.setValue('fecha', cotizacion.fecha);
-    form.setValue('estado_cotizacion', cotizacion.estado_cotizacion);
-    form.setValue('oportunidad', `${cotizacion.oportunidad}`);
-    form.setValue('monto_sin_impuesto', cotizacion.monto_sin_impuesto.toFixed(2));
-    form.setValue('monto_igv', cotizacion.monto_igv.toFixed(2));
-    form.setValue('monto_total', cotizacion.monto_total.toFixed(2));
-    form.setValue('descuento_adicional', cotizacion.descuento_adicional.toFixed(2));
-    form.setValue('observaciones', cotizacion.observaciones?? '');
-    form.setValue('direccion_entrega', cotizacion.direccion_entrega ?? '');
-    form.setValue('activo', cotizacion.activo ? 'true' : 'false');
-  };
 
   useEffect(()=>{
     if(crrCotizacion && crrTab === 'cotizaciones' &&edicionCotizacion!== 'nuevo'){
       console.log("cotizacion actual: ", crrCotizacion)
       setLoading(true);
-      cargarCotizacion(crrCotizacion)
+      cargarCotizacion(crrCotizacion, form)
       GetCotizacionLineaListApi(null, crrCotizacion.id).then(
         data => setListaDetalles(data)
       ).catch(error => console.error('error al obtener lineas de cotizacion, error: ', error))
@@ -152,32 +140,32 @@ const onSubmit = async (rawdata: FormCotizacionValues) => {
 const handleSelectProducto = (producto: TProducto) => {
   try {
     console.log("producto seleccionado", producto)
-    setListaDetalles((old) => {
-      const yaExiste = old.some(item => item.producto === producto.id);
-      if (yaExiste) return old;
-
-      const detalle: TCotizacionDetalle = {
-        producto: producto.id,
-        cotizacion: 0, //al crear asignar a todas estas la cotizacion
-        cantidad: 1,
-        precio_unitario: producto.rprecio_actual?producto.rprecio_actual:0 ,
-        descuento: 0,
-        subtotal: producto.rprecio_actual?producto.rprecio_actual * 1: 0,
-        nrolinea: old.length + 1,
-        activo: true,
-        rnombre: producto.nombre,
-        rum: producto.umedida_sunat,
-        rigv: Number(producto.igv ?? 0.18).toFixed(2)
-      };
-      console.log("ATENCION detalle:",detalle)
-
-      // Aplicar descuentos automáticamente
-      aplicarDescuentosADetalle(detalle).then((detalleConDescuento) => {
-        setListaDetalles(prev => [...prev.filter(item => item.producto !== producto.id), detalleConDescuento]);
+    const yaExiste = listaDetalles.some(item => item.producto === producto.id);
+    if (yaExiste) return;
+    //si no esta creas la linea
+    const detalle: TCotizacionDetalle = {
+      producto: producto.id,
+      cotizacion: 0,
+      cantidad: 1,
+      precio_unitario: producto.rprecio_actual ?? 0,
+      descuento: 0,
+      subtotal: producto.rprecio_actual ?? 0,
+      nrolinea: listaDetalles.length + 1,
+      activo: true,
+      rnombre: producto.nombre,
+      rum: producto.umedida_sunat,
+      rigv: Number(producto.igv ?? 0.18).toFixed(2)
+    };
+    //mandas al back para calcular
+    aplicarDescuentosADetalle(detalle)
+      .then((detalleConDescuento) => {
+        //asignas a la lista actual
+        setListaDetalles(prev => [...prev, detalleConDescuento]);
+      })
+      .catch(error => {
+        console.error('Error aplicando descuentos', error);
+        setListaDetalles(prev => [...prev, detalle]);
       });
-
-      return [...old, detalle];
-    });
 
     setIsSearchPopupOpen(false);
   } catch (error) {
@@ -310,6 +298,19 @@ const handleSelectProducto = (producto: TProducto) => {
             <div>
             <FormField
               control = {form.control}
+              name = "vendedor"
+              render={({field}) => (
+                <FormItem className='flex flex-col'>
+                  <FormLabel> Vendedor</FormLabel>
+                  <FormControl>
+                    <Input type = "text" {...field} disabled={edicionCotizacion==='edicion'}/>
+                  </FormControl>
+                  <FormMessage className="min-h-[24px]"/>
+                </FormItem>
+              )}
+            />
+            <FormField
+              control = {form.control}
               name = "observaciones"
               render={({field}) => (
                 <FormItem className='flex flex-col'>
@@ -389,13 +390,13 @@ const handleSelectProducto = (producto: TProducto) => {
         {/* Tabla de detalles */}
         {(loading && edicionCotizacion !== 'nuevo')? (<div>Cargando ...</div>) : 
         (<div className="bg-white rounded-lg border">
-          <CotizacionTable
+          <NewCotizacionTable
             detalles={listaDetalles}
             setDetalles={setListaDetalles}
             isDisabled = { edicionCotizacion === 'edicion'}
           />
         </div>)
-}
+        }
       </div>
          
     </div>

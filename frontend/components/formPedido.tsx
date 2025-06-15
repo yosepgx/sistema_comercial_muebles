@@ -22,9 +22,14 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import {format} from  'date-fns'
 import { formPedidoSchema, FormPedidoValues } from './schemas/pedidoSchemas'
 import { UNIDADES_MEDIDA_BUSCA } from '@/constants/unidadesMedidaConstants'
+import { usePermiso } from '@/hooks/usePermiso'
+import { PERMISSION_KEYS } from '@/constants/constantRoles'
+import { GenerarGuiaModal } from './pedidos/GenerarGuiaModal'
 
 
 export default function FormPedido() {
+  const puedeEditarPedidos = usePermiso(PERMISSION_KEYS.PEDIDO_DESPACHAR)
+  const [openModal, setOpenModal] = useState(false);
   const {crrTab, crrOportunidad} = useOportunidadContext()
   const [pedido, setPedido] = useState<TPedido | null>(null)
   const [listaDetalles, setListaDetalles] = useState<TPedidoDetalle[]>([])
@@ -383,13 +388,13 @@ export default function FormPedido() {
 
           {/* Botones de acción */}
           <div className="flex flex-row gap-8">
-            {pedido && <CustomButton type='button' variant='primary'
+            {pedido && puedeEditarPedidos && <CustomButton type='button' variant='primary'
             onClick={()=>GetXMLFile(null,pedido.id)}
             >
               Generar archivo XML
             </CustomButton>}
             
-            {pedido?.estado_pedido === 'pendiente' && (
+            {pedido?.estado_pedido === 'pendiente' && puedeEditarPedidos && (
               <CustomButton
                 type='button'
                 variant='green'
@@ -406,7 +411,7 @@ export default function FormPedido() {
               </CustomButton>
             )}
 
-            {pedido?.estado_pedido === 'pagado' && (
+            {pedido?.estado_pedido === 'pagado' && puedeEditarPedidos && (
               <CustomButton
                 type='button'
                 variant='green'
@@ -422,7 +427,7 @@ export default function FormPedido() {
                 Marcar como Despachado
               </CustomButton>
             )}
-            <CustomButton
+            {/* {puedeEditarPedidos && <CustomButton
               type='button'
               variant='red'
               onClick={async () => {
@@ -437,12 +442,23 @@ export default function FormPedido() {
               }}
             >
               Anular Pedido
-            </CustomButton>
+            </CustomButton>} */}
+            {puedeEditarPedidos && 
+              <CustomButton
+              onClick={() => setOpenModal(true)}
+            >Generar Guia</CustomButton>}
           </div>
         </div>
       </div>
         </form>
       </Form>        
+      <div>
+        <GenerarGuiaModal
+        open={openModal}
+        onClose={() => setOpenModal(false)}
+        pedidoId={`${pedido?.id}`}
+      />
+      </div>
       {/* Sección RESUMEN PRODUCTOS */}
       <div className="mt-8">
         <h3 className="text-lg font-semibold mb-4 text-gray-800">RESUMEN PRODUCTOS</h3>

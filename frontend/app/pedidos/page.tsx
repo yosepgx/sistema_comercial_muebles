@@ -17,8 +17,11 @@ import { transformDateUTCHourToUserTime } from "@/components/transformDate";
 import { useRouter } from "next/navigation";
 import {format} from 'date-fns'
 import CustomButton from "@/components/customButtom";
+import { usePermiso } from "@/hooks/usePermiso";
+import { PERMISSION_KEYS } from "@/constants/constantRoles";
 
 export default function PedidosPage(){
+    const puedeVerPedidos = usePermiso(PERMISSION_KEYS.PEDIDO_LEER_TODOS)
     const [data, setData] = useState<TPedido[]>([])
     const [loading, setLoading] = useState(true)
     const router = useRouter()
@@ -34,7 +37,9 @@ export default function PedidosPage(){
         try {
         const res = await GetPedidoListApi(ct)
         console.log("Datos cargados:", res)
-        setData(res)
+        const filtrados = res.filter(value => value.tipo_comprobante === 'boleta' 
+          || value.tipo_comprobante === 'factura')
+        setData(filtrados)
         } catch (error) {
         console.error("Error al cargar los datos", error)
         } finally {
@@ -64,7 +69,9 @@ export default function PedidosPage(){
     const camposFiltrables = [
       item.id?.toString().toLowerCase(),
       item.estado_pedido?.toLowerCase(),
-      item.direccion?.toLowerCase()
+      item.direccion?.toLowerCase(),
+      item.serie?.toLowerCase(),
+      item.correlativo?.toLowerCase(),
     ];
     return camposFiltrables.some(campo => campo?.includes(texto));
   });
@@ -90,51 +97,82 @@ export default function PedidosPage(){
           resizable: false,
           flex: 1
       },
-      {   field: 'fecha', 
-          headerName: 'Fecha de creacion',
+      {   field: 'fecha',
+          renderHeader: () => (
+            <span className="text-center block">
+              Fecha de <br /> creacion
+            </span>
+          ),  
           resizable: false,
           flex: 1,
           valueFormatter: (value) => transformDateUTCHourToUserTime(value),
 
       },
-      {   field: 'fechaentrega', 
-          headerName: 'Fecha de entrega',
+      {   field: 'fechaentrega',
+          renderHeader: () => (
+            <span className="text-center block">
+              Fecha de <br /> entrega
+            </span>
+          ), 
+          resizable: false,
+          flex: 1,
+          valueFormatter: (value) => value? value: 'Sin Fecha',
+      },
+      {   field: 'fecha_pago',
+          renderHeader: () => (
+            <span className="text-center block">
+              Fecha de <br /> pago
+            </span>
+          ),  
+          resizable: false,
+          flex: 1,
+          valueFormatter: (value) => value? value: 'Sin Fecha',
+      },
+      {   field: 'serie', 
+          headerName: 'Serie',
           resizable: false,
           flex: 1
       },
-      {   field: 'fecha_pago', 
-          headerName: 'Fecha de pago',
-          resizable: false,
-          flex: 1
-      },
-      // {   field: 'serie', 
-      //     headerName: 'Id',
-      //     resizable: false,
-      //     flex: 1
-      // },
 
-      // {   field: 'correlativo', 
-      //     headerName: 'Fecha de creacion',
-      //     resizable: false,
-      //     flex: 1
-      // },
-      // {   field: 'tipo_comprobante', 
-      //     headerName: 'Estado',
-      //     resizable: false,
-      //     flex: 1
-      // },
-      {   field: 'direccion', 
-          headerName: 'Direccion Entrega',
+      {   field: 'correlativo', 
+          headerName: 'Correlativo',
           resizable: false,
           flex: 1
+      },
+      {   field: 'tipo_comprobante', 
+          renderHeader: () => (
+            <span className="text-center block">
+              Tipo de <br /> Documento
+            </span>
+          ),
+          resizable: false,
+          flex: 1,
+      },
+      {   field: 'direccion', 
+          renderHeader: () => (
+            <span className="text-center block">
+              Direccion de <br /> Entrega
+            </span>
+          ),
+          resizable: false,
+          flex: 1,
       },
       {   field: 'cotizacion', 
-          headerName: 'Codigo de Cotizacion',
+          renderHeader: () => (
+            <span className="text-center block">
+              Codigo de <br /> Cotizacion
+            </span>
+          ),
           resizable: false,
+          
           flex: 1
       },
       {   field: 'estado_pedido', 
-          headerName: 'Estado Pedido',
+          renderHeader: () => (
+            <span className="text-center block">
+              Estado de <br /> Pedido
+            </span>
+          ),
           resizable: false,
           flex: 1
       },
@@ -153,19 +191,17 @@ export default function PedidosPage(){
           resizable: false,
           flex: 1
       },
-      {   field: 'descuento_adicional', 
-          headerName: 'Descuento auxiliar',
-          resizable: false,
-          flex: 1
-      },
-      
-      {   field: 'activo', 
-          headerName: 'Activo',
+      {   field: 'descuento_adicional',
+          renderHeader: () => (
+            <span className="text-center block">
+              Descuento <br /> auxiliar
+            </span>
+          ),
           resizable: false,
           flex: 1,
-          valueFormatter: (value) => (value? "Activo":"Inactivo"),
-
       },
+      
+      
       {
       field: 'acciones',
       headerName: 'Acciones',
@@ -189,7 +225,7 @@ export default function PedidosPage(){
     return (
         <ProtectedRoute>
             <MainWrap>
-                
+                {puedeVerPedidos && <>
                 <div className="flex grid-cols-4 gap-8">
                   <div>
                   <Label>Buscador</Label>
@@ -224,11 +260,13 @@ export default function PedidosPage(){
                 <CustomButton type="button" onClick={()=>descargarPedidosAPI(null, 
                   format(fechaInicio?? '01/01/2012', 'yyyy-MM-dd'), 
                   format(fechaFin ?? '01/01/2040', 'yyyy-MM-dd'))
+                  
                   }>
                   Exportar
                 </CustomButton>
                 </div>
                 <DataGrid
+                className="mt-2"
                 rows = {filteredData? filteredData : []}
                 columns={Columns}
                 initialState={{
@@ -239,10 +277,19 @@ export default function PedidosPage(){
                 },
                 
                 }}
+                sx={{
+                  '& .MuiDataGrid-columnHeader': {
+                    whiteSpace: 'normal',
+                    lineHeight: '1.2',
+                    textAlign: 'center',
+                    wordBreak: 'break-word',
+                  }
+                }}
                 pageSizeOptions={[5, 10, 25]}
                 disableRowSelectionOnClick
                 disableColumnMenu
                 />
+                </>}
             </MainWrap>
         </ProtectedRoute>
     )

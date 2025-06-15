@@ -16,13 +16,14 @@ import { RadioGroup, RadioGroupItem } from '../ui/radio-group'
 import { GetCotizacionLineaListApi, PostCotizacionLineaAPI } from '@/api/cotizacionDetalleApis'
 import { TProducto } from '@/components/types/productoTypes'
 import ProductSearchPopup from '../popsearchproducto'
-import { CotizacionTable } from '../tablecotizacion'
+import { CotizacionTable } from '../tableCotizacion'
 import { GetCotizacionDetailApi, PostCotizacionAPI, UpdateCotizacionAPI } from '@/api/cotizacionApis'
 import { TCotizacion } from '../types/cotizacion'
 import { useParams, useRouter } from 'next/navigation'
 import { formCotizacionSchema, formCotizacionSchemaSend, FormCotizacionValues } from '../schemas/formCotizacionSchema'
 import { useCalculosCotizacion } from '../hooks/useCalculosCotizacion'
 import { GetDatoGeneralDetailApi } from '@/api/datogeneralApis'
+import { cargarCotizacion } from './cargarCotizacion'
 
 
 type Props = {
@@ -73,26 +74,12 @@ const fetchCotizacion = async () => {
     return cotizacion;
 }
 
-const cargarCotizacion = (cotizacion: TCotizacion | null) => {
-  if(!cotizacion) return;
-  form.setValue('id', `${cotizacion.id}`);
-  form.setValue('fecha', cotizacion.fecha);
-  form.setValue('estado_cotizacion', cotizacion.estado_cotizacion);
-  form.setValue('oportunidad', `${cotizacion.oportunidad}`);
-  form.setValue('monto_sin_impuesto', `${cotizacion.monto_sin_impuesto}`);
-  form.setValue('monto_igv', `${cotizacion.monto_igv}`);
-  form.setValue('monto_total', `${cotizacion.monto_total}`);
-  form.setValue('descuento_adicional', `${cotizacion.descuento_adicional}`);
-  form.setValue('observaciones', cotizacion.observaciones || '');
-  form.setValue('direccion_entrega', cotizacion.direccion_entrega || '');
-  form.setValue('activo', cotizacion.activo ? 'true' : 'false');
-};
 
 useEffect(()=>{
     if(edicionCotizacion ==='edicion' && id){
         const cargar = async () => {
             const data = await fetchCotizacion(); 
-            cargarCotizacion(data);              
+            cargarCotizacion(data, form);              
         };
         cargar();
     }
@@ -284,6 +271,19 @@ if(!crrCotizacion)return (<div>Cargando...</div>)
             </div>
             {/* Observación/Razón de rechazo */}
             <div>
+            <FormField
+              control = {form.control}
+              name = "vendedor"
+              render={({field}) => (
+                <FormItem className='flex flex-col'>
+                  <FormLabel> Vendedor</FormLabel>
+                  <FormControl>
+                    <Input type = "text" {...field} disabled={edicionCotizacion==='edicion'}/>
+                  </FormControl>
+                  <FormMessage className="min-h-[24px]"/>
+                </FormItem>
+              )}
+            />
             <FormField
               control = {form.control}
               name = "observaciones"

@@ -26,7 +26,7 @@ def crear_series_default(sender, instance, created, **kwargs):
                     sede=instance,
                     tipo_comprobante=tipo_doc['tipo'],
                     serie=tipo_doc['serie'] + str(instance.id),
-                    ultimo_correlativo=0,
+                    ultimo_correlativo=1,
                     activo=True
                 )
             except Exception as e:

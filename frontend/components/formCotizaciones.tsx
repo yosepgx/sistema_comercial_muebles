@@ -62,12 +62,18 @@ export default function FormCotizaciones() {
       resizable: false,
       flex: 1
     },
-    // {
-    //   field: 'vendedor',
-    //   headerName: 'VENDEDOR',
-    //   resizable: false,
-    //   flex: 1
-    // },
+    {
+      field: 'vendedor',
+      headerName: 'VENDEDOR',
+      resizable: false,
+      flex: 1
+    },
+    {   
+      field: 'descuento_adicional', 
+      headerName: 'Descuento auxiliar',
+      resizable: false,
+      flex: 1
+    },
     {
       field: 'acciones',
       headerName: 'Acciones',
@@ -85,9 +91,9 @@ export default function FormCotizaciones() {
             }}>
             <Eye />
           </IconButton>
-          <IconButton>
+          {/* <IconButton>
             <Trash2 />
-          </IconButton>
+          </IconButton> */}
           <IconButton>
             <Printer onClick={()=>{handleDownload(null,params.row.id)}}/>
           </IconButton>

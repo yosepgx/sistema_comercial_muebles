@@ -59,7 +59,8 @@ class CotizacionViewSet(viewsets.ModelViewSet):
 #               Validar stock suficiente
                 for detalle in instance.detalles.all():
                     stock_disponible = detalle.producto.stock
-                    if detalle.cantidad > stock_disponible:
+                    verificador_servicio = detalle.producto.es_servicio
+                    if not verificador_servicio and detalle.cantidad > stock_disponible:
                         raise ValidationError({
                             "codigo": "STOCK_INSUFICIENTE",
                             "detalle": f"No hay stock suficiente para el producto '{detalle.producto.nombre}'. "
@@ -104,9 +105,10 @@ class CotizacionViewSet(viewsets.ModelViewSet):
             tipo_comprobante = Pedido.TIPOFACTURA
         
         # Darle una Serie y un correlativo (solo facturas y boletas, la NC y ND se trabajan con las anulaciones)
-        resultado = CorrelativoService.guardar_siguiente_correlativo(sede_id=sede.id,tipo_documento=tipo_comprobante)
+        resultado = CorrelativoService.obtener_guardar_siguiente_correlativo(sede_id=sede.id,tipo_documento=tipo_comprobante)
         
         # Creamos el pedido con la información de la cotización
+        #TODOS12: REGULARIZAR CON NOTA-> no es necesario no creas notas con esto por lo que tipo_nota sera null igual que documento_referencia
         pedido = Pedido.objects.create(
             #fecha = now_add
             fechaentrega = None,

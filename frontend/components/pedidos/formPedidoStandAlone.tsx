@@ -21,13 +21,18 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import {format} from  'date-fns'
 import { UNIDADES_MEDIDA_BUSCA } from '@/constants/unidadesMedidaConstants'
-import { formPedidoSchema,formPedidoSchemaSend, FormPedidoValues } from '../schemas/pedidoSchemas'
+import { formPedidoSchema, FormPedidoValues } from '../schemas/pedidoSchemas'
+import { usePermiso } from '@/hooks/usePermiso'
+import { PERMISSION_KEYS } from '@/constants/constantRoles'
+import { GenerarGuiaModal } from './GenerarGuiaModal'
 
 type Props = {
   tipo: 'nuevo' | 'edicion'
 }
 
 export default function FormPedidoStandAlone({tipo} : Props) {
+  const puedeEditarPedidos = usePermiso(PERMISSION_KEYS.PEDIDO_DESPACHAR)
+  const [openModal, setOpenModal] = useState(false);
   const [pedido, setPedido] = useState<TPedido | null>(null)
   const [descuentoTotal, setDescuentoTotal] = useState(0.0)
   const {id} = useParams();
@@ -387,13 +392,13 @@ export default function FormPedidoStandAlone({tipo} : Props) {
 
           {/* Botones de acción */}
           <div className="flex flex-row gap-8">
-            {pedido && <CustomButton type='button' variant='primary'
+            {pedido && puedeEditarPedidos && <CustomButton type='button' variant='primary'
             onClick={()=>GetXMLFile(null,pedido.id)}
             >
               Generar archivo XML
             </CustomButton>}
             
-            {pedido?.estado_pedido === 'pendiente' && (
+            {pedido?.estado_pedido === 'pendiente' && puedeEditarPedidos &&  (
               <CustomButton
                 type='button'
                 variant='green'
@@ -410,7 +415,7 @@ export default function FormPedidoStandAlone({tipo} : Props) {
               </CustomButton>
             )}
 
-            {pedido?.estado_pedido === 'pagado' && (
+            {pedido?.estado_pedido === 'pagado' && puedeEditarPedidos &&  (
               <CustomButton
                 type='button'
                 variant='green'
@@ -426,7 +431,7 @@ export default function FormPedidoStandAlone({tipo} : Props) {
                 Marcar como Despachado
               </CustomButton>
             )}
-            <CustomButton
+            {/* {puedeEditarPedidos && <CustomButton
               type='button'
               variant='red'
               onClick={async () => {
@@ -441,12 +446,37 @@ export default function FormPedidoStandAlone({tipo} : Props) {
               }}
             >
               Anular Pedido
-            </CustomButton>
+            </CustomButton>} */}
+            {puedeEditarPedidos && <CustomButton type='button'
+            variant='red'
+            onClick={ async () => {
+              const confirmacion = window.confirm('¿Deseas Emitir una nota sobre el pedido?')
+                if (confirmacion) {
+                  if(pedido){
+                    //const nuevopedido = {...pedido, estado_pedido: 'anulado' as const}; de repente modificado o nota existente
+                    //await UpdatePedidoAPI(null,nuevopedido.id, nuevopedido)
+                    //setPedido(nuevopedido)
+                    router.push(`/notas/nuevo?pedidoId=${pedido.id}`)
+                  }
+                }
+            }}
+            >Emitir Nota de credito</CustomButton>}
+            {puedeEditarPedidos && 
+              <CustomButton
+              onClick={() => setOpenModal(true)}
+            >Generar Guia</CustomButton>}
           </div>
         </div>
       </div>
         </form>
       </Form>        
+      <div>
+        <GenerarGuiaModal
+        open={openModal}
+        onClose={() => setOpenModal(false)}
+        pedidoId={`${pedido?.id}`}
+      />
+      </div>
       {/* Sección RESUMEN PRODUCTOS */}
       <div className="mt-8">
         <h3 className="text-lg font-semibold mb-4 text-gray-800">RESUMEN PRODUCTOS</h3>

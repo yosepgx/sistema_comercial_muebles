@@ -4,9 +4,9 @@ from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status, viewsets
-from .services import ServiceCargarDataVenta  
+from .services import ServiceCargarDataVenta, generar_nodos_descuento_global_etree
 from .models import Pedido, PedidoDetalle
-from .serializers import PedidoSerializer, PedidoDetalleSerializer
+from .serializers import PedidoSerializer, PedidoDetalleSerializer, NotaSerializer
 from oportunidades_app.services import ServiceCargarDatosOportunidades
 import openpyxl
 from oportunidades_app.models import Oportunidad, Cotizacion
@@ -18,7 +18,12 @@ from datetime import datetime
 import pandas as pd
 from io import BytesIO
 from ajustes_app.models import Dgeneral
-#cuando un pedido se anula si estaba:
+from decimal import Decimal
+from django.template.loader import render_to_string
+from weasyprint import HTML
+
+
+
 
 
 #      por validar: no pasa nada con el stock
@@ -48,12 +53,15 @@ class PedidoViewSet(viewsets.ModelViewSet):
         nuevo_estado = request.data.get('estado_pedido', estado_anterior)
 
         with transaction.atomic():
-    #      por validar -> pagado: se bloquea el stock (pasa de stock general a stock comprometido)
+    #      por validar -> pagado: se bloquea el stock (pasa de stock general a stock comprometido) / si es servicio no se reduce stock
             if estado_anterior == Pedido.PENDIENTE and nuevo_estado == Pedido.PAGADO:
                 instance.fecha_pago = timezone.now().date()
                 lineas = instance.detalles.all()
                 for linea in lineas:
                     cantidad = linea.cantidad
+                    validador_servicio = linea.producto.es_servicio
+                    if validador_servicio:
+                        continue
                     registro = linea.producto.registros_inventario.first()
                     if not registro:
                         raise ValidationError(f"El producto '{linea.producto}' no tiene registro de inventario.")
@@ -61,11 +69,15 @@ class PedidoViewSet(viewsets.ModelViewSet):
                     registro.cantidad_comprometida += cantidad
                     registro.save()
             
+            
     #      pagado -> anulado: se tiene que desbloquear los compromisos y se anula cotizacion
             if estado_anterior == Pedido.PAGADO and nuevo_estado == Pedido.ANULADO:
                 lineas = instance.detalles.all()
                 for linea in lineas:
                     cantidad = linea.cantidad
+                    validador_servicio = linea.producto.es_servicio
+                    if validador_servicio:
+                        continue
                     registro = linea.producto.registros_inventario.first()
                     if not registro:
                         raise ValidationError(f"El producto '{linea.producto}' no tiene registro de inventario.")
@@ -83,11 +95,15 @@ class PedidoViewSet(viewsets.ModelViewSet):
                 lineas = instance.detalles.all()
                 for linea in lineas:
                     cantidad = linea.cantidad
+                    validador_servicio = linea.producto.es_servicio
+                    if validador_servicio:
+                        continue
                     registro = linea.producto.registros_inventario.first()
                     if not registro:
                         raise ValidationError(f"El producto '{linea.producto}' no tiene registro de inventario.")
                     registro.cantidad_comprometida -= cantidad
                     registro.save()
+
 
                 oportunidad = instance.cotizacion.oportunidad
                 if oportunidad:
@@ -95,12 +111,15 @@ class PedidoViewSet(viewsets.ModelViewSet):
                     oportunidad.save()
 
     #      despachado -> anulado: se tiene que volver a agregar los productos a stock disponible y se anula cotizacion
-    #                           -> si se cancela el codigo del comprobante sigue, no se modifica el comprobante
+    #                           -> si se cancela, el codigo del comprobante sigue, no se modifica el comprobante
             if estado_anterior == Pedido.DESPACHADO and nuevo_estado == Pedido.ANULADO:
                 #TODO: seria bueno tener fecha de anulacion
                 lineas = instance.detalles.all()
                 for linea in lineas:
                     cantidad = linea.cantidad
+                    validador_servicio = linea.producto.es_servicio
+                    if validador_servicio:
+                        continue
                     registro = linea.producto.registros_inventario.first()
                     if not registro:
                         raise ValidationError(f"El producto '{linea.producto}' no tiene registro de inventario.")
@@ -113,13 +132,14 @@ class PedidoViewSet(viewsets.ModelViewSet):
                 cotizacion.save()
                 
                 oportunidad = instance.cotizacion.oportunidad
-                if oportunidad:
+                if oportunidad.estado_oportunidad == Oportunidad.GANADO:
                     oportunidad.estado_oportunidad = Oportunidad.EN_NEGOCIACION
                     oportunidad.save()
             
             self.perform_update(serializer)
 
         return Response(serializer.data, status=status.HTTP_200_OK)
+
 
 class PedidoDetalleViewSet(viewsets.ModelViewSet):
     queryset = PedidoDetalle.objects.all() 
@@ -132,6 +152,7 @@ class PedidoDetalleViewSet(viewsets.ModelViewSet):
         return super().get_queryset()
 
 class CargarDataPedidosView(APIView):
+    #sedes -> serieCorrelativo -> oportunidades -> cotizaciones -> pedidos
     parser_classes = (MultiPartParser, FormParser)  
 
     def post(self, request, *args, **kwargs):
@@ -284,6 +305,10 @@ class GenerarXMLUBLView(APIView):
         # Relleno ID 
         tax_scheme = ET.SubElement(party_tax_scheme, "cac:TaxScheme")
         ET.SubElement(tax_scheme, "cbc:ID").text = "-"
+        
+        nodos = generar_nodos_descuento_global_etree(pedido.detalles.all(),pedido.descuento_adicional)
+        for nodo in nodos:
+            documento.append(nodo)
 
         # Total
         total = ET.SubElement(documento, "cac:LegalMonetaryTotal")
@@ -372,6 +397,7 @@ class GenerarXMLUBLView(APIView):
         return response
 
 
+
 class DescargarPedidos(APIView):
     def post(self, request):
         try:
@@ -439,3 +465,38 @@ class DescargarPedidos(APIView):
                 {"detail": "Error al generar el archivo Excel.", "error": str(e)},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
+
+class GenerarPDFGuiaRemisionView(APIView):
+    def post(self, request, pedido_id):
+        direccion_partida = request.data.get("direccion_partida")
+        if not direccion_partida:
+            return Response({"error": "Debe proporcionar la dirección de partida"}, status=400)
+
+        try:
+            pedido = Pedido.objects.prefetch_related("detalles__producto").get(id=pedido_id)
+        except Pedido.DoesNotExist:
+            return Response("Pedido no encontrado", status=404)
+
+        try:
+            datos = Dgeneral.objects.get(id=1)
+            
+        except Dgeneral.DoesNotExist:
+            return Response("No hay datos generales de la empresa", status=500)
+        
+        detalles = pedido.detalles.filter(activo=True)
+
+        fecha_emision_actual = timezone.now()
+
+        html_string = render_to_string("guias_remision/pdf_guia_remision.html", {
+            "pedido": pedido,
+            "detalles": detalles,
+            "direccion_partida": direccion_partida,
+            "datos": datos,
+            "fecha_emision": fecha_emision_actual,
+        })
+
+        pdf_bytes = HTML(string=html_string).write_pdf()
+
+        response = HttpResponse(pdf_bytes, content_type="application/pdf")
+        response["Content-Disposition"] = f'attachment; filename="GuiaRemision_{pedido.serie}-{pedido.correlativo}.pdf"'
+        return response

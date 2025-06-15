@@ -3,6 +3,8 @@ from rest_framework.response import Response
 from django.utils import timezone
 from decimal import Decimal
 from .models import ReglaDescuento
+from datetime import datetime, timedelta
+from copy import deepcopy
 
 # views.py
 from rest_framework import viewsets, status, filters
@@ -11,7 +13,9 @@ from rest_framework.response import Response
 from django.utils import timezone
 from django.db import transaction
 from .models import ReglaDescuento
-from .serializers import ReglaDescuentoSerializer, ValidationError
+from .serializers import ReglaDescuentoSerializer
+from dateutil import parser
+from rest_framework.exceptions import ValidationError
 
 @api_view(['POST'])
 def calcular_descuentos_linea(request):
@@ -98,6 +102,84 @@ def generar_descripcion_descuento(regla):
     return "Descuento aplicado"
 
 
+def validar_regla(data, instance = None):
+        """Validaciones personalizadas"""
+
+        fecha_inicio = data.get('fecha_inicio')
+        fecha_fin = data.get('fecha_fin')
+
+        if isinstance(fecha_inicio, str):
+            fecha_inicio = parser.parse(fecha_inicio)
+        if isinstance(fecha_fin, str):
+            fecha_fin = parser.parse(fecha_fin)
+
+        data['fecha_inicio'] = fecha_inicio
+        data['fecha_fin'] = fecha_fin
+
+        # Validar fechas
+        if data.get('fecha_inicio') and data.get('fecha_fin'):
+            if data['fecha_inicio'] >= data['fecha_fin']:
+                raise ValidationError({'code':"DESCUENTO_ERR01", 'message': "La fecha fin debe ser posterior a la fecha inicio"})
+        
+        # Validar que tenga al menos un tipo de descuento
+        if not data.get('porcentaje') and not data.get('monto_fijo'):
+            if not (data.get('cantidad_pagada') and data.get('cantidad_libre')):
+                raise ValidationError({'code':"DESCUENTO_ERR02", 'message': "Debe especificar al menos un tipo de descuento"})
+        
+        # Validar porcentaje
+        if data.get('porcentaje') and (data['porcentaje'] < 0 or data['porcentaje'] > 100):
+            raise ValidationError({'code':"DESCUENTO_ERR03", 'message': "El porcentaje debe estar entre 0 y 100"})
+        
+        # Validar monto fijo
+        if data.get('monto_fijo') and data['monto_fijo'] < 0:
+            raise ValidationError({'code':"DESCUENTO_ERR04", 'message': "El monto fijo no puede ser negativo"})
+            
+        
+        # Validar cantidades
+        if data.get('cantidad_pagada', 0) < 0:
+            raise ValidationError({'code':"DESCUENTO_ERR05", 'message': "La cantidad pagada no puede ser negativa"})
+        
+        if data.get('cantidad_libre', 0) < 0:
+            raise ValidationError({'code':"DESCUENTO_ERR06", 'message': "La cantidad libre no puede ser negativa"})
+        
+        if data.get('cantidad_libre_maxima', 0) < 0:
+            raise ValidationError({'code':"DESCUENTO_ERR07", 'message': "La cantidad libre máxima no puede ser negativa"})
+        
+        # Validar duplicados
+        producto = data.get('producto')
+        
+        
+        if producto and fecha_inicio and fecha_fin:
+            query = ReglaDescuento.objects.filter(
+                producto=producto,
+                fecha_inicio__range=[fecha_inicio, fecha_fin],
+                fecha_fin__range = [fecha_inicio, fecha_fin]
+            )
+            
+            # Si estamos editando, excluir el registro actual
+            if instance:
+                query = query.exclude(pk=instance.pk)
+                
+            if query.exists():
+                raise ValidationError({'code':"DESCUENTO_ERR08", 'message':"Ya existe una regla para este producto en las fechas seleccionadas"})
+        
+        # Validaciones específicas por fecha (según estrategia)
+        ahora = timezone.now()
+        fecha_inicio = data.get('fecha_inicio')
+        fecha_fin = data.get('fecha_fin')
+
+        if instance is None:
+            # Caso CREACIÓN
+            if fecha_inicio and fecha_inicio < ahora:
+                raise ValidationError({'code':"DESCUENTO_ERR09", 'message': "No se puede crear una regla con fecha inicio en el pasado"})
+
+            # Caso EDICIÓN
+        else :
+            if fecha_fin and fecha_fin < ahora:
+                raise ValidationError({'code':"DESCUENTO_ERR10", 'message': "No puedes acortar la fecha de fin a antes de ahora."})
+        
+
+
 class ReglaDescuentoViewSet(viewsets.ModelViewSet):
     queryset = ReglaDescuento.objects.select_related('producto').all()
     serializer_class = ReglaDescuentoSerializer
@@ -105,95 +187,75 @@ class ReglaDescuentoViewSet(viewsets.ModelViewSet):
 
     def create(self, request, *args, **kwargs):
         """Crear nueva regla con manejo de errores"""
-        try:
-            with transaction.atomic():
-                serializer = self.get_serializer(data=request.data)
-                serializer.is_valid(raise_exception=True)
-                regla = serializer.save()
-                
-                return Response({
-                    'success': True,
-                    'message': 'Regla de descuento creada exitosamente',
-                    'data': ReglaDescuentoSerializer(regla).data
-                }, status=status.HTTP_201_CREATED)
-                
-        except ValidationError as e:
+        with transaction.atomic():
+            data = request.data
+            validar_regla(data )
+
+            serializer = self.get_serializer(data=request.data)
+            serializer.is_valid(raise_exception=True)
+            regla = serializer.save()
+            
             return Response({
-                'success': False,
-                'message': 'Error de validación',
-                'errors': e.detail
-            }, status=status.HTTP_400_BAD_REQUEST)
+                'success': True,
+                'message': 'Regla de descuento creada exitosamente',
+                'data': ReglaDescuentoSerializer(regla).data
+            }, status=status.HTTP_201_CREATED)
+            
         
-        except Exception as e:
-            return Response({
-                'success': False,
-                'message': f'Error inesperado: {str(e)}'
-            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     def update(self, request, *args, **kwargs):
         """Actualizar regla existente"""
-        try:
-            with transaction.atomic():
-                partial = kwargs.pop('partial', False)
-                instance = self.get_object()
-                serializer = self.get_serializer(instance, data=request.data, partial=partial)
-                serializer.is_valid(raise_exception=True)
-                data = serializer.validated_data
+        with transaction.atomic():
+            partial = kwargs.pop('partial', False)
+            instance = self.get_object()
+            validar_regla(request.data, instance)
+            serializer = self.get_serializer(instance, data=request.data, partial=partial)
+            serializer.is_valid(raise_exception=True)
+            data = serializer.validated_data
+            
 
-                ahora = timezone.now()
-                afecta_hoy = instance.fecha_inicio <= ahora <= instance.fecha_fin
+            ahora = timezone.now()
+            afecta_hoy = instance.fecha_inicio <= ahora <= instance.fecha_fin
 
-                campos_sensibles = [
-                    'fecha_inicio', 'fecha_fin', 'porcentaje', 'monto_fijo',
-                    'cantidad_pagada', 'cantidad_libre', 'cantidad_libre_maxima'
-                ]
+            campos_sensibles = [
+                'fecha_inicio', 'fecha_fin', 'porcentaje', 'monto_fijo',
+                'cantidad_pagada', 'cantidad_libre', 'cantidad_libre_maxima'
+            ]
 
-                cambios_sensibles = any(
-                    field in data and data[field] != getattr(instance, field)
-                    for field in campos_sensibles
-                )
+            cambios_sensibles = any(
+                field in data and data[field] != getattr(instance, field)
+                for field in campos_sensibles
+            )
 
-                if afecta_hoy and cambios_sensibles:
-                    # Cerrar la regla actual
-                    instance.fecha_fin = ahora - timedelta(seconds=1)
-                    instance.activo = False
-                    instance.save()
+            if afecta_hoy and cambios_sensibles:
+                # Cerrar la regla actual
+                instance.fecha_fin = ahora - timedelta(seconds=1)
+                instance.activo = False
+                instance.save()
 
-                    # Crear nueva regla a partir de hoy con los datos nuevos
-                    nueva_data = deepcopy(request.data)
-                    nueva_data['fecha_inicio'] = timezone.now().replace(microsecond=0).isoformat()
+                # Crear nueva regla a partir de hoy con los datos nuevos
+                nueva_data = deepcopy(request.data)
+                nueva_data['fecha_inicio'] = timezone.now().replace(microsecond=0).isoformat()
 
-                    nueva_serializer = self.get_serializer(data=nueva_data)
-                    nueva_serializer.is_valid(raise_exception=True)
-                    nueva_regla = nueva_serializer.save()
+                nueva_serializer = self.get_serializer(data=nueva_data)
+                nueva_serializer.is_valid(raise_exception=True)
+                nueva_regla = nueva_serializer.save()
 
-                    return Response({
-                        'success': True,
-                        'message': 'Regla anterior cerrada y nueva regla creada desde hoy',
-                        'data': ReglaDescuentoSerializer(nueva_regla).data
-                    })
+                return Response({
+                    'success': True,
+                    'message': 'Regla anterior cerrada y nueva regla creada desde hoy',
+                    'data': ReglaDescuentoSerializer(nueva_regla).data
+                })
 
-                else:
-                    # No afecta hoy o no hay cambios sensibles → update directo
-                    regla = serializer.save()
-                    return Response({
-                        'success': True,
-                        'message': 'Regla actualizada exitosamente',
-                        'data': ReglaDescuentoSerializer(regla).data
-                    })
+            else:
+                # No afecta hoy o no hay cambios sensibles → update directo
+                regla = serializer.save()
+                return Response({
+                    'success': True,
+                    'message': 'Regla actualizada exitosamente',
+                    'data': ReglaDescuentoSerializer(regla).data
+                })
                 
-        except ValidationError as e:
-            return Response({
-                'success': False,
-                'message': 'Error de validación',
-                'errors': e.detail
-            }, status=status.HTTP_400_BAD_REQUEST)
-        
-        except Exception as e:
-            return Response({
-                'success': False,
-                'message': f'Error inesperado: {str(e)}'
-            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     def destroy(self, request, *args, **kwargs):
         """Eliminar regla"""
@@ -215,9 +277,23 @@ class ReglaDescuentoViewSet(viewsets.ModelViewSet):
     def toggle_activo(self, request, pk=None):
         """Activar/desactivar regla"""
         regla = self.get_object()
+        ahora = timezone.now()
+        
+        if not regla.activo:
+        # Reglas para activación
+            if regla.fecha_fin < ahora:
+                return Response({
+                    'success': False,
+                    'message': 'No se puede activar una regla vencida',
+                    'code': 'DESCUENTO_ERR_ACTIVAR_VENCIDA'
+                }, status=status.HTTP_400_BAD_REQUEST)
+
+        #bloquear la desactivacion de ya aplicados no seria necesario, no deberia afectar porque no vuelve a 
+            #calcularse ya se guardo    
+        #bloquear si estan incompletos tampoco porque ya le obligamos a datos completos en el front
         regla.activo = not regla.activo
         regla.save()
-        
+
         return Response({
             'success': True,
             'message': f'Regla {"activada" if regla.activo else "desactivada"}',
@@ -228,7 +304,7 @@ class ReglaDescuentoViewSet(viewsets.ModelViewSet):
     @action(detail=False, methods=['get'])
     def activas(self, request):
         """Obtener solo reglas activas y vigentes"""
-        hoy = timezone.now().date()
+        hoy = timezone.now()
         reglas_activas = self.queryset.filter(
             activo=True,
             fecha_inicio__lte=hoy,
@@ -246,7 +322,7 @@ class ReglaDescuentoViewSet(viewsets.ModelViewSet):
     @action(detail=False, methods=['get'])
     def estadisticas(self, request):
         """Obtener estadísticas de reglas"""
-        hoy = timezone.now().date()
+        hoy = timezone.now()
         total = self.queryset.count()
         activas = self.queryset.filter(activo=True, fecha_inicio__lte=hoy, fecha_fin__gte=hoy).count()
         vencidas = self.queryset.filter(fecha_fin__lt=hoy).count()

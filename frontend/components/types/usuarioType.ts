@@ -12,6 +12,7 @@ export const usuario = z.object({
     email: z.string(),
     groups: z.array(string()),
     is_active: z.boolean(),
+    password: z.string().optional()
   
 });
 

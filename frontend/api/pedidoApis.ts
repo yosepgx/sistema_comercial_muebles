@@ -11,7 +11,7 @@ export const GetXMLFile = async (token: string | null, idpedido: number) => {
     const url = window.URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
-    link.setAttribute('download', 'pedido_1.xml');
+    link.setAttribute('download', `pedido-${idpedido}.xml`);
     document.body.appendChild(link);
     link.click();
     link.remove();

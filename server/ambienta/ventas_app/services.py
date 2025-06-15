@@ -58,10 +58,11 @@ class CorrelativoService:
         
     
     @staticmethod
-    def guardar_siguiente_correlativo(sede_id, tipo_documento, documento_origen_id=None):
+    def obtener_guardar_siguiente_correlativo(sede_id, tipo_documento, documento_origen_id=None):
         """
         No solo obtiene el siguiente correlativo para un tipo de documento y sede específica sino 
-        tambien lo guarda
+        tambien lo guarda. NO necesita cambios para NC y ND porque al crearse sedes ya se crean con 
+        el codigo necesario BC FC BD FD, solo tiene que sumar 1 
         
         Args:
             sede_id (int): ID de la sede
@@ -83,9 +84,6 @@ class CorrelativoService:
                     activo=True
                 )
                 
-                # Incrementar correlativo
-                serie_correlativo.ultimo_correlativo += 1
-                serie_correlativo.save()
                 
                 # Formatear número completo
                 numero_completo = f"{serie_correlativo.serie}-{serie_correlativo.ultimo_correlativo:08d}"
@@ -105,6 +103,10 @@ class CorrelativoService:
                         'numero': documento_origen.numero_completo if hasattr(documento_origen, 'numero_completo') else f"{documento_origen.serie}-{documento_origen.correlativo}",
                         'tipo': documento_origen.tipo_comprobante
                     }
+
+                # Incrementar correlativo
+                serie_correlativo.ultimo_correlativo += 1
+                serie_correlativo.save()
                 
                 return resultado
                 
@@ -127,20 +129,35 @@ class ServiceCargarDataVenta:
                                )
             
             objetos = []
-            df['observaciones'] = None
-            for _, row in df.iterrows():
-                datos = row.to_dict()
+            with transaction.atomic():
+                for _, row in df.iterrows():
+                    datos = row.to_dict()
+
+                    id_cotizacion = datos.pop('cotizacion')
+                    cot = Cotizacion.objects.get(id=id_cotizacion)
+
+                    tipo_comprobante = datos['tipo_comprobante']
+                    sede_id = cot.oportunidad.sede.id  
+
+                    #necesito la serie y correlativo
+                    correlativo_info = CorrelativoService.obtener_guardar_siguiente_correlativo(
+                        sede_id=sede_id,
+                        tipo_documento=tipo_comprobante
+                    )
+                    datos['serie'] = correlativo_info['serie']
+                    datos['correlativo'] = correlativo_info['correlativo']
+                    observaciones = datos.get('observaciones')
+                    datos['observaciones'] = None if pd.isna(observaciones) else observaciones
+                    observaciones = datos.get('observaciones')
+                    
+                    obj = Pedido(cotizacion=cot, **datos)
+                    objetos.append(obj)
                 
-                id_cotizacion = datos.pop('cotizacion')
-                cot = Cotizacion.objects.get(id=id_cotizacion)
-                
-                obj = Pedido(cotizacion = cot, **datos)
-                objetos.append(obj)
-            
-            Pedido.objects.bulk_create(objetos)
+                Pedido.objects.bulk_create(objetos)
 
         except Exception as e:
             print(e)
+            raise
 
     def PedidoDetalle(archivo):
         try:
@@ -178,10 +195,23 @@ def generar_nodos_descuento_global_etree(detalle_items, descuento_auxiliar):
     if not descuento_auxiliar or descuento_auxiliar <= 0:
         return []  # No hay descuento
 
-    total_con_igv = sum(Decimal(item['subtotal']) for item in detalle_items)
-    if total_con_igv == 0:
+    # Calcular total sin IGV como base para prorrateo
+    total_sin_igv = Decimal('0.00')
+    for item in detalle_items:
+        subtotal = Decimal(item.subtotal)
+        afectacion = item.producto.codigo_afecion_igv
+        tasa = Decimal(item.producto.igv or 0)
+
+        if afectacion == "10":  # Gravado
+            neto = subtotal / (1 + tasa)
+        else:
+            neto = subtotal  # No tiene IGV
+        total_sin_igv += neto
+
+    if total_sin_igv == 0:
         return []
 
+    # Distribuir descuento proporcional
     agrupados = defaultdict(lambda: {
         'base': Decimal('0.00'),
         'igv': Decimal('0.00'),
@@ -189,22 +219,27 @@ def generar_nodos_descuento_global_etree(detalle_items, descuento_auxiliar):
     })
 
     for item in detalle_items:
-        subtotal = Decimal(item['subtotal'])
-        afectacion = item['producto']['afectacion_igv']
-        tasa = Decimal(item['producto'].get('igv', 0))
+        subtotal = Decimal(item.subtotal)
+        afectacion = item.producto.codigo_afecion_igv
+        tasa = Decimal(item.producto.igv or 0)
 
-        proporcion = subtotal / total_con_igv
-        descuento_con_igv = Decimal(descuento_auxiliar) * proporcion
-
-        if afectacion == "10":  # Gravado
-            descuento_base = descuento_con_igv / (1 + tasa)
-            descuento_igv = descuento_con_igv - descuento_base
+        if afectacion == "10":
+            base_item = subtotal / (1 + tasa)
         else:
-            descuento_base = descuento_con_igv
-            descuento_igv = Decimal('0.00')
+            base_item = subtotal
 
-        agrupados[afectacion]['base'] += descuento_base
-        agrupados[afectacion]['igv'] += descuento_igv
+        proporcion = base_item / total_sin_igv
+        descuento_auxiliar_con_igv = Decimal(descuento_auxiliar) * proporcion
+
+        if afectacion == "10":
+            descuento_auxiliar_base = descuento_auxiliar_con_igv / (1 + tasa)
+            descuento_auxiliar_igv = descuento_auxiliar_con_igv - descuento_auxiliar_base
+        else:
+            descuento_auxiliar_base = descuento_auxiliar_con_igv
+            descuento_auxiliar_igv = Decimal('0.00')
+
+        agrupados[afectacion]['base'] += descuento_auxiliar_base
+        agrupados[afectacion]['igv'] += descuento_auxiliar_igv
         agrupados[afectacion]['tasa'] = tasa
 
     nodos = []
@@ -214,7 +249,7 @@ def generar_nodos_descuento_global_etree(detalle_items, descuento_auxiliar):
 
         ET.SubElement(allowance, 'cbc:ChargeIndicator').text = 'false'
         ET.SubElement(allowance, 'cbc:AllowanceChargeReasonCode').text = '00'
-        ET.SubElement(allowance, 'cbc:MultiplierFactorNumeric').text = '0.00'
+        # ET.SubElement(allowance, 'cbc:MultiplierFactorNumeric').text = str(porcentaje)
 
         ET.SubElement(
             allowance, 'cbc:Amount', attrib={'currencyID': 'PEN'}
@@ -222,25 +257,7 @@ def generar_nodos_descuento_global_etree(detalle_items, descuento_auxiliar):
 
         ET.SubElement(
             allowance, 'cbc:BaseAmount', attrib={'currencyID': 'PEN'}
-        ).text = str(redondear(data['base'] + data['igv']))
-
-        tax_total = ET.SubElement(allowance, 'cac:TaxTotal')
-        ET.SubElement(
-            tax_total, 'cbc:TaxAmount', attrib={'currencyID': 'PEN'}
-        ).text = str(redondear(data['igv']))
-
-        tax_sub = ET.SubElement(tax_total, 'cac:TaxSubtotal')
-        ET.SubElement(
-            tax_sub, 'cbc:TaxAmount', attrib={'currencyID': 'PEN'}
-        ).text = str(redondear(data['igv']))
-
-        tax_category = ET.SubElement(tax_sub, 'cac:TaxCategory')
-        ET.SubElement(tax_category, 'cbc:TaxExemptionReasonCode').text = cod_afectacion
-
-        tax_scheme = ET.SubElement(tax_category, 'cac:TaxScheme')
-        ET.SubElement(tax_scheme, 'cbc:ID').text = '1000'
-        ET.SubElement(tax_scheme, 'cbc:Name').text = 'IGV'
-        ET.SubElement(tax_scheme, 'cbc:TaxTypeCode').text = 'VAT'
+        ).text = str(redondear(total_sin_igv))  
 
         nodos.append(allowance)
 

@@ -15,8 +15,16 @@ import { format } from "date-fns";
 import { DatePicker } from "@mui/x-date-pickers";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
+import { usePermiso } from "@/hooks/usePermiso";
+import { PERMISSION_KEYS } from "@/constants/constantRoles";
 
 export default function CotizacionesPage(){
+    const puedeCrearCotizaciones = usePermiso(PERMISSION_KEYS.COTIZACION_CREAR)
+    const puedeVerCotizaciones = usePermiso(PERMISSION_KEYS.COTIZACION_LEER)
+    const puedeEditarCotizaciones = usePermiso(PERMISSION_KEYS.COTIZACION_ACTUALIZAR)
+    const puedeEliminarCotizaciones = usePermiso(PERMISSION_KEYS.COTIZACION_ELIMINAR)
+    const puedeExportarCotizaciones = usePermiso(PERMISSION_KEYS.COTIZACION_EXPORTAR)
+
     const [data, setData] = useState<TCotizacion[]>([])
     const [loading, setLoading] = useState(true)
     const router = useRouter()
@@ -112,6 +120,11 @@ export default function CotizacionesPage(){
             resizable: false,
             flex: 1
         },
+        {   field: 'vendedor', 
+            headerName: 'Vendedor',
+            resizable: false,
+            flex: 1
+        },
         {   field: 'descuento_adicional', 
             headerName: 'Descuento auxiliar',
             resizable: false,
@@ -137,7 +150,7 @@ export default function CotizacionesPage(){
         width: 120,
         renderCell: (params) => (
         <div>
-            <IconButton onClick={() => router.push(`cotizaciones/${params.row.id}`)}>
+            <IconButton disabled={!puedeVerCotizaciones} onClick={() => router.push(`cotizaciones/${params.row.id}`)}>
             <Edit />
             </IconButton>
             {/* <IconButton onClick={() => {
@@ -163,6 +176,7 @@ export default function CotizacionesPage(){
     return (
         <ProtectedRoute>
             <MainWrap>
+                { puedeVerCotizaciones && <>
                 <div className="flex grid-cols-4 gap-8">
                     <div>
                     <Label>Buscador</Label>
@@ -192,12 +206,13 @@ export default function CotizacionesPage(){
                     value={fechaFin}
                     onChange={(newValue) => setFechaFin(newValue)}
                 />
-                <CustomButton type="button" onClick={()=>descargarCotizacionesAPI(null, 
+                {puedeExportarCotizaciones && 
+                <CustomButton  type="button" onClick={()=>descargarCotizacionesAPI(null, 
                                   format(fechaInicio?? '01/01/2012', 'yyyy-MM-dd'), 
                                   format(fechaFin ?? '01/01/2040', 'yyyy-MM-dd'))
                                   }>
                                   Exportar
-                </CustomButton>
+                </CustomButton>}
                 </div>
                 <DataGrid
                 rows = {data? data : []}
@@ -214,6 +229,7 @@ export default function CotizacionesPage(){
                 disableRowSelectionOnClick
                 disableColumnMenu
                 />
+                </>}
             </MainWrap>
         </ProtectedRoute>
     )

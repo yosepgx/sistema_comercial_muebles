@@ -4,7 +4,9 @@ import { GetRolListApi } from "@/api/rolesApis";
 import MainWrap from "@/components/mainwrap"
 import { ProtectedRoute } from "@/components/protectedRoute"
 import { Trol } from "@/components/types/rolType";
+import { PERMISSION_KEYS } from "@/constants/constantRoles";
 import { useAuth } from "@/context/authContext";
+import { usePermiso } from "@/hooks/usePermiso";
 import { IconButton } from "@mui/material";
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
 import { Edit } from "lucide-react";
@@ -25,6 +27,7 @@ const userColumns: GridColDef<Trol>[] = [
 ];
 
 export default function RolesPage(){
+    const puedeGestionarRoles = usePermiso(PERMISSION_KEYS.CONFIGURAR_SISTEMA)
     const [data, setData] = useState<Trol[]>([])
     const [loading, setLoading] = useState(true)
     const {ct} = useAuth();
@@ -50,6 +53,7 @@ export default function RolesPage(){
     return (
         <ProtectedRoute>
             <MainWrap>
+                {puedeGestionarRoles && <>
                 <DataGrid
                 rows = {data? data : []}
                 columns={userColumns}
@@ -65,6 +69,7 @@ export default function RolesPage(){
                 disableRowSelectionOnClick
                 disableColumnMenu
                 />
+                </>}
             </MainWrap>
         </ProtectedRoute>
     )

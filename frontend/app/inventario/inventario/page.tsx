@@ -7,8 +7,11 @@ import { GetInventarioListApi, Inventario } from "@/api/InventarioApis";
 import { ProtectedRoute } from "@/components/protectedRoute";
 import { useAuth } from "@/context/authContext";
 import MainWrap from "@/components/mainwrap";
+import { usePermiso } from "@/hooks/usePermiso";
+import { PERMISSION_KEYS } from "@/constants/constantRoles";
 
 export default function InventarioPage() {
+  const puedeGestionarInventario = usePermiso(PERMISSION_KEYS.INVENTARIO_ACTUALIZAR)
   const [data, setData] = useState<Inventario[]>([])
   const [loading, setLoading] = useState(true)
   const [allData, setAllData] = useState<Inventario[]>([])
@@ -39,13 +42,14 @@ export default function InventarioPage() {
     <>
     <ProtectedRoute>
       <MainWrap>
+        {puedeGestionarInventario && 
         <div>
             <div className="container mx-auto">
             <DataTable
                 columns={columns}
                 odata={data}
                 defaultColumn={defaultColumnCell}
-                placeholder={"Buscar por codigo de producto"}
+                placeholder={"Buscar por nombre de producto"}
                 canFilterActivo = {false}
                 canExport = {true}
             >
@@ -53,6 +57,7 @@ export default function InventarioPage() {
             </DataTable>
             </div>
         </div>
+        }
       </MainWrap>
     </ProtectedRoute>
     </>

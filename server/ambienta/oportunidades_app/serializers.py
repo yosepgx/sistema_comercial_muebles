@@ -10,6 +10,7 @@ class OportunidadSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 #en el codigo de view si puede acceder directamente al modelo oportunidad
+#no es necesario agregar campos todos ya estan incluidos
 class CotizacionSerializer(serializers.ModelSerializer):
     class Meta:
         model = Cotizacion

@@ -25,6 +25,8 @@ import { TRequisicion } from "@/components/types/requisicion"
 import { descargarExcel } from "./descargar"
 import { Box } from "@mui/material"
 import { formatInTimeZone } from "date-fns-tz";
+import { PERMISSION_KEYS } from "@/constants/constantRoles"
+import { usePermiso } from "@/hooks/usePermiso"
 
 const FormSchema = z.object({
   horizonte: z.coerce.number().int().max(12, {
@@ -91,6 +93,7 @@ const Columns: GridColDef<TRequisicion>[] = [
   ]
 
 export default function PrediccionPage() {
+  const puedeHacerPredicciones = usePermiso(PERMISSION_KEYS.CONFIGURAR_SISTEMA)
   const  [mensaje,setMensaje] = useState<string>(
     "Es necesario completar todos los campos antes de generar el archivo");
   const form = useForm<z.infer<typeof FormSchema>>({
@@ -171,6 +174,7 @@ export default function PrediccionPage() {
     <>
       <ProtectedRoute>
       <MainWrap>
+      {puedeHacerPredicciones && <>
       <div>
       <h1 className="text-xl font-bold mb-4">Módulo Predictivo</h1>
 
@@ -265,6 +269,7 @@ export default function PrediccionPage() {
         </div>
       </Box>
     </div>
+    </>}
     </MainWrap>
     </ProtectedRoute>
     </>

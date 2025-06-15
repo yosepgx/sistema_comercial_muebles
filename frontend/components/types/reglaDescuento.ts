@@ -12,6 +12,9 @@ export const regla = z.object({
     cantidad_libre_maxima: z.number(),
     tipo_descuento : z.enum(['porcentaje','monto_fijo','cantidad']),
     activo : z.boolean(),
+    rproducto_info: z.string().optional(),
+    rporcentaje_descuento : z.string().optional(),
+    restado : z.string().optional()
 })
 
 export type TRegla = z.infer<typeof regla>

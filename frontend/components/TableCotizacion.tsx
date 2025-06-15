@@ -26,37 +26,41 @@ export const CotizacionTable : React.FC<CotizacionTableProps>  = ({detalles, set
   const { aplicarDescuentosADetalle } = useDescuentosAutomaticos()
 
 
-  const handleCantidadChange =  (id: string, value: number) => {
+  const handleCantidadChange =  async (id: string, value: number) => {
+    if (value <= 0) {
+    setErrors((e) => ({ ...e, [id]: 'Cantidad debe ser mayor a 0' }));
+    return;
+    } else {
+      setErrors((e) => {
+        const newErrors = { ...e };
+        delete newErrors[id];
+        return newErrors;
+      });
+    }
+
     setDetalles((prev) =>
-      prev.map((row) => {
-        if (`${row.producto}-${row.cotizacion}` === id) {
-          const isValid = value > 0
-          if (!isValid) {
-            setErrors((e) => ({ ...e, [id]: 'Cantidad debe ser mayor a 0' }))
-            return row
-          } else {
-            setErrors((e) => {
-              const newErrors = { ...e }
-              delete newErrors[id]
-              return newErrors
-            })
-          }
-          // Crear detalle temporal con nueva cantidad
-          const detalleTemp = {
-            ...row,
-            cantidad: value
-          }
+    prev.map((row) => {
+      if (`${row.producto}-${row.cotizacion}` === id) {
+        return { ...row, cantidad: value }; 
+      }
+      return row;
+    })
+    );
 
-          // Recalcular descuentos automáticamente
-          let detalleConDescuento = row
-          aplicarDescuentosADetalle(detalleTemp)
-          .then(data => detalleConDescuento = data)
-          return detalleConDescuento
+    // el descuento
+    const detalleOriginal = detalles.find((row) => `${row.producto}-${row.cotizacion}` === id);
+    if (!detalleOriginal) return;
 
-          }
-        return row
-      })
-    )
+    const detalleTemp = { ...detalleOriginal, cantidad: value };
+    const detalleConDescuento = await aplicarDescuentosADetalle(detalleTemp);
+
+    setDetalles((prev) =>
+      prev.map((row) =>
+        `${row.producto}-${row.cotizacion}` === id ? detalleConDescuento : row
+      )
+    );
+    
+
   }
 
   const handleSave = (id: string) => {

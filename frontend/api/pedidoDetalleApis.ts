@@ -1,5 +1,5 @@
 import { customFetch } from "@/components/customFetch";
-import { TPedidoDetalle } from "@/components/types/pedido";
+import { pedidoDetalleListSchema, TPedidoDetalle } from "@/components/types/pedido";
 
 export async function GetPedidoLineaListApi(token:string | null, idpedido: number) {
     try {
@@ -19,7 +19,8 @@ export async function GetPedidoLineaListApi(token:string | null, idpedido: numbe
         }
         const data = await response.json();
         if (data) {
-            return data as TPedidoDetalle[];
+            const validado = pedidoDetalleListSchema.parse(data)
+            return validado;
         }
         return [];
         

@@ -13,7 +13,8 @@ import { DataGrid, GridColDef } from '@mui/x-data-grid';
 import { Close as CloseIcon } from '@mui/icons-material';
 import { GetProductoListApi } from '@/api/productoApis'; // asegúrate de tener esta API
 import CustomButton from './customButtom';
-import { TProducto } from '@/components/types/productoTypes';
+import { TCategoria, TProducto } from '@/components/types/productoTypes';
+import { GetCategoriaListApi } from '@/api/categoriaApis';
 
 interface ProductSearchPopupProps {
   open: boolean;
@@ -27,15 +28,24 @@ const ProductSearchPopup: React.FC<ProductSearchPopupProps> = ({
   onSelectProducto
 }) => {
   const [searchTerm, setSearchTerm] = useState('');
+  const [categorias, setCategorias] = useState<TCategoria[]>([]);
   const [productos, setProductos] = useState<TProducto[]>([]);
 
   useEffect(() => {
-    GetProductoListApi('').then(data => setProductos(data));
+    GetProductoListApi(null).then(data => setProductos(data));
+    GetCategoriaListApi(null).then(data => setCategorias(data));
   }, []);
 
-  const filteredProductos = productos.filter(producto =>
-    String(producto.id).includes(searchTerm.toLowerCase()) ||
-    producto.nombre?.toLowerCase().includes(searchTerm.toLowerCase()) 
+  //FIX: filtrado de categoria tambien
+  const filteredProductos = productos.filter(producto =>{
+    const categoria = categorias.find(cat => cat.id === producto.categoria);
+    const lowerSearchTerm = searchTerm.toLowerCase()
+    return (
+    String(producto.id).includes(lowerSearchTerm) ||
+    producto.nombre?.toLowerCase().includes(lowerSearchTerm) ||
+    categoria?.descripcion?.toLowerCase().includes(lowerSearchTerm)
+    );
+  }
   );
 
   const handleSelectProducto = (producto: TProducto) => {
@@ -62,12 +72,12 @@ const ProductSearchPopup: React.FC<ProductSearchPopupProps> = ({
       width: 100,
       flex: 1,
     },
-    // {
-    //   field: 'stock',
-    //   headerName: 'STOCK',
-    //   width: 100,
-    //   flex: 1,
-    // },
+    {
+      field: 'rstock',
+      headerName: 'STOCK',
+      width: 100,
+      flex: 1,
+    },
     {
       field: 'actions',
       headerName: 'Acción',

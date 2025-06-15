@@ -78,6 +78,7 @@ class Cotizacion(models.Model):
     observaciones = models.TextField(blank=True, null=True)
     direccion_entrega = models.CharField(max_length=255)
     activo = models.BooleanField(default=True)
+    vendedor = models.CharField(max_length=200, default='MariaBenitez' ,blank=False, null=False)
 
     def __str__(self):
         return f"Cotización {self.id} - {self.estado_cotizacion}"
