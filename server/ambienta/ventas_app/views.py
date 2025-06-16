@@ -91,7 +91,7 @@ class PedidoViewSet(viewsets.ModelViewSet):
 
     #      pagado -> despachado: se descuenta el stock ( se quita de stock comprometido)
             if estado_anterior == Pedido.PAGADO and nuevo_estado == Pedido.DESPACHADO:
-                instance.fecha_entrega = timezone.now().date()
+                instance.fechaentrega = timezone.now().date()
                 lineas = instance.detalles.all()
                 for linea in lineas:
                     cantidad = linea.cantidad

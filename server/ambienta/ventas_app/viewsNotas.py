@@ -78,7 +78,7 @@ class NotaViewSet(CreateAPIView):
 
         #quitar las cantidades y devolver a stock / si es servicio no tiene que quitar nada (no hay registro)
         if tipo_nota in [Pedido.CTIPOANULACION, Pedido.CTIPODEVOLUCIONTOT, Pedido.CTIPOANULACIONRUC]:
-            
+            #pagado -> anulado
             #si esta en pagado ya comprometio -> quita lo comprometido y lo pone en disponible
             if pedido_original.estado_pedido == Pedido.PAGADO:
                 lineas = pedido_original.detalles.all()
@@ -94,10 +94,9 @@ class NotaViewSet(CreateAPIView):
                     registro.cantidad_disponible += cantidad
                     registro.save()
                 ncs = obtener_notas_credito_devolucion(pedido_original)
-                
+            #despachado -> anulado    
             #si esta en despachado ya lo desconto -> regresar lo que desconto al disponible
             if pedido_original.estado_pedido == Pedido.DESPACHADO:
-                pedido_original.fecha_entrega = timezone.now().date()
                 lineas = pedido_original.detalles.all()
                 for linea in lineas:
                     cantidad = linea.cantidad
