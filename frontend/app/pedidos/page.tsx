@@ -226,15 +226,17 @@ export default function PedidosPage(){
         <ProtectedRoute>
             <MainWrap>
                 {puedeVerPedidos && <>
-                <div className="flex grid-cols-4 gap-8">
-                  <div>
-                  <Label>Buscador</Label>
+                <div className="flex flex-row space-x-8 mb-4">
+                  <div className="flex-1 flex items-center">
                   <Input
+                    className="w-full"
+                    placeholder="Buscar por cualquier campo"
                     value={busquedaGeneral}
                     onChange={(e) => setBusquedaGeneral(e.target.value)}
                     
                   />
                   </div> 
+                <div>
                 <FormControl >
                   <InputLabel>Campo de fecha</InputLabel>
                   <Select
@@ -247,16 +249,21 @@ export default function PedidosPage(){
                     <MenuItem value="fecha_pago">Fecha de Pago</MenuItem>
                   </Select>
                 </FormControl>
+                </div>
+                <div>
                  <DatePicker
                   label="Desde"
                   value={fechaInicio}
                   onChange={(newValue) => setFechaInicio(newValue)}
                 />
+                </div>
+                <div>
                 <DatePicker
                   label="Hasta"
                   value={fechaFin}
                   onChange={(newValue) => setFechaFin(newValue)}
                 />
+                </div>
                 <CustomButton type="button" onClick={()=>descargarPedidosAPI(null, 
                   format(fechaInicio?? '01/01/2012', 'yyyy-MM-dd'), 
                   format(fechaFin ?? '01/01/2040', 'yyyy-MM-dd'))

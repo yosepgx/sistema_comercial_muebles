@@ -177,15 +177,16 @@ export default function CotizacionesPage(){
         <ProtectedRoute>
             <MainWrap>
                 { puedeVerCotizaciones && <>
-                <div className="flex grid-cols-4 gap-8">
-                    <div>
-                    <Label>Buscador</Label>
+                <div className="flex flex-row space-x-8 mb-4">
+                    <div className="flex-1 flex items-center">
                     <Input
+                    className="w-full"
+                    placeholder="Buscar por campo"
                     value={busquedaGeneral}
                     onChange={(e) => setBusquedaGeneral(e.target.value)}
-                    
                     />
-                    </div> 
+                    </div>
+                <div>
                 <FormControl >
                     <InputLabel>Campo de fecha</InputLabel>
                     <Select
@@ -196,16 +197,21 @@ export default function CotizacionesPage(){
                     <MenuItem value="fecha">Fecha de creacion</MenuItem>
                     </Select>
                 </FormControl>
-                    <DatePicker
+                </div>
+                <div>
+                <DatePicker
                     label="Desde"
                     value={fechaInicio}
                     onChange={(newValue) => setFechaInicio(newValue)}
                 />
+                </div>
+                <div>
                 <DatePicker
                     label="Hasta"
                     value={fechaFin}
                     onChange={(newValue) => setFechaFin(newValue)}
                 />
+                </div>
                 {puedeExportarCotizaciones && 
                 <CustomButton  type="button" onClick={()=>descargarCotizacionesAPI(null, 
                                   format(fechaInicio?? '01/01/2012', 'yyyy-MM-dd'), 

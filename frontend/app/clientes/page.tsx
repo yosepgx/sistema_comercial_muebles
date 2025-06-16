@@ -6,6 +6,7 @@ import MainWrap from "@/components/mainwrap";
 import { ProtectedRoute } from "@/components/protectedRoute";
 import { transformOnlyDate } from "@/components/transformDate";
 import { TCliente } from "@/components/types/clienteType";
+import { Input } from "@/components/ui/input";
 import { PERMISSION_KEYS } from "@/constants/constantRoles";
 import { useAuth } from "@/context/authContext";
 import { usePermiso } from "@/hooks/usePermiso";
@@ -25,6 +26,8 @@ export default function ClientePage(){
     const puedeCrearCLiente = usePermiso(PERMISSION_KEYS.CLIENTE_CREAR)
     const [data, setData] = useState<TCliente[]>([])
     const [loading, setLoading] = useState(true)
+    const [searchTerm, setSearchTerm] = useState('');
+    
     const router = useRouter()
     const cargarDatos = async () => {
         try {
@@ -41,7 +44,16 @@ export default function ClientePage(){
         cargarDatos()
     }, [])
 
-    const userColumns: GridColDef<TCliente>[] = [
+    // Filtrar clientes basado en el término de búsqueda
+    const filteredClientes = data.filter(cliente =>
+        String(cliente.id).includes(searchTerm.toLowerCase()) ||
+        cliente.nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        cliente.documento.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        cliente.naturaleza.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        cliente.tipo_interes.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+
+    const clienteColumns: GridColDef<TCliente>[] = [
         {   field: 'id', 
             headerName: 'Id',
             resizable: false,
@@ -129,14 +141,21 @@ export default function ClientePage(){
         <ProtectedRoute>
             <MainWrap>
                 {puedeVerClientes && <>
-                <div className="flex justify-end mb-4">
+                <div className="flex flex-row space-x-8 mb-4">
+                <Input
+                    placeholder="Buscar por nombre, documento, tipo cliente"
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                />
+                <div >
                 {puedeCrearCLiente && <CustomButton type='button' variant='primary' onClick={()=>{router.push('/clientes/nuevo')}}>
                     Nuevo Cliente
                 </CustomButton>}
                 </div>
+                </div>
                 <DataGrid
-                rows = {data? data : []}
-                columns={userColumns}
+                rows = {filteredClientes? filteredClientes : []}
+                columns={clienteColumns}
                 initialState={{
                 pagination: {
                     paginationModel: {
