@@ -163,28 +163,30 @@ export default function HomePage() {
       <ProtectedRoute>
         <MainWrap>
           {puedeVerOportunidades && <>
-            <div className="flex grid-cols-3 gap-8">
-              <div>
-              <Label>Buscador</Label>
+            <div className="flex flex-row space-x-8 mb-4">
+              <div className="flex-1 flex items-center">
               <Input
+                className="w-full"
+                placeholder="Buscar por cualquier campo"
                 value={busquedaGeneral}
                 onChange={(e) => setBusquedaGeneral(e.target.value)}
                 
               />
               </div> 
-            <FormControl >
-              
-            </FormControl>
+            <div>
             <DatePicker
               label="Desde"
               value={fechaInicio}
               onChange={(newValue) => setFechaInicio(newValue)}
             />
+            </div>
+            <div>
             <DatePicker
               label="Hasta"
               value={fechaFin}
               onChange={(newValue) => setFechaFin(newValue)}
             />
+            </div>
             <CustomButton type="button"
             onClick={()=>{router.push('/nuevo'); 
               localStorage.removeItem('nueva-oportunidad');
