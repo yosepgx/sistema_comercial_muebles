@@ -94,6 +94,11 @@ export default function CotizacionesPage(){
             resizable: false,
             flex: 1
         },
+        {   field: 'oportunidad', 
+            headerName: 'Oportunidad asociada',
+            resizable: false,
+            flex: 1
+        },
         {   field: 'fecha', 
             headerName: 'Fecha de creacion',
             resizable: false,
@@ -131,15 +136,15 @@ export default function CotizacionesPage(){
             flex: 1
         },
         {   field: 'direccion_entrega', 
-            headerName: 'Id',
+            headerName: 'Direccion de entrega',
             resizable: false,
             flex: 1
         },
-        {   field: 'activo', 
-            headerName: 'Activo',
-            resizable: false,
-            flex: 1
-        },
+        // {   field: 'activo', 
+        //     headerName: 'Activo',
+        //     resizable: false,
+        //     flex: 1
+        // },
         {
         field: 'acciones',
         headerName: 'Acciones',
@@ -221,7 +226,7 @@ export default function CotizacionesPage(){
                 </CustomButton>}
                 </div>
                 <DataGrid
-                rows = {data? data : []}
+                rows = {filteredData? filteredData : []}
                 columns={userColumns}
                 initialState={{
                 pagination: {
