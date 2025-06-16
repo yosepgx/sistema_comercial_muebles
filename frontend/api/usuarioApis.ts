@@ -130,7 +130,7 @@ export async function SingUpUsuarioAPI(token:string | null, data: Tusuario){
     //groups = fields = ['id', 'name', 'permissions', 'permission_ids']
     //password
     try {
-        const response = await customFetch(token,`usuarios/signup/`, {
+        const response = await customFetch(token,`usuarios/signup`, {
             
             method: "POST",
             headers:{

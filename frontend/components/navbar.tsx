@@ -3,7 +3,7 @@
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 import { ReactNode } from "react";
-import { Home, Armchair, ShoppingBag, LineChart, BadgePercent, Settings, Bell, ChevronDown } from "lucide-react";
+import { Home, Armchair, ShoppingBag, LineChart, BadgePercent, Settings, Bell, ChevronDown, User, User2 } from "lucide-react";
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/context/authContext";
@@ -23,7 +23,7 @@ const puedeVerPedidos = usePermiso(PERMISSION_KEYS.PEDIDO_LEER_TODOS)
 const puedeVerClientes = usePermiso(PERMISSION_KEYS.CLIENTE_LEER)
 const puedeVerNotas = usePermiso(PERMISSION_KEYS.NOTAS_CREAR)
 const puedeconfigurar = usePermiso(PERMISSION_KEYS.CONFIGURAR_SISTEMA)
-const {fetchLogout} = useAuth();
+const {fetchLogout, user} = useAuth();
 const itemsInventario : IMenuItem[]= [
     puedeVerProductos &&{
       label: "Productos",
@@ -89,7 +89,9 @@ const itemsAjustes: IMenuItem[] = [
       {/* Sección Derecha */}
       <div className="flex items-center space-x-4">
         {/* <Bell size={20} className="cursor-pointer" /> */}
+        <User2/><span>{user?.username ?? 'usuario'}</span>
         <Button className="bg-blue-500 text-white" onClick={fetchLogout}>Cerrar Sesión</Button>
+        
       </div>
     </nav>
   );

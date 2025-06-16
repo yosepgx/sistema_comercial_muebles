@@ -22,7 +22,7 @@ const formSchema = z.object({
     email: z.string().email({ message: 'Correo electrónico inválido' }),
     rol: string(),
     is_active: z.string(),
-    password: z.string().optional(),
+    password: z.string().optional(), //TODO: validacion de campo minimo contraseña
 })
 
 type FormValues = z.infer<typeof formSchema>
@@ -49,6 +49,7 @@ export default function FormularioUsuario({tipo}: Props){
           defaultValues: {
             id: '',
             username: '',
+            password: '',
             email: '',
             rol: 'administrador',
             is_active: 'true',
@@ -57,6 +58,7 @@ export default function FormularioUsuario({tipo}: Props){
 
     const cargarUsuario = (usuario: Tusuario | null) => {
         if(!usuario)return;
+        console.log("usuario cargado", usuario)
         form.setValue('id', `${usuario.id}`);
         form.setValue('username', usuario.username);
         form.setValue('email', usuario.email);
@@ -165,10 +167,10 @@ export default function FormularioUsuario({tipo}: Props){
                 render={({field}) => (
                     <FormItem className='flex flex-col'>
                     <FormLabel> Rol del usuario</FormLabel>
-                    <Select onValueChange = {field.onChange} >
+                    <Select onValueChange = {field.onChange} value={field.value}>
                         <FormControl>
                         <SelectTrigger>
-                            <SelectValue placeholder="Seleccionar estado activo/inactivo"/>
+                            <SelectValue placeholder="Seleccionar rol"/>
                         </SelectTrigger>
                         </FormControl>
                         <SelectContent>
