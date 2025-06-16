@@ -148,14 +148,15 @@ export function DataTable<TData, TValue>({
 
     return (
     <div>
-      <div className="flex items-center py-4 flex-row">
+      <div className="flex flex-row space-x-8 mb-4">
+        <div className="flex-1 flex items-center">
       <Input
+        className="w-full"
+        placeholder={placeholder? placeholder:""}
         value={globalFilter ?? ""}
         onChange={(e) => setGlobalFilter(e.target.value)}
-        placeholder={placeholder? placeholder:""}
-        className="border px-3 py-1 rounded w-full max-w-sm"
-        
       />
+      </div>
       {canFilterActivo && 
       <select
           value={filtroEstado ?? ''}

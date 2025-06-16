@@ -47,7 +47,7 @@ export default function ProductoPage(){
                     odata={data}
                     placeholder={"Buscar por codigo, nombre o categoria de producto"}
                     canExport ={true}
-                    canFilterActivo = {true}
+                    canFilterActivo = {false}
                     canCreate = {true}
                     directionCreate="/inventario/producto/nuevo"
                 ></DataTable>
