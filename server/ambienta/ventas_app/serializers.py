@@ -1,6 +1,8 @@
 from rest_framework import serializers
 from .models import Pedido, PedidoDetalle
 from inventario_app.models import Producto
+from decimal import Decimal
+
 class PedidoSerializer(serializers.ModelSerializer):
     
     class Meta:
@@ -51,20 +53,24 @@ class NotaSerializer(serializers.ModelSerializer):
         detalles_data = self.initial_data.pop("detalles", [])
         nota = Pedido.objects.create(**validated_data)
 
-        totalizador_con_igv = 0
-        totalizador_sin_igv = 0
-        totalizador_igv = 0
+        totalizador_con_igv = Decimal("0.00")
+        totalizador_sin_igv = Decimal("0.00")
+        totalizador_igv = Decimal("0.00")
 
         for idx, d in enumerate(detalles_data):
             producto_id = d["producto"]
             producto = Producto.objects.get(id=producto_id)  
 
-            subtotal = d["subtotal"]
+            subtotal = Decimal(str(d["subtotal"]))
             igv_rate = producto.igv
 
+            divisor = Decimal("1.00") + igv_rate
+            sin_igv = subtotal / divisor
+            igv = subtotal - sin_igv
+
             totalizador_con_igv += subtotal
-            totalizador_sin_igv += subtotal / (1 + igv_rate)
-            totalizador_igv += subtotal - (subtotal / (1 + igv_rate))
+            totalizador_sin_igv += sin_igv
+            totalizador_igv += igv
 
             PedidoDetalle.objects.create(
                 pedido=nota,
