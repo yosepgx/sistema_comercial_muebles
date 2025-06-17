@@ -1,5 +1,5 @@
 import { customFetch } from "@/components/customFetch";
-import { TProducto } from "@/components/types/productoTypes"; 
+import { Producto, TProducto } from "@/components/types/productoTypes"; 
 
 export async function GetProductoListApi(token:string | null) {
     try {
@@ -45,7 +45,8 @@ export async function GetProductoDetailApi(token:string | null, id: number){
         }
 
         const data = await response.json();
-        return data as TProducto;
+        const verificar = Producto.parse(data)
+        return verificar as TProducto;
         
     } catch (error) {
         console.error("Error al obtener datos de detalle de producto:", error);
@@ -119,6 +120,29 @@ export async function UpdateProductoAPI(token:string | null, id: number, data: T
   
     } catch (error) {
       console.error("Error al actualizar registro de inventario:", error);
+      return null;
+    }
+  }
+
+export async function PatchProductoAPI(token:string | null, id: number, data: Partial<TProducto>) {
+    try {
+      const response = await customFetch(token, `inventario/producto/${id}/`, {
+        method: "PATCH",
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+      });
+  
+      if (!response.ok) {
+        throw new Error(`Error del servidor: ${response.status} - ${response.statusText}`);
+      }
+  
+      const responseData = await response.json();
+      return responseData as TProducto;
+  
+    } catch (error) {
+      console.error("Error al actualizar (PATCH) producto:", error);
       return null;
     }
   }

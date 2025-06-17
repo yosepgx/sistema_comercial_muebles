@@ -16,7 +16,7 @@ export default function NuevoProductoPage(){
           {puedeGestionarProducto && <>
             
             <h2 className="text-xl font-bold">Nuevo producto</h2>
-            <FormularioProducto crrProduct = {null}  editing = {false}/>
+            <FormularioProducto editing = {false}/>
           </>}
         </MainWrap>
       </ProtectedRoute>

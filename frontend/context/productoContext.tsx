@@ -14,26 +14,18 @@ interface ProductoContextType{
     setEditing: Dispatch<SetStateAction<boolean>>;
     editRedirect : (data: TProducto) => void;
     viewRedirect : (data: TProducto) => void;
-    categorias: TCategoria[];
+    crrTab: string;
+    setCrrTab: Dispatch<SetStateAction<string>>;
 }
 
 const ProductoContext = createContext<ProductoContextType | undefined>(undefined);
 
 export const ProductoProvider = ({children}: {children: ReactNode}) => {
     const [editing, setEditing] = useState(false)
+    const [crrTab, setCrrTab] = useState ('formulario')
     const [crrProduct, setCrrProduct] = useState<TProducto | null>(null)
     const router = useRouter();
-    const [categorias, setCategorias] = useState<TCategoria[]>([])
-    const {ct} = useAuth()
-
-    const obtenerCategorias = async () => {
-        const cats = await GetCategoriaListApi(ct)
-        setCategorias(cats)
-    }
-    useEffect(()=>{
-        obtenerCategorias();
-
-    },[])
+    
     const editRedirect = (data: TProducto) => {
         setCrrProduct(data);
         if(crrProduct) router.push(`/inventario/producto/${data.id}`);
@@ -47,7 +39,7 @@ export const ProductoProvider = ({children}: {children: ReactNode}) => {
 
 
     return(
-       <ProductoContext.Provider value = {{editing, crrProduct, setCrrProduct, setEditing, editRedirect, viewRedirect, categorias}}>
+       <ProductoContext.Provider value = {{editing, crrProduct, setCrrProduct, setEditing, editRedirect, viewRedirect, crrTab, setCrrTab}}>
             {children}
        </ProductoContext.Provider> 
     )

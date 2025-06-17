@@ -1,11 +1,11 @@
 "use client"
-import { useRouter } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import { useProductoContext } from '../../context/productoContext';
 import { useAuth } from '@/context/authContext';
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Input } from '@/components/ui/input';
 import {
   Form,
@@ -19,9 +19,10 @@ import {
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { UNIDADES_MEDIDA, UNIDADES_MEDIDA_BUSCA } from '@/constants/unidadesMedidaConstants';
-import { PostProductoAPI, UpdateProductoAPI } from '@/api/productoApis';
-import { TProducto } from '../types/productoTypes';
+import { GetProductoDetailApi, PostProductoAPI, UpdateProductoAPI } from '@/api/productoApis';
+import { TCategoria, TProducto } from '../types/productoTypes';
 import { BotonesFinales } from '../botonesFinales';
+import { GetCategoriaListApi } from '@/api/categoriaApis';
 const formSchema = z.object({
   id: z.string().min(1),
   nombre: z.string().min(1, "El nombre es obligatorio"),
@@ -53,34 +54,85 @@ const formSendSchema = formSchema.transform(data => ({
 type FormValues = z.infer<typeof formSchema>;
 
 interface FormularioProductoProps {
-  crrProduct: TProducto | null;
   editing: boolean;
 }
 
 export default function FormularioProducto({
-  crrProduct,
   editing,
 }: FormularioProductoProps) {
-
-    const {categorias} = useProductoContext()
+    const {crrProduct, setCrrProduct} = useProductoContext()
+    const {crrTab} = useProductoContext()
     const {user, ct} = useAuth()
+    const {id} = useParams()
+    const [loading, setLoading] = useState(true)
+    const [categorias, setCategorias] = useState<TCategoria[]>([])
+    const [loadingCategorias, setLoadingCategorias] = useState(true)
+    const router = useRouter()
+    //console.log("el crr",crrProduct);
+
+    
+    
     const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-        id: crrProduct?`${crrProduct.id}`:"0",
-        nombre: crrProduct?`${crrProduct.nombre}`:"",
-        precio: crrProduct?`${crrProduct.rprecio_actual}`:"0.00",
-        categoria: crrProduct?`${crrProduct.categoria}`:"",
-        umedida_sunat: crrProduct?`${crrProduct.umedida_sunat}`:'NIU',
-        activo: crrProduct?"true":"true",
-        igv: crrProduct?`${crrProduct.igv}`:"0.18",
-        afecto_igv: crrProduct?crrProduct.afecto_igv:true,
-        codigo_afecion_igv: crrProduct?`${crrProduct.codigo_afecion_igv}`:"10", //10 es afecto
-        es_servicio: crrProduct?crrProduct.es_servicio: false,
-        descripcion: crrProduct?`${crrProduct.descripcion??''}`:""
+        id: "0",
+        nombre: "",
+        precio: "0.00",
+        categoria: "",
+        umedida_sunat: 'NIU',
+        activo: "true",
+        igv: "0.18",
+        afecto_igv: true,
+        codigo_afecion_igv: "10", //10 es afecto
+        es_servicio: false,
+        descripcion: ""
     },
     });
-    const router = useRouter()
+    
+    const cargarProducto = (producto: TProducto | null) =>{
+      if(!producto)return
+      form.setValue("id",`${producto.id}`);
+      form.setValue("nombre",producto.nombre);
+      form.setValue("precio",producto.rprecio_actual?.toFixed(2) ??"0.00");
+      form.setValue("categoria",`${producto.categoria}`);
+      form.setValue("umedida_sunat",producto.umedida_sunat);
+      form.setValue("activo",`${producto.activo}`);
+      form.setValue("igv",producto.igv?.toFixed(2) ?? "0.00");
+      form.setValue("afecto_igv",producto.afecto_igv);
+      form.setValue("codigo_afecion_igv",producto.codigo_afecion_igv);
+      form.setValue("es_servicio",producto.es_servicio);
+      form.setValue("descripcion",producto.descripcion ?? "");
+    }
+
+
+    useEffect(() => {
+      const cargarDatos = async () => {
+        if (!id)return
+        setLoading(true);
+        let producto = null;
+        try {
+          producto = await GetProductoDetailApi(null, parseInt(id as string, 10));
+          
+          setCrrProduct(producto);
+        } catch (error) {
+          console.error("Error al cargar datos del producto", error);
+        } finally {
+          cargarProducto(producto);
+          setLoading(false);
+        }
+      };
+      const cargarCategorias = async () =>{
+          try{
+            const cats = await GetCategoriaListApi(null);
+            setCategorias(cats);
+          }finally{
+            setLoadingCategorias(false);
+          }
+      }
+      cargarCategorias();
+      cargarDatos();
+      
+    }, [id]);
 
     const onSubmit = (rawdata: FormValues) => {
       try {
@@ -104,6 +156,10 @@ export default function FormularioProducto({
       }
     
     };
+
+    if(loadingCategorias) return (<>Cargando...</>)
+    if(editing && loading)return (<>Cargando...</>)
+
 
     return (
         <Form {...form}>
@@ -156,7 +212,7 @@ export default function FormularioProducto({
               render={({field}) => (
                 <FormItem className='flex flex-col'>
                   <FormLabel> Categoria</FormLabel>
-                  <Select onValueChange = {field.onChange} defaultValue={field.value}>
+                  <Select onValueChange = {field.onChange} value={field.value}>
                     <FormControl>
                       <SelectTrigger>
                         <SelectValue placeholder="Seleccionar categoria de producto"/>
@@ -176,7 +232,7 @@ export default function FormularioProducto({
               render={({field}) => (
                 <FormItem className='flex flex-col'>
                   <FormLabel>Unidad</FormLabel>
-                  <Select onValueChange = {field.onChange} defaultValue={field.value}>
+                  <Select onValueChange = {field.onChange} value={field.value}>
                     <FormControl>
                       <SelectTrigger>
                         <SelectValue placeholder="Seleccionar unidad de medida"/>
@@ -196,7 +252,7 @@ export default function FormularioProducto({
               render={({field}) => (
                 <FormItem className='flex flex-col' hidden={!editing}>
                   <FormLabel>Activo</FormLabel>
-                  <Select onValueChange = {field.onChange} defaultValue={field.value}>
+                  <Select onValueChange = {field.onChange} value={field.value}>
                     <FormControl>
                       <SelectTrigger>
                         <SelectValue placeholder="activo o inactivo"/>
