@@ -1,7 +1,7 @@
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from django.utils import timezone
-from decimal import Decimal
+from decimal import Decimal, ROUND_HALF_UP
 from .models import ReglaDescuento
 from datetime import datetime, timedelta
 from copy import deepcopy
@@ -16,6 +16,12 @@ from .models import ReglaDescuento
 from .serializers import ReglaDescuentoSerializer
 from dateutil import parser
 from rest_framework.exceptions import ValidationError
+
+def redondear(valor):
+    """redondeo hacia arriba como sugiere sunat, redondeo a 2 decimales"""
+    if not isinstance(valor, Decimal):
+        valor = Decimal(str(valor)) 
+    return valor.quantize(Decimal('0.01'), rounding=ROUND_HALF_UP)
 
 @api_view(['POST'])
 def calcular_descuentos_linea(request):
@@ -45,7 +51,7 @@ def calcular_descuentos_linea(request):
                 descuento_total += descuento_regla
                 descuentos_aplicados.append({
                     'tipo': regla.tipo_descuento,
-                    'monto': float(descuento_regla),
+                    'monto': redondear(descuento_regla),
                     'descripcion': generar_descripcion_descuento(regla)
                 })
         
@@ -54,10 +60,10 @@ def calcular_descuentos_linea(request):
         subtotal_con_descuento = subtotal_sin_descuento - descuento_total
         
         return Response({
-            'descuento_total': float(descuento_total),
-            'subtotal': float(subtotal_con_descuento),
+            'descuento_total': redondear(descuento_total),
+            'subtotal': redondear(subtotal_con_descuento),
             'descuentos_aplicados': descuentos_aplicados,
-            'precio_unitario': float(precio_unitario),
+            'precio_unitario': redondear(precio_unitario),
             'cantidad': cantidad
         })
         
