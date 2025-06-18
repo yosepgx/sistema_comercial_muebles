@@ -14,10 +14,22 @@ export const formReglaSchema = z.object({
         message: 'Fecha de fin invalida'
     }),
     monto_fijo: z.string().min(1, "Este campo es necesario"),
-    porcentaje: z.string().min(1, "Este campo es necesario"),
-    cantidad_pagada: z.string().min(1, "Este campo es necesario"),
-    cantidad_libre: z.string().min(1, "Este campo es necesario"),
-    cantidad_libre_maxima: z.string().min(1, "Este campo es necesario"),
+    porcentaje: z.string().min(1, "Este campo es necesario").refine(
+    val => !isNaN(parseFloat(val)) && parseFloat(val) >= 0 && parseFloat(val)< 100, {
+        message: "El margen debe ser un número positivo menor a 100"
+    }),
+    cantidad_pagada: z.string().min(1, "Este campo es necesario")
+        .refine(val => /^[0-9]+$/.test(val), {
+        message: "Debe ser un número entero positivo sin decimales",
+        }),
+    cantidad_libre: z.string().min(1, "Este campo es necesario")
+    .refine(val => /^[0-9]+$/.test(val), {
+        message: "Debe ser un número entero positivo sin decimales",
+        }),
+    cantidad_libre_maxima: z.string().min(1, "Este campo es necesario")
+        .refine(val => /^[0-9]+$/.test(val), {
+        message: "Debe ser un número entero positivo sin decimales",
+        }),
     tipo_descuento : z.enum(['porcentaje','monto_fijo','cantidad']),
     activo : z.string(),
 }).refine((data) => data.fecha_fin > data.fecha_inicio, {

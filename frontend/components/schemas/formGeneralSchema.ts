@@ -7,8 +7,8 @@ export const formGeneralSchema = z.object({
     nombre_comercial: z.string().min(1,"Es necesario llenar este campo"),
     direccion_fiscal: z.string().min(1,"Es necesario llenar este campo"),
     margen_general: z.string().refine(
-    val => !isNaN(parseFloat(val)) && parseFloat(val) > 0, {
-        message: "El precio debe ser un número mayor a 0"
+    val => !isNaN(parseFloat(val)) && parseFloat(val) > 0 && parseFloat(val)< 100, {
+        message: "El margen debe ser un número entre 0 y 100"
     }),
     activo: z.string(),
 })

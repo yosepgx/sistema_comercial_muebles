@@ -26,8 +26,8 @@ const precioSchema = z.object({
 const precioSchemaParsed = precioSchema.transform(data => ({
   ...data,
   valor: parseFloat(data.valor),
-  fecha_inicio: new Date(data.fecha_inicio),
-  fecha_fin: new Date(data.fecha_fin)
+  fecha_inicio: new Date(data.fecha_inicio).toISOString(),
+  fecha_fin: new Date(data.fecha_fin).toISOString()
 }));
 
 export type TPrecio = z.infer<typeof precioSchema>;

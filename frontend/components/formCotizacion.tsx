@@ -67,9 +67,10 @@ export default function FormCotizacionDetalle() {
       ).catch(error => console.error('error al obtener lineas de cotizacion, error: ', error))
       .finally(()=>{
         GetDatoGeneralDetailApi(null,1).then(data => {
-          const margen = data?.margen_general??0.05
-          setPorcentajePermisible(margen)
-          setMaximoPermisible((margen*crrCotizacion.monto_total))
+          const margen = data?.margen_general??5.00
+          const margenTasa = margen/100
+          setPorcentajePermisible(margenTasa)
+          setMaximoPermisible((margenTasa*crrCotizacion.monto_total))
         })
         .catch(error => console.error('error no se encontro configuracion general', error))
         .finally(()=>setLoading(false)) 
@@ -77,8 +78,9 @@ export default function FormCotizacionDetalle() {
     }
     else if(edicionCotizacion ==='nuevo'){
       GetDatoGeneralDetailApi(null,1).then(data => {
-          const margen = data?.margen_general??0.05
-          setPorcentajePermisible(margen)
+          const margen = data?.margen_general??5.00
+          const margenTasa = margen/100
+          setPorcentajePermisible(margenTasa)
           setMaximoPermisible(0.00)
         })
         .catch(error => console.error('error no se encontro configuracion general', error))

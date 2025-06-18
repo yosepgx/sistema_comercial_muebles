@@ -65,9 +65,10 @@ const fetchCotizacion = async () => {
     if(cotizacion){
         const listado = await GetCotizacionLineaListApi(null, parseInt(id as string, 10))
         const data = await GetDatoGeneralDetailApi(null, 1)
-        const margen = data?.margen_general??0.05
-        setPorcentajePermisible(margen)
-        setMaximoPermisible((margen*cotizacion.monto_total))
+        const margen = data?.margen_general??5.00
+        const margenTasa = margen/100
+        setPorcentajePermisible(margenTasa)
+        setMaximoPermisible((margenTasa*cotizacion.monto_total))
         setCrrCotizacion(cotizacion)
         setListaDetalles(listado)
     }

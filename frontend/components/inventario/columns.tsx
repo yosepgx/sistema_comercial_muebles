@@ -28,6 +28,7 @@ const EditableCell: React.FC<any> = ({ getValue, row, column, table }) => {
       onChange={(e) => setValue(e.target.value)}
       onBlur={onBlur}
       disabled={!isEditing}
+      type="number"
     />
   )
 }
