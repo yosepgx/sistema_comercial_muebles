@@ -5,7 +5,10 @@ import { cliente } from '../types/clienteType'
 export const formOportunidadSchema = z.object({
   id: z.string(),
   cliente: z.string().nullable(), 
-  sede: z.string(),
+  sede: z.string({
+    required_error: "Este campo es necesario",
+    invalid_type_error: "Este campo es necesario"
+  }).min(1, "Este campo es necesario"),
   fecha_contacto: z.string(), //manejado por back
   estado_oportunidad: z.enum(["ganado","perdido","negociacion"]),
   activo: z.string(),
