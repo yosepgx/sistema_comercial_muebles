@@ -66,6 +66,14 @@ const ProductSearchPopup: React.FC<ProductSearchPopupProps> = ({
       width: 200,
       flex: 1,
     },
+    {   field: 'rcategoria_producto', 
+          headerName: 'Categoria', //incluido en busqueda
+          resizable: false,
+          flex: 1,
+          renderCell: (params) => (
+            params.row.rcategoria_producto?.descripcion ?? 'Otros'
+          )
+    },
     {
       field: 'rprecio_actual',
       headerName: 'PRECIO',
