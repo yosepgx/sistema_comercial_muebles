@@ -56,7 +56,7 @@ const Columns: GridColDef<TRequisicion>[] = [
         resizable: false,
     },
     {   field: 'Stock Actual', 
-        headerName: 'Stock Actual',
+        headerName: 'Stock Físico',
         renderHeader: () => <>Stock<br />Actual</>,
         resizable: false,
     },
@@ -225,7 +225,7 @@ export default function PrediccionPage() {
             <CustomButton type = "button" variant="primary" onClick={() => handleClick("inventario")}>Cargar Inventario</CustomButton>
             <CustomButton type = "button" variant="primary" onClick={() => handleClick("clientes")}>Cargar Clientes</CustomButton>
             <CustomButton type = "button" variant="primary" onClick={() => handleClick("ventas")}>Cargar Ventas</CustomButton>
-            <CustomButton type = "button" variant="primary" onClick={() => handleClick("compras")}>Cargar Compras</CustomButton>
+            <CustomButton type = "button" variant="primary" onClick={() => handleClick("compras")}>Cargar Pedidos en transito</CustomButton>
           </div>
           <div className="flex justify-center mt-6 gap-4">
             <CustomButton variant="primary" type="submit">Generar Prediccion</CustomButton>

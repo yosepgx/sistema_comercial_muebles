@@ -61,6 +61,9 @@ export default function FormCotizacionDetalle() {
     if(crrCotizacion && crrTab === 'cotizaciones' &&edicionCotizacion!== 'nuevo'){
       console.log("cotizacion actual: ", crrCotizacion)
       setLoading(true);
+      if(crrCotizacion?.direccion_entrega !== 'tienda'){
+        setTipoDireccion('otro')
+      }
       cargarCotizacion(crrCotizacion, form)
       GetCotizacionLineaListApi(null, crrCotizacion.id).then(
         data => setListaDetalles(data)

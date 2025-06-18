@@ -13,6 +13,8 @@ import { customFetch } from "../customFetch";
 
 export default function Reglas() {
     const [data, setData] = useState<TRegla[]>([])
+    const [filtroActivo, setFiltroActivo] = useState<"todos" | "activos" | "inactivos">("todos");
+
     const router = useRouter()
     const columns: GridColDef<TRegla>[] = [
         { field: "id", headerName: "REGLA", flex: 1},
@@ -103,18 +105,31 @@ return (
             <CustomButton type="button" variant="primary"
             onClick={()=>router.push('/descuentos/nuevo')}
             >Agregar descuento</CustomButton>
-            <div className="flex items-center gap-2">
+            {/* <div className="flex items-center gap-2">
             <span className="text-sm text-gray-700">Preferencia de descuento</span>
             <select className="border border-gray-300 rounded px-2 py-1 text-sm">
                 <option>Utilizar descuento por cantidad</option>
                 <option>Utilizar descuento especifico</option>
             </select>
-            </div>
+            </div> */}
+            <select
+            className="border border-gray-300 rounded px-2 py-1 text-sm"
+            value={filtroActivo}
+            onChange={(e) => setFiltroActivo(e.target.value as "todos" | "activos" | "inactivos")}
+            >
+            <option value="todos">Mostrar todos</option>
+            <option value="activos">Solo activos</option>
+            <option value="inactivos">Solo inactivos</option>
+            </select>
         </div>
 
         <div style={{ height: 400, width: "100%" }}>
             <DataGrid
-            rows = {data}
+            rows={data.filter((row) => {
+                if (filtroActivo === "todos") return true;
+                if (filtroActivo === "activos") return row.activo === true;
+                if (filtroActivo === "inactivos") return row.activo === false;
+            })}
             columns={columns}
             initialState={{
             pagination: {

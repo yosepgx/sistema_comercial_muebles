@@ -58,7 +58,7 @@ export const columns: ColumnDef<Inventario>[] = [
     // },
     {
       accessorKey: "cantidad_disponible",
-      header: "Stock",
+      header: "Stock Físico",
       enableGlobalFilter: false
     },
     {

@@ -244,7 +244,7 @@ export default function FormNotaCreditoDebito({edicion, pedido, notaid, detalles
                           </div>
                           <div className='flex flex-row gap-2'>
                           <RadioGroupItem value={tipoNotaChoices.CTIPOANULACIONRUC} id="tipoanul" />
-                          <Label >Anulacion por error de RUC</Label>
+                          <Label >Anulacion por documento de cliente incorrecto</Label>
                           </div>
                           {/* <RadioGroupItem value={tipoNotaChoices.CTIPODECITEM} id="tipodesci" />
                           <Label >Nota de credito a factura</Label>

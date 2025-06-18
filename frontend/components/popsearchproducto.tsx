@@ -74,7 +74,7 @@ const ProductSearchPopup: React.FC<ProductSearchPopupProps> = ({
     },
     {
       field: 'rstock',
-      headerName: 'STOCK',
+      headerName: 'STOCK FÍSICO',
       width: 100,
       flex: 1,
     },

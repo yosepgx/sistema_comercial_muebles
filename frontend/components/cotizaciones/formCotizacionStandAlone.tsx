@@ -79,7 +79,10 @@ const fetchCotizacion = async () => {
 useEffect(()=>{
     if(edicionCotizacion ==='edicion' && id){
         const cargar = async () => {
-            const data = await fetchCotizacion(); 
+            const data = await fetchCotizacion();
+            if(data?.direccion_entrega !== 'tienda'){
+              setTipoDireccion('otro')
+            }
             cargarCotizacion(data, form);              
         };
         cargar();
