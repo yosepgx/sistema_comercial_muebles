@@ -21,7 +21,7 @@ from ajustes_app.models import Dgeneral
 from decimal import Decimal
 from django.template.loader import render_to_string
 from weasyprint import HTML
-
+from clientes_app.models import Cliente
 
 
 
@@ -89,7 +89,7 @@ class PedidoViewSet(viewsets.ModelViewSet):
                 cotizacion.estado_cotizacion = Cotizacion.RECHAZADA
                 cotizacion.save()
 
-    #      pagado -> despachado: se descuenta el stock ( se quita de stock comprometido)
+    #      pagado -> despachado: se descuenta el stock ( se quita de stock comprometido) y si era lead ahora es cliente
             if estado_anterior == Pedido.PAGADO and nuevo_estado == Pedido.DESPACHADO:
                 instance.fechaentrega = timezone.now().date()
                 lineas = instance.detalles.all()
@@ -109,6 +109,11 @@ class PedidoViewSet(viewsets.ModelViewSet):
                 if oportunidad:
                     oportunidad.estado_oportunidad = Oportunidad.GANADO
                     oportunidad.save()
+                    cliente = oportunidad.cliente
+                    if cliente and cliente.tipo_interes == Cliente.TIPOLEAD:
+                        cliente.fecha_conversion = timezone.now().date()
+                        cliente.tipo_interes = Cliente.TIPOCLIENTE
+                        cliente.save()
 
     #      despachado -> anulado: se tiene que volver a agregar los productos a stock disponible y se anula cotizacion
     #                           -> si se cancela, el codigo del comprobante sigue, no se modifica el comprobante
