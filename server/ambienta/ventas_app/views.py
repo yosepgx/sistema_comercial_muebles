@@ -469,8 +469,10 @@ class DescargarPedidos(APIView):
 class GenerarPDFGuiaRemisionView(APIView):
     def post(self, request, pedido_id):
         direccion_partida = request.data.get("direccion_partida")
-        if not direccion_partida:
-            return Response({"error": "Debe proporcionar la dirección de partida"}, status=400)
+        placa = request.data.get("placa")
+        licencia = request.data.get("licencia")
+        if not direccion_partida or not placa or not licencia:
+            return Response({"error": "Debe proporcionar los datos necesarios"}, status=400)
 
         try:
             pedido = Pedido.objects.prefetch_related("detalles__producto").get(id=pedido_id)
@@ -493,6 +495,8 @@ class GenerarPDFGuiaRemisionView(APIView):
             "direccion_partida": direccion_partida,
             "datos": datos,
             "fecha_emision": fecha_emision_actual,
+            "placa": placa,
+            "licencia": licencia
         })
 
         pdf_bytes = HTML(string=html_string).write_pdf()

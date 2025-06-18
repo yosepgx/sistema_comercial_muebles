@@ -21,6 +21,8 @@
     <p><strong>Documento de identidad del destinatario:</strong> {{ pedido.cotizacion.oportunidad.cliente.documento }}</p>
     <p><strong>Dirección de Partida:</strong> {{ direccion_partida }}</p>
     <p><strong>Dirección de Llegada:</strong> {{ pedido.direccion }}</p>
+    <p><strong>Placa del vehiculo:</strong> {{ placa }}</p>
+    <p><strong>Documento del conductor:</strong> {{ licencia }}</p>
     <p><strong>Observaciones:</strong> {{ pedido.observaciones|default:"-" }}</p>
 
     <h3>Productos Transportados</h3>

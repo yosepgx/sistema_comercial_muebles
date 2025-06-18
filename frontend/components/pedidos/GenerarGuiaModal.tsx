@@ -13,6 +13,8 @@ interface GenerarGuiaModalProps {
 
 export function GenerarGuiaModal({ open, onClose, pedidoId }: GenerarGuiaModalProps) {
   const [direccionPartida, setDireccionPartida] = useState("");
+  const [placa, setPlaca] = useState("");
+  const [licencia, setLicencia] = useState("");
 
   const handleGenerarGuia = async () => {
     if(!pedidoId)return
@@ -22,7 +24,7 @@ export function GenerarGuiaModal({ open, onClose, pedidoId }: GenerarGuiaModalPr
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ direccion_partida: direccionPartida }),
+        body: JSON.stringify({ direccion_partida: direccionPartida, placa: placa,  licencia: licencia}),
       });
 
       if (!response.ok) throw new Error("No se pudo generar la guía");
@@ -56,6 +58,18 @@ export function GenerarGuiaModal({ open, onClose, pedidoId }: GenerarGuiaModalPr
             id="direccion"
             value={direccionPartida}
             onChange={(e) => setDireccionPartida(e.target.value)}
+          />
+          <Label htmlFor="placa">Placa</Label>
+          <Input
+            id="placa"
+            value={placa}
+            onChange={(e) => setPlaca(e.target.value)}
+          />
+          <Label htmlFor="licencia">Documento del conductor</Label>
+          <Input
+            id="licencia"
+            value={licencia}
+            onChange={(e) => setLicencia(e.target.value)}
           />
         </div>
       </DialogContent>
