@@ -22,6 +22,7 @@ import { PERMISSION_KEYS } from "@/constants/constantRoles";
 
 export default function PedidosPage(){
     const puedeVerPedidos = usePermiso(PERMISSION_KEYS.PEDIDO_LEER_TODOS)
+    const puedeExportarPedidos = usePermiso(PERMISSION_KEYS.COTIZACION_EXPORTAR)
     const [data, setData] = useState<TPedido[]>([])
     const [loading, setLoading] = useState(true)
     const router = useRouter()
@@ -264,13 +265,13 @@ export default function PedidosPage(){
                   onChange={(newValue) => setFechaFin(newValue)}
                 />
                 </div>
-                <CustomButton type="button" onClick={()=>descargarPedidosAPI(null, 
+                {puedeExportarPedidos && <CustomButton type="button" onClick={()=>descargarPedidosAPI(null, 
                   format(fechaInicio?? '01/01/2012', 'yyyy-MM-dd'), 
                   format(fechaFin ?? '01/01/2040', 'yyyy-MM-dd'))
                   
                   }>
                   Exportar
-                </CustomButton>
+                </CustomButton>}
                 </div>
                 <DataGrid
                 className="mt-2"
