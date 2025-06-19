@@ -90,6 +90,7 @@ export default function CategoriasPage(){
         <ProtectedRoute>
             <MainWrap>
                 {puedeGestionarCategoria && <>
+                <h1 className="text-xl font-semibold mb-4">Ajuste de categorias</h1>
                 <div className="flex justify-end mb-4">
                 <CustomButton type='button' variant='primary' onClick={()=>{router.push('/ajustes/categorias/nuevo')}}>
                     Nueva Categoría

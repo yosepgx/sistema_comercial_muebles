@@ -227,6 +227,7 @@ export default function PedidosPage(){
         <ProtectedRoute>
             <MainWrap>
                 {puedeVerPedidos && <>
+                <h1 className="text-xl font-semibold mb-4">{"Pedidos(ventas)"}</h1>
                 <div className="flex flex-row space-x-8 mb-4">
                   <div className="flex-1 flex items-center">
                   <Input

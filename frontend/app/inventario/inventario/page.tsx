@@ -44,6 +44,7 @@ export default function InventarioPage() {
       <MainWrap>
         {puedeGestionarInventario && 
         <div>
+            <h1 className="text-xl font-semibold mb-4">Inventario</h1>
             <div className="container mx-auto">
             <DataTable
                 columns={columns}

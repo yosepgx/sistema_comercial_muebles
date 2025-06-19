@@ -10,8 +10,7 @@ export default function DescuentosTabs() {
 
   return (
     <div className="p-6">
-      <h2 className="text-lg font-semibold mb-4">Reglas de descuento</h2>
-
+      <h1 className="text-xl font-semibold mb-4">Reglas de descuento</h1>
       <Tabs value={tab} onValueChange={setTab}>
         <TabsList className="mb-4">
           <TabsTrigger value="producto">Producto</TabsTrigger>

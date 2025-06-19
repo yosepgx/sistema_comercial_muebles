@@ -152,6 +152,7 @@ export default function DatosPage(){
         <ProtectedRoute>
             <MainWrap>
                 {puedeGestionarDatosGenerales && <>
+                <h1 className="text-xl font-semibold mb-4">Ajuste de datos generales</h1>
                 <DataGrid
                     rows = {datagen}
                     columns={genColumns}

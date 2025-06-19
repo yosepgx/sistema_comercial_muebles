@@ -54,6 +54,7 @@ export default function RolesPage(){
         <ProtectedRoute>
             <MainWrap>
                 {puedeGestionarRoles && <>
+                <h1 className="text-xl font-semibold mb-4">Roles</h1>
                 <DataGrid
                 rows = {data? data : []}
                 columns={userColumns}

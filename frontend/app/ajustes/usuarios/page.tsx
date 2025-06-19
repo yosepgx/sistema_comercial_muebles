@@ -111,6 +111,7 @@ export default function UsuariosPage(){
         <ProtectedRoute>
             <MainWrap>
                 {puedeGestionarUsuarios && <>
+                <h1 className="text-xl font-semibold mb-4">Usuarios</h1>
                 <div className="flex justify-end mb-4">
                 <CustomButton type='button' variant='primary' onClick={()=>{router.push('/ajustes/usuarios/nuevo')}}>
                     Nuevo Usuario

@@ -141,6 +141,7 @@ export default function ClientePage(){
         <ProtectedRoute>
             <MainWrap>
                 {puedeVerClientes && <>
+                <h1 className="text-xl font-semibold mb-4">Clientes</h1>
                 <div className="flex flex-row space-x-8 mb-4">
                 <Input
                     placeholder="Buscar por nombre, documento, tipo cliente"
