@@ -181,12 +181,12 @@ export default function FormularioProducto({
             />
             <FormField
               control = {form.control}
-              name = "precio"
+              name = "nombre"
               render={({field}) => (
                 <FormItem className='flex flex-col'>
-                  <FormLabel> Precio</FormLabel>
+                  <FormLabel> Nombre</FormLabel>
                   <FormControl>
-                    <Input type = "number" {...field}/>
+                    <Input type = "text" {...field}/>
                   </FormControl>
                   <FormMessage className="min-h-[24px]"/>
                 </FormItem>
@@ -194,12 +194,12 @@ export default function FormularioProducto({
             />
             <FormField
               control = {form.control}
-              name = "nombre"
+              name = "precio"
               render={({field}) => (
                 <FormItem className='flex flex-col'>
-                  <FormLabel> Nombre</FormLabel>
+                  <FormLabel> Precio</FormLabel>
                   <FormControl>
-                    <Input type = "text" {...field}/>
+                    <Input type = "number" {...field}/>
                   </FormControl>
                   <FormMessage className="min-h-[24px]"/>
                 </FormItem>

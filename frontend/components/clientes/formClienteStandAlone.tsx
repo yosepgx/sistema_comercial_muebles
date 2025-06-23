@@ -75,7 +75,7 @@ export default function FormClienteStandAlone({tipo}:Props) {
         let clienteId: number | null = null
 
         const verified = formClienteSchemaSend.parse(data)
-        if (tipo === "nuevo" && !cliente) {
+        if (tipo === "nuevo") {
         const nuevoCliente = await PostClienteAPI('', verified)
         if (nuevoCliente) clienteId = nuevoCliente.id
         } 
@@ -86,6 +86,7 @@ export default function FormClienteStandAlone({tipo}:Props) {
 
         if (clienteId) {
         setCliente(verified)
+        router.push('/clientes')
         }
     }
 

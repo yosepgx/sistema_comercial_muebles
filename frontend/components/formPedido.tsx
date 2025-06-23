@@ -443,6 +443,20 @@ export default function FormPedido() {
             >
               Anular Pedido
             </CustomButton>} */}
+            {puedeEditarPedidos && <CustomButton type='button'
+            variant='red'
+            onClick={ async () => {
+              const confirmacion = window.confirm('¿Deseas Emitir una nota sobre el pedido?')
+                if (confirmacion) {
+                  if(pedido){
+                    //const nuevopedido = {...pedido, estado_pedido: 'anulado' as const}; de repente modificado o nota existente
+                    //await UpdatePedidoAPI(null,nuevopedido.id, nuevopedido)
+                    //setPedido(nuevopedido)
+                    router.push(`/notas/nuevo?pedidoId=${pedido.id}`)
+                  }
+                }
+            }}
+            >Emitir Nota de credito</CustomButton>}
             {puedeEditarPedidos && 
               <CustomButton
               onClick={() => setOpenModal(true)}

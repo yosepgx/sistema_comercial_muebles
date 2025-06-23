@@ -56,7 +56,8 @@ export const useCalculosCotizacion = ({
     });
 
     const totalFinal = totalBase + totalIGV;
-    setMaximoPermisible(totalConIGV*porcentajePermisible)
+    const resultado = Number((totalConIGV * porcentajePermisible)?.toFixed(2)??'0.00');
+    setMaximoPermisible(resultado)
     //console.log("rawtotal descontado: ",totalConIGV - descuentoConIGV)
     //console.log("total procesado: ",totalFinal)
 
