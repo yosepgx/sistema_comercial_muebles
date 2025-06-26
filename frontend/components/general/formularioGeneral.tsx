@@ -78,7 +78,7 @@ export default function FormularioGeneral({tipo}: Props){
                 name = "id"
                 render={({field}) => (
                     <FormItem className='flex flex-col' hidden = {tipo === 'nuevo'}>
-                    <FormLabel> Codigo de dato general</FormLabel>
+                    <FormLabel> Código de dato general</FormLabel>
                     <FormControl>
                         <Input type = "text" {...field}  disabled={true}/>
                     </FormControl>
@@ -104,7 +104,7 @@ export default function FormularioGeneral({tipo}: Props){
                 name = "razon_social"
                 render={({field}) => (
                     <FormItem className='flex flex-col'>
-                    <FormLabel> Razon social</FormLabel>
+                    <FormLabel> Razón social</FormLabel>
                     <FormControl>
                         <Input type = "text" {...field}/>
                     </FormControl>
@@ -130,7 +130,7 @@ export default function FormularioGeneral({tipo}: Props){
                 name = "direccion_fiscal"
                 render={({field}) => (
                     <FormItem className='flex flex-col'>
-                    <FormLabel> Direccion fiscal</FormLabel>
+                    <FormLabel> Dirección fiscal</FormLabel>
                     <FormControl>
                         <Input type = "text" {...field}/>
                     </FormControl>

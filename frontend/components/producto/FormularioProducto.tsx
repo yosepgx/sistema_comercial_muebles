@@ -171,7 +171,7 @@ export default function FormularioProducto({
               name = "id"
               render={({field}) => (
                 <FormItem className='flex flex-col' hidden={!editing}>
-                  <FormLabel> Codigo</FormLabel>
+                  <FormLabel> Código</FormLabel>
                   <FormControl>
                     <Input type = "number" {...field} disabled={true}/>
                   </FormControl>
@@ -211,7 +211,7 @@ export default function FormularioProducto({
               name = "categoria"
               render={({field}) => (
                 <FormItem className='flex flex-col'>
-                  <FormLabel> Categoria</FormLabel>
+                  <FormLabel> Categoría</FormLabel>
                   <Select onValueChange = {field.onChange} value={field.value}>
                     <FormControl>
                       <SelectTrigger>
@@ -285,7 +285,7 @@ export default function FormularioProducto({
               name = "codigo_afecion_igv"
               render={({field}) => (
                 <FormItem className='flex flex-col'>
-                  <FormLabel>Tipo de affección de igv:</FormLabel>
+                  <FormLabel>Tipo de afección de igv:</FormLabel>
                   <FormControl>
                     <RadioGroup
                       onValueChange={field.onChange}
@@ -325,7 +325,7 @@ export default function FormularioProducto({
               name = "descripcion"
               render={({field}) => (
                 <FormItem className='flex flex-col'>
-                  <FormLabel>Descripcion</FormLabel>
+                  <FormLabel>Descripción</FormLabel>
                   <FormControl>
                     <Input type = "text" placeholder='Opcional'{...field}/>
                   </FormControl>

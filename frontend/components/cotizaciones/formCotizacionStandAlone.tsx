@@ -236,7 +236,7 @@ if(!crrCotizacion)return (<div>Cargando...</div>)
                 name = "direccion_entrega"
                 render={({field}) => (
                   <FormItem className='flex flex-col'>
-                    <FormLabel> Direccion de Entrega</FormLabel>
+                    <FormLabel> Dirección de Entrega</FormLabel>
                     <FormControl>
                       <Input type = "text" {...field} disabled={tipoDireccion==="tienda" || edicionCotizacion === 'edicion'}/>
                     </FormControl>

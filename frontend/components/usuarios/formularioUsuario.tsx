@@ -111,7 +111,7 @@ export default function FormularioUsuario({tipo}: Props){
                 name = "id"
                 render={({field}) => (
                     <FormItem className='flex flex-col' hidden = {tipo === 'nuevo'}>
-                    <FormLabel> Codigo del usuario</FormLabel>
+                    <FormLabel> Código del usuario</FormLabel>
                     <FormControl>
                         <Input type = "text" {...field}  disabled={true}/>
                     </FormControl>

@@ -235,7 +235,7 @@ export default function FormNotaCreditoDebito({edicion, pedido, notaid, detalles
                   name="tipo_nota"
                   render={({ field }) => (
                     <FormItem >
-                      <FormLabel>Razon de eliminacion</FormLabel>
+                      <FormLabel>Razón de Anulación</FormLabel>
                       <RadioGroup value={field.value} onValueChange={field.onChange} disabled={edicion==='edicion'}>
                         <div className="flex flex-col gap-y-2">
                           <div className='flex flex-row gap-2'>

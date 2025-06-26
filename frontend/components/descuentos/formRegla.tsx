@@ -126,7 +126,7 @@ export default function FormRegla({tipo} : Props){
             name = "id"
             render={({field}) => (
                 <FormItem className='flex flex-col'  hidden={tipo==='nuevo'}>
-                <FormLabel > Codigo de Regla</FormLabel>
+                <FormLabel > Código de Regla</FormLabel>
                 <FormControl>
                     <Input type = "number" {...field} />
                 </FormControl>
@@ -139,7 +139,7 @@ export default function FormRegla({tipo} : Props){
             name = "producto"
             render={({field}) => (
                 <FormItem className='flex flex-col'>
-                <FormLabel> Codigo de producto</FormLabel>
+                <FormLabel> Código de producto</FormLabel>
                 <FormControl>
                     <Input type = "number" {...field} />
                 </FormControl>

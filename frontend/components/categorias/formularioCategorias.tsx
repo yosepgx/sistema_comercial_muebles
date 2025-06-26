@@ -82,7 +82,7 @@ export default function FormularioCategorias({tipo}: Props){
                 name = "id"
                 render={({field}) => (
                     <FormItem className='flex flex-col' hidden = {tipo === 'nuevo'}>
-                    <FormLabel> Codigo de categoria</FormLabel>
+                    <FormLabel> Código de categoria</FormLabel>
                     <FormControl>
                         <Input type = "text" {...field}  disabled={true}/>
                     </FormControl>
@@ -95,7 +95,7 @@ export default function FormularioCategorias({tipo}: Props){
                 name = "descripcion"
                 render={({field}) => (
                     <FormItem className='flex flex-col'>
-                    <FormLabel> Descripcion de categoria</FormLabel>
+                    <FormLabel> Descripción de categoría</FormLabel>
                     <FormControl>
                         <Input type = "text" {...field}/>
                     </FormControl>

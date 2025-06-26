@@ -189,7 +189,7 @@ export default function PrediccionPage() {
               <FormItem className="flex flex-col">
                 <FormLabel>Meses a promediar demanda</FormLabel>
                 <FormDescription>
-                Cantidad de meses historicos de venta a usar para los promedios moviles
+                Cantidad de meses históricos de venta a usar para los promedios móviles
                 </FormDescription>
                 <FormControl>
                   <Input type= "number" placeholder="24" {...field} />
@@ -207,7 +207,7 @@ export default function PrediccionPage() {
               <FormItem className="flex flex-col">
                 <FormLabel>Cantidad de meses en horizonte</FormLabel>
                 <FormDescription>
-                  Cantidad de meses que se predeciran.
+                  Cantidad de meses que se predecirán.
                 </FormDescription>
                 <FormControl>
                   <Input placeholder="1" {...field} />
