@@ -67,8 +67,11 @@ const fetchCotizacion = async () => {
         const data = await GetDatoGeneralDetailApi(null, 1)
         const margen = data?.margen_general??5.00
         const margenTasa = margen/100
+        const total = cotizacion.monto_total + cotizacion.descuento_adicional
+        const maximo = Math.round(margenTasa * total * 100) / 100
         setPorcentajePermisible(margenTasa)
-        setMaximoPermisible((margenTasa*cotizacion.monto_total))
+        setMaximoPermisible(maximo)
+        //setMaximoPermisible((margenTasa*cotizacion.monto_total))
         setCrrCotizacion(cotizacion)
         setListaDetalles(listado)
     }
@@ -211,7 +214,7 @@ if(!crrCotizacion)return (<div>Cargando...</div>)
           <span className="font-medium">Datos generales</span>
         </CollapsibleTrigger>
         <CollapsibleContent className="border border-t-0 rounded-b-lg p-6 bg-white">
-          <div className="grid grid-cols-2 ">
+          <div className="grid grid-cols-2 gap-4">
             {/* Descuento auxiliar */}
             <div>
               <div className='flex flex-row gap-8' > 
@@ -235,7 +238,7 @@ if(!crrCotizacion)return (<div>Cargando...</div>)
                 control = {form.control}
                 name = "direccion_entrega"
                 render={({field}) => (
-                  <FormItem className='flex flex-col'>
+                  <FormItem className='flex flex-col w-full'>
                     <FormLabel> Dirección de Entrega</FormLabel>
                     <FormControl>
                       <Input type = "text" {...field} disabled={tipoDireccion==="tienda" || edicionCotizacion === 'edicion'}/>
@@ -245,34 +248,7 @@ if(!crrCotizacion)return (<div>Cargando...</div>)
                 )}
               />
               </div>
-              <div className='flex flex-row'>
-                <FormField
-                  control = {form.control}
-                  name = "descuento_adicional"
-                  render={({field}) => (
-                    <FormItem className='flex flex-col'>
-                      <FormLabel> Monto de Descuento Auxiliar</FormLabel>
-                      <FormControl>
-                        <Input type = "number" step={"0.1"}{...field} className='flex' disabled = {edicionCotizacion === 'edicion'}/>
-                      </FormControl>
-                      <FormMessage className="min-h-[24px]"/>
-                    </FormItem>
-                  )}
-                />
-                {/* Máximo permisible */}
-
-                <div className="space-y-2">
-                <Label>
-                  Máximo permisible
-                </Label>
-                <Input
-                  id="maximoPermisible"
-                  type = "number"
-                  value={maximoPermisible}
-                  disabled = {true}
-                />
-              </div>
-            </div>
+              
             {/* Observación/Razón de rechazo */}
             <div>
             <FormField
@@ -305,9 +281,37 @@ if(!crrCotizacion)return (<div>Cargando...</div>)
             </div>
             
             <div>
+              <div className='flex flex-row space-x-4'>
+                  <FormField
+                    control = {form.control}
+                    name = "descuento_adicional"
+                    render={({field}) => (
+                      <FormItem className='flex flex-col'>
+                        <FormLabel> Monto de Descuento Auxiliar</FormLabel>
+                        <FormControl>
+                          <Input type = "number" step={"0.1"}{...field} className='flex' disabled = {edicionCotizacion === 'edicion'}/>
+                        </FormControl>
+                        <FormMessage className="min-h-[24px]"/>
+                      </FormItem>
+                    )}
+                  />
+                  {/* Máximo permisible */}
+
+                  <div className="flex flex-col space-y-2">
+                  <Label>
+                    Máximo permisible
+                  </Label>
+                  <Input
+                    id="maximoPermisible"
+                    type = "number"
+                    value={maximoPermisible}
+                    disabled = {true}
+                  />
+                </div>
+              </div>
               <div className="space-y-2">
               <Label>
-                Valor Total
+                Monto Total
               </Label>
               <Input
                 id="valorTotal"
