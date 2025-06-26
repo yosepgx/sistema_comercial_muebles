@@ -8,8 +8,7 @@ import { useEffect, useState } from "react"
 import { useForm } from "react-hook-form"
 import {z} from "zod"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { Form, FormControl, FormField, FormItem, FormMessage } from './ui/form'
-import { FormLabel } from "@mui/material"
+import { Form, FormControl, FormField, FormItem, FormMessage,FormLabel } from './ui/form'
 import { format } from "date-fns-tz"
 import { TOportunidad } from "./types/oportunidad"
 import CustomButton from "./customButtom"
@@ -50,7 +49,7 @@ export default function FormOportunidad() {
       estado_oportunidad: `${crrOportunidad.estado_oportunidad}`,
       activo: `${crrOportunidad.activo}`,
       rcliente: null,
-      rvalorneto: crrOportunidad.rvalorneto?crrOportunidad.rvalorneto.toFixed(2): "0.00"
+      rvalorneto: crrOportunidad?.rvalor_neto ?? "0.00"
     });
   }
 }, [crrOportunidad]);
@@ -67,7 +66,7 @@ useEffect(()=>{
 
 
    const onSubmit = async (rawdata: FormOportunidadValues) => {
-    console.log('Datos del formulario:', rawdata)
+    //console.log('Datos del formulario:', rawdata)
     const data = formOportunidadSchemaSend.parse(rawdata)
     let nuevaOportunidad = null
     if(tipoEdicion === 'nuevo' && !crrOportunidad){
@@ -89,18 +88,17 @@ useEffect(()=>{
   if(loading)return (<div>Cargando...</div>);
 
     return (
-      <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="p-6" >
       {/* Card de formulario */}
       {/* Número de consulta */}
       <Form {...form}> 
       <form onSubmit={form.handleSubmit(onSubmit)}>
-      <div>
-        <Label htmlFor="consulta">Número de consulta</Label>
-        <Input id="consulta" value="00001" disabled={true} />
-      </div>
-
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 ">
+        <div className="space-y-2" hidden= {tipoEdicion === "nuevo"}>
+        <Label htmlFor="consulta">Número de oportunidad</Label>
+        <Input id="consulta" value={crrOportunidad?.id?.toString() ?? '0'}  disabled={true} />
+        </div>
       {/* Sede */}
-      <div>
         
         <FormField
           control = {form.control}
@@ -128,10 +126,8 @@ useEffect(()=>{
             </FormItem>
           )}
         />
-      </div>
 
       {/* Fecha de contacto */}
-      <div>
         <FormField
           control = {form.control}
           name = "fecha_contacto"
@@ -145,9 +141,7 @@ useEffect(()=>{
             </FormItem>
           )}
           />
-      </div>
       {/* Resultado */}
-      <div >
          <FormField
             control = {form.control}
             name = "estado_oportunidad"
@@ -191,7 +185,6 @@ useEffect(()=>{
             )}
           />
         
-      </div>
 
       {/* Valor Neto */}
          <FormField
@@ -214,12 +207,14 @@ useEffect(()=>{
             </FormItem>
           )}
         /> 
-        
+        </div>
+        <div className="flex justify-between w-full pt-4">
         <CustomButton variant="orange" type="button" 
         onClick={()=>{router.push('/'); localStorage.removeItem('nueva-oportunidad')}}>
           Salir
         </CustomButton>
         <CustomButton variant="primary" type="submit">Guardar Oportunidad</CustomButton>
+        </div>
           </form>
           </Form>
       </div>

@@ -8,7 +8,7 @@ const oportunidad = z.object({
     estado_oportunidad: z.enum(["ganado","perdido","negociacion"]),
     rcliente: z.string().optional().nullable(),
     activo: z.boolean(),
-    rvalorneto: z.number().optional().nullable()
+    rvalor_neto: z.string().optional().nullable()
 })
 
 export type TOportunidad = z.infer<typeof oportunidad>

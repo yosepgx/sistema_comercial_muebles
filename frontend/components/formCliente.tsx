@@ -300,7 +300,7 @@ export default function FormCliente() {
               </div>
 
               {/* Botón de envío */}
-              <div className="flex justify-end pt-4">
+              <div className="flex justify-between w-full pt-4">
                 <CustomButton variant="orange" type="button" 
                   onClick={()=>{router.push('/'); localStorage.removeItem('nueva-oportunidad')}}>
                   Salir
