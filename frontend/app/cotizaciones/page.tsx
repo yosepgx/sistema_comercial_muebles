@@ -67,6 +67,7 @@ export default function CotizacionesPage(){
   result = result.filter(item => {
     const camposFiltrables = [
       item.id?.toString().toLowerCase(),
+      item.rcliente?.toLowerCase(),
       item.estado_cotizacion?.toLowerCase(),
       item.direccion_entrega?.toLowerCase()
     ];
@@ -95,9 +96,25 @@ export default function CotizacionesPage(){
             flex: 1
         },
         {   field: 'oportunidad', 
-            headerName: 'Oportunidad asociada',
+            renderHeader: () => (
+                <span className="text-center block">
+                Oportunidad<br /> asociada
+                </span>
+            ),
             resizable: false,
             flex: 1
+        },
+        {
+            field: 'rcliente', 
+            headerName: 'Documento de cliente',
+            renderHeader: () => (
+                <span className="text-center block">
+                Documento de<br /> cliente
+                </span>
+            ),
+            resizable: false,
+            flex: 1,
+            valueFormatter: (value) => value? value: "Cliente no asignado"
         },
         {   field: 'fecha', 
             headerName: 'Fecha de creacion',
@@ -136,7 +153,11 @@ export default function CotizacionesPage(){
             flex: 1
         },
         {   field: 'direccion_entrega', 
-            headerName: 'Direccion de entrega',
+            renderHeader: () => (
+                <span className="text-center block">
+                Direccion de<br /> entrega
+                </span>
+            ),
             resizable: false,
             flex: 1
         },

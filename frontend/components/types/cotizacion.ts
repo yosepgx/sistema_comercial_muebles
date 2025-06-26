@@ -27,6 +27,7 @@ export const cotizacion = z.object({
     direccion_entrega: z.string(),
     activo: z.boolean(),
     vendedor: z.string(),
+    rcliente: z.string().nullable().optional()
 })
 
 export const cotizaciones = z.array(cotizacion);

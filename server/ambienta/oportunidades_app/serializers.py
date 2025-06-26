@@ -12,6 +12,13 @@ class OportunidadSerializer(serializers.ModelSerializer):
 #en el codigo de view si puede acceder directamente al modelo oportunidad
 #no es necesario agregar campos todos ya estan incluidos
 class CotizacionSerializer(serializers.ModelSerializer):
+    rcliente = serializers.SerializerMethodField(read_only=True)
+    def get_rcliente(self, obj):
+        cliente = getattr(obj.oportunidad, 'cliente', None)
+        if cliente and cliente.documento:
+            return getattr(cliente, 'documento', None)
+        return None
+    
     class Meta:
         model = Cotizacion
         fields = '__all__'
