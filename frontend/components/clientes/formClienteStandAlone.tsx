@@ -33,7 +33,7 @@ export default function FormClienteStandAlone({tipo}:Props) {
     form.setValue('telefono', cliente.telefono);
     form.setValue('naturaleza', cliente.naturaleza);
     form.setValue('tipo_interes', cliente.tipo_interes); 
-    form.setValue('fecha_conversion', cliente.fecha_conversion?format(cliente.fecha_conversion,'dd-MM-yyyy'): ''); 
+    form.setValue('fecha_conversion', cliente.fecha_conversion?format(cliente.fecha_conversion,'yyyy-MM-dd'): null); 
     form.setValue('documento', cliente.documento);
     form.setValue('tipo_documento', cliente.tipo_documento);
     form.setValue('activo', cliente.activo.toString());
@@ -76,17 +76,17 @@ export default function FormClienteStandAlone({tipo}:Props) {
 
         const verified = formClienteSchemaSend.parse(data)
         if (tipo === "nuevo") {
-        const nuevoCliente = await PostClienteAPI('', verified)
-        if (nuevoCliente) clienteId = nuevoCliente.id
+            const nuevoCliente = await PostClienteAPI('', verified)
+            if (nuevoCliente) clienteId = nuevoCliente.id
         } 
         else if(tipo === "edicion" && cliente && cliente.id === verified.id){
-        const nuevoCliente = await UpdateClienteAPI(null, verified.id,verified)
-        if (nuevoCliente) clienteId = nuevoCliente.id
+            const nuevoCliente = await UpdateClienteAPI(null, verified.id,verified)
+            if (nuevoCliente) clienteId = nuevoCliente.id
         }
 
         if (clienteId) {
-        setCliente(verified)
-        router.push('/clientes')
+            setCliente(verified)
+            router.push('/clientes')
         }
     }
 
