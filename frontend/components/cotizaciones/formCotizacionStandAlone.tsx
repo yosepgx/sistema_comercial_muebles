@@ -350,15 +350,15 @@ if(!crrCotizacion)return (<div>Cargando...</div>)
         <h3 className="text-lg font-medium mb-4">Listado</h3>
         
         {/* Botones de acción */}
-        <div className="flex justify-between items-center mb-4">
+        {edicionCotizacion === 'nuevo' &&  <div className="flex justify-between items-center mb-4">
           <CustomButton variant='primary'
           type='button'
-          disabled = {edicionCotizacion === 'edicion'}
+          
           onClick={()=>setIsSearchPopupOpen(true)}>
             Agregar Línea
           </CustomButton>
           
-        </div>
+        </div>}
       
         {/* Tabla de detalles */}
         <div className="bg-white rounded-lg border">

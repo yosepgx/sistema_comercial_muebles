@@ -59,6 +59,16 @@ export default function ClientePage(){
             resizable: false,
             flex: 1
         },
+        {   field: 'documento', 
+            headerName: 'DNI/RUC',
+            resizable: false,
+            flex: 1
+        },
+        {   field: 'tipo_documento', 
+            headerName: 'Tipo de Documento',
+            resizable: false,
+            flex: 1
+        },
         {   field: 'nombre', 
             headerName: 'Nombre/Razon',
             resizable: false,
@@ -79,27 +89,18 @@ export default function ClientePage(){
             resizable: false,
             flex: 1
         },
-        {   field: 'fecha_conversion', 
-            headerName: 'Fecha de conversion',
-            resizable: false,
-            flex: 1,
-            valueFormatter: (value) => transformOnlyDate(value),
-        },
+        // {   field: 'fecha_conversion', 
+        //     headerName: 'Fecha de conversion',
+        //     resizable: false,
+        //     flex: 1,
+        //     valueFormatter: (value) => transformOnlyDate(value),
+        // },
         {   field: 'naturaleza', 
             headerName: 'Tipo de cliente',
             resizable: false,
             flex: 1
         },
-        {   field: 'documento', 
-            headerName: 'DNI/RUC',
-            resizable: false,
-            flex: 1
-        },
-        {   field: 'tipo_documento', 
-            headerName: 'Tipo de Documento',
-            resizable: false,
-            flex: 1
-        },
+        
         {   field: 'activo', 
             headerName: 'Estado',
             resizable: false,
