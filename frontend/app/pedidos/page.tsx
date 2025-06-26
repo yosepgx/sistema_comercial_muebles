@@ -69,6 +69,7 @@ export default function PedidosPage(){
   result = result.filter(item => {
     const camposFiltrables = [
       item.id?.toString().toLowerCase(),
+      item.rcliente?.toLowerCase(),
       item.estado_pedido?.toLowerCase(),
       item.direccion?.toLowerCase(),
       item.serie?.toLowerCase(),
@@ -97,6 +98,18 @@ export default function PedidosPage(){
           headerName: 'Id',
           resizable: false,
           flex: 1
+      },
+      {
+          field: 'rcliente', 
+          headerName: 'Documento de cliente',
+          renderHeader: () => (
+              <span className="text-center block">
+              Documento <br /> cliente
+              </span>
+          ),
+          resizable: false,
+          flex: 1,
+          valueFormatter: (value) => value? value: "Cliente no asignado"
       },
       {   field: 'fecha',
           renderHeader: () => (
@@ -210,7 +223,7 @@ export default function PedidosPage(){
       sortable: false,
       filterable: false,
       disableColumnMenu: true,
-      width: 120,
+      width: 90,
       renderCell: (params) => (
         <div>
           <IconButton onClick={() => router.push(`/pedidos/${params.row.id}`)}>

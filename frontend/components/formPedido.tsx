@@ -176,7 +176,7 @@ export default function FormPedido() {
       {/* Información del pedido en grid */}
       <Form {...form}> 
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6 pr-30">
         {/* Primera columna */}
         <div className="space-y-4">
           <FormField
@@ -192,7 +192,10 @@ export default function FormPedido() {
               </FormItem>
             )}
           />
-
+          <div className='flex flex-col space-y-2'>
+            <Label>Documento del cliente</Label>
+            <Input type='text' value={pedido?.rcliente ?? 'Sin cliente'} readOnly disabled={true}></Input>
+          </div>
 
           {/* <div className="space-y-2">
             <Label className="text-sm font-medium text-gray-600">Solicitante</Label>
@@ -202,19 +205,7 @@ export default function FormPedido() {
             />
           </div> */}
           
-          <FormField
-            control = {form.control}
-            name = "descuento_adicional"
-            render={({field}) => (
-              <FormItem className='flex flex-col'>
-                <FormLabel> Descuento auxiliar</FormLabel>
-                <FormControl>
-                  <Input type = "number" {...field} disabled={true}/>
-                </FormControl>
-                <FormMessage className="min-h-[24px]"/>
-              </FormItem>
-            )}
-          />
+          
 
           <FormField
             control = {form.control}
@@ -261,6 +252,7 @@ export default function FormPedido() {
             </FormItem>
           )}
         />
+        <div className='flex flex-row grid-cols-3 space-x-4'>
         <FormField
           control = {form.control}
           name = "fecha"
@@ -302,7 +294,7 @@ export default function FormPedido() {
             </FormItem>
           )}
         />
-
+        </div>
           
           {/* <div className="space-y-2">
             <Label className="text-sm font-medium text-gray-600">Descuento total</Label>
@@ -322,6 +314,20 @@ export default function FormPedido() {
 
         {/* Tercera columna */}
         <div className="space-y-4">
+          <FormField
+            control = {form.control}
+            name = "descuento_adicional"
+            render={({field}) => (
+              <FormItem className='flex flex-col'>
+                <FormLabel> Descuento auxiliar</FormLabel>
+                <FormControl>
+                  <Input type = "number" {...field} disabled={true}/>
+                </FormControl>
+                <FormMessage className="min-h-[24px]"/>
+              </FormItem>
+            )}
+          />
+
           <FormField
             control = {form.control}
             name = "monto_sin_impuesto"

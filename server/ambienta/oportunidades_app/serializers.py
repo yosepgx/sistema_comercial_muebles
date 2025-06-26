@@ -15,7 +15,7 @@ class CotizacionSerializer(serializers.ModelSerializer):
     rcliente = serializers.SerializerMethodField(read_only=True)
     def get_rcliente(self, obj):
         cliente = getattr(obj.oportunidad, 'cliente', None)
-        if cliente and cliente.documento:
+        if cliente :
             return getattr(cliente, 'documento', None)
         return None
     

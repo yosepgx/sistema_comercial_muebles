@@ -4,11 +4,21 @@ from inventario_app.models import Producto
 from decimal import Decimal
 
 class PedidoSerializer(serializers.ModelSerializer):
+    rcliente = serializers.SerializerMethodField(read_only=True)
+    def get_rcliente(self, obj):
+        cotizacion = getattr(obj, 'cotizacion', None)
+        if cotizacion :
+            oportunidad = getattr(cotizacion, 'oportunidad', None)
+            if oportunidad:
+                cliente = getattr(oportunidad, 'cliente', None)
+                if cliente :
+                    return getattr(cliente, 'documento', None)
+        return None
     
     class Meta:
         model = Pedido
         fields= '__all__'
-        read_only_fields = ['serie', 'correlativo', 'fechaentrega', 'fecha_pago']
+        read_only_fields = ['serie', 'correlativo', 'fechaentrega', 'fecha_pago', 'rcliente']
 
 
 class PedidoDetalleSerializer(serializers.ModelSerializer):

@@ -181,7 +181,7 @@ export default function FormPedidoStandAlone({tipo} : Props) {
       {/* Información del pedido en grid */}
       <Form {...form}> 
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6 pr-30">
         {/* Primera columna */}
         <div className="space-y-4">
           <FormField
@@ -198,6 +198,11 @@ export default function FormPedidoStandAlone({tipo} : Props) {
             )}
           />
 
+          <div className='flex flex-col space-y-2'>
+            <Label>Documento del cliente</Label>
+            <Input type='text' value={pedido?.rcliente ?? 'Sin cliente'} readOnly disabled={true}></Input>
+          </div>
+
 
           {/* <div className="space-y-2">
             <Label className="text-sm font-medium text-gray-600">Solicitante</Label>
@@ -207,19 +212,7 @@ export default function FormPedidoStandAlone({tipo} : Props) {
             />
           </div> */}
           
-          <FormField
-            control = {form.control}
-            name = "descuento_adicional"
-            render={({field}) => (
-              <FormItem className='flex flex-col'>
-                <FormLabel> Descuento auxiliar</FormLabel>
-                <FormControl>
-                  <Input type = "number" {...field} disabled={true}/>
-                </FormControl>
-                <FormMessage className="min-h-[24px]"/>
-              </FormItem>
-            )}
-          />
+          
 
           <FormField
             control = {form.control}
@@ -266,6 +259,7 @@ export default function FormPedidoStandAlone({tipo} : Props) {
             </FormItem>
           )}
         />
+        <div className='flex flex-row grid-cols-3 space-x-4'>
         <FormField
           control = {form.control}
           name = "fecha"
@@ -307,9 +301,9 @@ export default function FormPedidoStandAlone({tipo} : Props) {
             </FormItem>
           )}
         />
-
+        </div>
           
-        <div className="flex flex-col space-y-2">
+        {/* <div className="flex flex-col space-y-2">
             <Label className="text-sm font-medium text-gray-600">Descuento total</Label>
             <div className="relative">
               <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">S/.</span>
@@ -320,12 +314,26 @@ export default function FormPedidoStandAlone({tipo} : Props) {
                 disabled={true}
               />
             </div>
-        </div>
+        </div> */}
           
         </div>
 
         {/* Tercera columna */}
         <div className="space-y-4">
+          <FormField
+            control = {form.control}
+            name = "descuento_adicional"
+            render={({field}) => (
+              <FormItem className='flex flex-col'>
+                <FormLabel> Descuento auxiliar</FormLabel>
+                <FormControl>
+                  <Input type = "number" {...field} disabled={true}/>
+                </FormControl>
+                <FormMessage className="min-h-[24px]"/>
+              </FormItem>
+            )}
+          />
+
           <FormField
             control = {form.control}
             name = "monto_sin_impuesto"

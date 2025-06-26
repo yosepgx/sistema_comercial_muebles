@@ -40,7 +40,8 @@ const pedido = z.object({
     codigo_tipo_tributo: z.string(), //talvez number
     activo: z.boolean(),
     documento_referencia: z.number().nullable().optional(),
-    tipo_nota:z.string().nullable().optional()
+    tipo_nota:z.string().nullable().optional(),
+    rcliente: z.string().nullable().optional()
 })
 export const pedidoDetalleListSchema = z.array(pedidoDetalle)
 export type TPedido = z.infer<typeof pedido>
