@@ -208,8 +208,10 @@ const handleSelectProducto = (producto: TProducto) => {
                 onClick={async () => {
                   const confirmacion = window.confirm('¿Estás seguro de que deseas rechazar esta cotización?')
                   if (confirmacion) {
-                    const nueva = { ...crrCotizacion, estado_cotizacion: 'rechazada' as const}
+                    const obs = form.getValues('observaciones') ?? ''
+                    const nueva = { ...crrCotizacion, estado_cotizacion: 'rechazada' as const, observaciones: obs}
                     await UpdateCotizacionAPI(null, crrCotizacion.id, nueva)
+                    SetModoCotizacion('muchas')
                   }
                 }}
               >
