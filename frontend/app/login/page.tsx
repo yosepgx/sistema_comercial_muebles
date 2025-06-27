@@ -5,6 +5,7 @@ import { z } from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useState } from 'react'
 import { useAuth } from '@/context/authContext'
+import Image from 'next/image'
 
 const loginSchema = z.object({
   username: z.string(),
@@ -36,7 +37,19 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="max-w-sm mx-auto mt-20">
+     <div className="flex min-h-screen">
+      <div className="hidden md:flex w-1/2 bg-gray-100 items-center justify-center overflow-hidden">
+        <div className="w-full h-full relative">
+          <Image
+            src="/login-banner5.png"
+            alt="Login"
+            fill
+            className="object-cover"
+            priority
+          />
+        </div>
+      </div>
+    <div className="flex flex-col justify-center w-full md:w-1/2 px-8 py-12">
       <h1 className="text-2xl font-bold mb-6">Iniciar sesión</h1>
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
         <div>
@@ -65,6 +78,7 @@ export default function LoginPage() {
 
         {error && <p className="text-red-500 text-sm mt-2">{error}</p>}
       </form>
+      </div>
     </div>
   )
 }

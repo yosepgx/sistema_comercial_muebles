@@ -106,7 +106,6 @@ export default function HomePage() {
   const cargarDatos = async () => {
         try {
         const res = await GetOportunidadListApi(null)
-        console.log("Datos cargados:", res)
         setData(res)
         } catch (error) {
         console.error("Error al cargar los datos", error)
@@ -136,6 +135,8 @@ export default function HomePage() {
   result = result.filter(item => {
     const camposFiltrables = [
       item.id?.toString().toLowerCase(),
+      item.rcliente?.toLowerCase(),
+      item.estado_oportunidad?.toLowerCase(),
     ];
     return camposFiltrables.some(campo => campo?.includes(texto));
   });

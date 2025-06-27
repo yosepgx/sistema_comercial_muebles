@@ -38,7 +38,6 @@ export default function CotizacionesPage(){
     const cargarDatos = async () => {
         try {
         const res = await GetCotizacionListApi(ct)
-        console.log("Datos cargados:", res)
         setData(res)
         } catch (error) {
         console.error("Error al cargar los datos", error)

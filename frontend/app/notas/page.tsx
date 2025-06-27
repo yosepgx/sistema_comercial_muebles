@@ -38,7 +38,6 @@ export default function PedidosPage(){
         try {
         let res = await GetPedidoListApi(ct)
         res = res.filter(value => value.tipo_comprobante !== 'boleta' && value.tipo_comprobante !== 'factura')
-        console.log("Datos cargados:", res)
         setData(res)
         } catch (error) {
         console.error("Error al cargar los datos", error)

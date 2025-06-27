@@ -59,7 +59,7 @@ export default function FormClienteStandAlone({tipo}:Props) {
           tipo_interes: cliente?cliente.tipo_interes:'lead',
           fecha_conversion: cliente?.fecha_conversion
             ? format(cliente.fecha_conversion, 'dd-MM-yyyy')
-            : format(new Date(), 'dd-MM-yyyy'),
+            : null,
           naturaleza: cliente?cliente.naturaleza:'Natural',
           documento: cliente?cliente.documento:'',
           tipo_documento: cliente?cliente.tipo_documento:'DNI',

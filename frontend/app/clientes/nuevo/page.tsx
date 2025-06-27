@@ -8,7 +8,7 @@ export default function ClienteNuevoPage(){
     return (
         <ProtectedRoute>
             <MainWrap>
-                <FormClienteStandAlone tipo='edicion'/>
+                <FormClienteStandAlone tipo='nuevo'/>
             </MainWrap>
         </ProtectedRoute>
     )
