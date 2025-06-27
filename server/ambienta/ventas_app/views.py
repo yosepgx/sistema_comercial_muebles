@@ -22,6 +22,7 @@ from decimal import Decimal
 from django.template.loader import render_to_string
 from weasyprint import HTML
 from clientes_app.models import Cliente
+from django.db.models import Q
 
 
 
@@ -430,16 +431,19 @@ class DescargarPedidos(APIView):
             if tipo_fecha == 'fecha':
                 queryset = PedidoDetalle.objects.select_related(
                     'pedido', 'producto'
-                ).filter(pedido__fecha__range=(fecha_inicio, fecha_fin)).order_by('-id')
+                ).filter(Q(pedido__fecha__range=(fecha_inicio, fecha_fin)) &
+                            (Q(pedido__tipo_comprobante=Pedido.TIPOBOLETA) | Q(pedido__tipo_comprobante=Pedido.TIPOFACTURA))).order_by('-id')
 
             elif tipo_fecha == 'fechaentrega':
                 queryset = PedidoDetalle.objects.select_related(
                         'pedido', 'producto'
-                    ).filter(pedido__fechaentrega__range=(fecha_inicio, fecha_fin)).order_by('-id')
+                    ).filter(Q(pedido__fechaentrega__range=(fecha_inicio, fecha_fin)) &
+                            (Q(pedido__tipo_comprobante=Pedido.TIPOBOLETA) | Q(pedido__tipo_comprobante=Pedido.TIPOFACTURA))).order_by('-id')
             elif tipo_fecha == 'fecha_pago':
                 queryset = PedidoDetalle.objects.select_related(
                         'pedido', 'producto'
-                    ).filter(pedido__fecha_pago__range=(fecha_inicio, fecha_fin)).order_by('-id')
+                    ).filter(Q(pedido__fecha_pago__range=(fecha_inicio, fecha_fin)) &
+                            (Q(pedido__tipo_comprobante=Pedido.TIPOBOLETA) | Q(pedido__tipo_comprobante=Pedido.TIPOFACTURA))).order_by('-id')
             
 
             if not queryset.exists():

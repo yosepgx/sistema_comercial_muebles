@@ -207,12 +207,7 @@ export default function PedidosPage(){
                   onChange={(newValue) => setFechaFin(newValue)}
                 />
                 </div>
-                {puedeExportarNotas && <CustomButton type="button" onClick={()=>descargarPedidosAPI(null, 
-                  format(fechaInicio?? '01/01/2012', 'yyyy-MM-dd'), 
-                  format(fechaFin ?? '01/01/2040', 'yyyy-MM-dd'))
-                  }>
-                  Exportar
-                </CustomButton>}
+                
                 </div>
                 <DataGrid
                 className="mt-2"
