@@ -280,8 +280,8 @@ export default function PedidosPage(){
                 </div>
                 {puedeExportarPedidos && <CustomButton type="button" onClick={()=>descargarPedidosAPI(null, 
                   format(fechaInicio?? '01/01/2012', 'yyyy-MM-dd'), 
-                  format(fechaFin ?? '01/01/2040', 'yyyy-MM-dd'))
-                  
+                  format(fechaFin ?? '01/01/2040', 'yyyy-MM-dd'),
+                  campoFecha)
                   }>
                   Exportar
                 </CustomButton>}

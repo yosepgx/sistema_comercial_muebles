@@ -168,7 +168,7 @@ export async function UpdatePedidoAPI(token:string | null, id: number, data: TPe
     }
   }
 
-export const descargarPedidosAPI = async (token: string | null,fechaInicio: string, fechaFin: string) => {
+export const descargarPedidosAPI = async (token: string | null,fechaInicio: string, fechaFin: string, tipoFecha:string) => {
     try {
       const response = await customFetch(token,'ventas/descargar-pedidos/', {
         method: 'POST',
@@ -178,6 +178,7 @@ export const descargarPedidosAPI = async (token: string | null,fechaInicio: stri
         body: JSON.stringify({
           fecha_inicio: fechaInicio,
           fecha_fin: fechaFin,
+          tipo_fecha: tipoFecha
         }),
       });
 

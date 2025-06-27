@@ -409,6 +409,7 @@ class DescargarPedidos(APIView):
             # Leer fechas del request
             fecha_inicio_str = request.data.get('fecha_inicio')
             fecha_fin_str = request.data.get('fecha_fin')
+            tipo_fecha = request.data.get('tipo_fecha')
 
             if not fecha_inicio_str or not fecha_fin_str:
                 return Response({"detail": "Debe proporcionar fecha_inicio y fecha_fin."},
@@ -426,9 +427,20 @@ class DescargarPedidos(APIView):
                 return Response({"detail": "La fecha de inicio no puede ser mayor que la fecha de fin."},
                                 status=status.HTTP_400_BAD_REQUEST)
             
-            queryset = PedidoDetalle.objects.select_related(
-                'pedido', 'producto'
-            ).filter(pedido__fecha__range=(fecha_inicio, fecha_fin)).order_by('-id')
+            if tipo_fecha == 'fecha':
+                queryset = PedidoDetalle.objects.select_related(
+                    'pedido', 'producto'
+                ).filter(pedido__fecha__range=(fecha_inicio, fecha_fin)).order_by('-id')
+
+            elif tipo_fecha == 'fechaentrega':
+                queryset = PedidoDetalle.objects.select_related(
+                        'pedido', 'producto'
+                    ).filter(pedido__fechaentrega__range=(fecha_inicio, fecha_fin)).order_by('-id')
+            elif tipo_fecha == 'fecha_pago':
+                queryset = PedidoDetalle.objects.select_related(
+                        'pedido', 'producto'
+                    ).filter(pedido__fecha_pago__range=(fecha_inicio, fecha_fin)).order_by('-id')
+            
 
             if not queryset.exists():
                 return Response({"detail": "No hay pedidos disponibles para exportar."}, status=status.HTTP_204_NO_CONTENT)
