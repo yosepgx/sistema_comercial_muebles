@@ -6,6 +6,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { useState } from 'react'
 import { useAuth } from '@/context/authContext'
 import Image from 'next/image'
+import { useRouter } from 'next/navigation'
 
 const loginSchema = z.object({
   username: z.string(),
@@ -17,7 +18,7 @@ type LoginForm = z.infer<typeof loginSchema>
 export default function LoginPage() {
   const [error, setError] = useState('')
   const {fetchLogin} = useAuth()
-  
+  const router = useRouter()
   const {
     register,
     handleSubmit,
@@ -71,13 +72,16 @@ export default function LoginPage() {
           />
           {errors.password && <p className="text-red-500 text-sm">{errors.password.message}</p>}
         </div>
-
+        <div>
+        <span className='hover:text-blue-600 cursor-pointer' onClick={()=>router.push('/olvide-contrasena')}>¿Olvidaste tu contraseña?</span>
+        </div>
         <button type="submit" className="bg-blue-600 text-white px-4 py-2 rounded">
           Entrar
         </button>
 
         {error && <p className="text-red-500 text-sm mt-2">{error}</p>}
       </form>
+      
       </div>
     </div>
   )
